@@ -12,11 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:importantForAccessibility="no"
         android:layout_marginBottom="20dp"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_launcher_round"
-        tools:ignore="ImageContrastCheck">
-    </ImageView>
+        android:visibility="gone"
+        tools:ignore="ImageContrastCheck"></ImageView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exitButton"

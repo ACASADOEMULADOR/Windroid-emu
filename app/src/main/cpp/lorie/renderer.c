@@ -14,6 +14,7 @@
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
 #include <android/native_window_jni.h>
 #include <android/log.h>
 #include <dlfcn.h>
@@ -145,6 +146,8 @@ static struct {
     GLuint id;
     bool cursorChanged;
 } cursor;
+static int gles_version = 0;
+static GLuint pbo = 0;
 
 GLuint g_texture_program = 0, gv_pos = 0, gv_coords = 0;
 GLuint g_texture_program_bgra = 0, gv_pos_bgra = 0, gv_coords_bgra = 0;
@@ -171,6 +174,10 @@ static EGLint configAttribs[] = {
 
 const EGLint ctxattribs[] = {
         EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+};
+
+const EGLint ctxattribs3[] = {
+        EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 0, EGL_NONE
 };
 
 int renderer_init(JNIEnv* env) {
@@ -217,12 +224,26 @@ int renderer_init(JNIEnv* env) {
         eglChooseConfig(egl_display, configAttribs, &cfg, 1, &numConfigs) != EGL_TRUE)
         return printEglError("eglChooseConfig failed", __LINE__);
 
-    ctx = eglCreateContext(egl_display, cfg, NULL, ctxattribs);
+    ctx = eglCreateContext(egl_display, cfg, NULL, ctxattribs3);
+    if (ctx != EGL_NO_CONTEXT)
+        gles_version = 3;
+    else {
+        ctx = eglCreateContext(egl_display, cfg, NULL, ctxattribs);
+        gles_version = 2;
+    }
+
     if (ctx == EGL_NO_CONTEXT)
         return printEglError("eglCreateContext failed", __LINE__);
 
     if (eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) != EGL_TRUE)
         return printEglError("eglMakeCurrent failed", __LINE__);
+
+    if (gles_version == 3) {
+        log("Xlorie: Initialized GLES 3.0 context, using PBO for legacy drawing.");
+        glGenBuffers(1, &pbo);
+    } else {
+        log("Xlorie: Fallback to GLES 2.0 context");
+    }
 
     pthread_create(&t, NULL, renderer_thread, vm);
     return 1;
@@ -510,7 +531,7 @@ void renderer_refresh_context(JNIEnv* env) {
         return vprintEglError("eglMakeCurrent failed", __LINE__);
     }
 
-    eglSwapInterval(egl_display, 0);
+    eglSwapInterval(egl_display, 1);
 
     if (state)
         // We should redraw image at least once right after surface change
@@ -609,6 +630,7 @@ static void renderer_renew_image(void) {
 void renderer_redraw_locked(JNIEnv* env) {
     EGLSync fence;
     int err = EGL_SUCCESS;
+    bool unlocked_early = false;
 
     // We should signal X server to not use root window while we actively copy use it
     lorie_mutex_lock(&state->lock, &state->lockingPid);
@@ -616,11 +638,25 @@ void renderer_redraw_locked(JNIEnv* env) {
     if (display.desc.data && state->drawRequested) {
         state->drawRequested = FALSE;
         bindLinearTexture(display.id);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, display.desc.width, display.desc.height, display.desc.format == AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM ? GL_BGRA_EXT : GL_RGBA, GL_UNSIGNED_BYTE, display.desc.data);
+        GLenum format = display.desc.format == AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM ? GL_BGRA_EXT : GL_RGBA;
+
+        if (gles_version == 3 && pbo) {
+             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+             glBufferData(GL_PIXEL_UNPACK_BUFFER, display.desc.width * display.desc.height * 4, display.desc.data, GL_STREAM_DRAW);
+             
+             // PBO update is zero-copy (DMA-like) or fast copy. We can release the lock now.
+             lorie_mutex_unlock(&state->lock, &state->lockingPid);
+             unlocked_early = true;
+
+             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, display.desc.width, display.desc.height, format, GL_UNSIGNED_BYTE, 0);
+             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        } else {
+             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, display.desc.width, display.desc.height, format, GL_UNSIGNED_BYTE, display.desc.data);
+        }
     }
 
     // Not a mistake, we reset drawRequested flag even in the case if there is no legacy drawing.
-    state->drawRequested = FALSE;
+    if (!unlocked_early) state->drawRequested = FALSE;
     draw(display.id,  -1.f, -1.f, 1.f, 1.f, display.desc.format != AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM);
     fence = eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
     glFlush();
@@ -639,10 +675,11 @@ void renderer_redraw_locked(JNIEnv* env) {
     glFlush();
 
     // Wait until root window drawing is finished before giving control back to X server
-    eglClientWaitSyncKHR(egl_display, fence, 0, EGL_FOREVER);
+    if (!unlocked_early) {
+        eglClientWaitSyncKHR(egl_display, fence, 0, EGL_FOREVER);
+        lorie_mutex_unlock(&state->lock, &state->lockingPid);
+    }
     eglDestroySyncKHR(egl_display, fence);
-    state->waitForNextFrame = true;
-    lorie_mutex_unlock(&state->lock, &state->lockingPid);
 
     if (eglSwapBuffers(egl_display, sfc) != EGL_TRUE) {
         printEglError("Failed to swap buffers", __LINE__);
@@ -654,7 +691,11 @@ void renderer_redraw_locked(JNIEnv* env) {
 #else
             renderer_set_window(env, NULL);
 #endif
-            lorie_mutex_unlock(&state->lock, &state->lockingPid);
+            // If we unlocked early, we don't own the lock here. But window lost usually implies catastrophic failure anyway.
+            // Safe to check unlocked_early flag or just re-lock/check owner?
+            // Actually original code unlocked unconditionally. Here we must be careful.
+            // If we unlocked early, we can't unlock again.
+            if (!unlocked_early) lorie_mutex_unlock(&state->lock, &state->lockingPid);
         }
     }
 
@@ -675,7 +716,7 @@ static inline __always_inline bool renderer_should_wait(void) {
         // If there are pending changes we should process them immediately.
         return false;
 
-    if (!state || !state->surfaceAvailable || state->waitForNextFrame)
+    if (!state || !state->surfaceAvailable)
         // Even in the case if there are pending changes, we can not draw it without rendering surface
         return true;
 

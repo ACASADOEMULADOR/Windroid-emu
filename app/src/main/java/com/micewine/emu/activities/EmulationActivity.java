@@ -9,11 +9,11 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_MANGOHU
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
 import static com.micewine.emu.activities.MainActivity.enableCpuCounter;
 import static com.micewine.emu.activities.MainActivity.enableRamCounter;
-import static com.micewine.emu.activities.MainActivity.getCpuInfo;
-import static com.micewine.emu.activities.MainActivity.getMemoryInfo;
+import static com.micewine.emu.activities.MainActivity.memoryStats;
 import static com.micewine.emu.activities.MainActivity.preferences;
 import static com.micewine.emu.activities.MainActivity.screenFpsLimit;
 import static com.micewine.emu.activities.MainActivity.setSharedVars;
+import static com.micewine.emu.activities.MainActivity.totalCpuUsage;
 import static com.micewine.emu.activities.RatManagerActivity.generateMangoHUDConfFile;
 import static com.micewine.emu.adapters.AdapterGame.selectedGameName;
 import static com.micewine.emu.controller.ControllerUtils.connectController;
@@ -85,8 +85,13 @@ import com.micewine.emu.input.TouchInputHandler;
 import com.micewine.emu.views.VirtualControllerInputView;
 import com.micewine.emu.views.VirtualKeyboardInputView;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
+import android.app.ActivityManager;
 
 public class EmulationActivity extends AppCompatActivity implements View.OnApplyWindowInsetsListener {
     public static Handler handler = new Handler();
@@ -95,7 +100,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
     static InputMethodManager inputMethodManager;
     public static boolean externalKeyboardConnected = false;
     private View.OnKeyListener mLorieKeyListener;
-    private final SharedPreferences.OnSharedPreferenceChangeListener preferencesChangedListener = (__, key) -> onPreferencesChanged();
+    private final SharedPreferences.OnSharedPreferenceChangeListener preferencesChangedListener = (__,
+            key) -> onPreferencesChanged();
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -129,21 +135,14 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
     private VirtualControllerInputView virtualControllerInputView;
 
     @Override
-    @SuppressLint({"AppCompatMethod", "ObsoleteSdkInt", "ClickableViewAccessibility", "WrongConstant", "UnspecifiedRegisterReceiverFlag", "SetTextI18n"})
+    @SuppressLint({ "AppCompatMethod", "ObsoleteSdkInt", "ClickableViewAccessibility", "WrongConstant",
+            "UnspecifiedRegisterReceiverFlag", "SetTextI18n" })
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (preferences != null) {
             preferences.registerOnSharedPreferenceChangeListener(preferencesChangedListener);
         }
-
-        new Thread(() -> {
-            if (enableCpuCounter) getCpuInfo();
-        }).start();
-
-        new Thread(() -> {
-            if (enableRamCounter) getMemoryInfo(this);
-        }).start();
 
         ControllerUtils.startInputServer();
 
@@ -192,7 +191,9 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         });
 
         MaterialSwitch enableMangoHudSwitch = headerViewMain.findViewById(R.id.enableMangoHudSwitch);
-        enableMangoHudSwitch.setChecked(preferences != null ? preferences.getBoolean(ENABLE_MANGOHUD, ENABLE_MANGOHUD_DEFAULT_VALUE) : ENABLE_MANGOHUD_DEFAULT_VALUE);
+        enableMangoHudSwitch
+                .setChecked(preferences != null ? preferences.getBoolean(ENABLE_MANGOHUD, ENABLE_MANGOHUD_DEFAULT_VALUE)
+                        : ENABLE_MANGOHUD_DEFAULT_VALUE);
         enableMangoHudSwitch.setOnClickListener((v) -> {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(ENABLE_MANGOHUD, enableMangoHudSwitch.isChecked());
@@ -212,7 +213,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             getLorieView().requestLayout();
         });
 
-        MaterialSwitch openCloseVirtualControllerSwitch = headerViewMain.findViewById(R.id.openCloseVirtualControllerSwitch);
+        MaterialSwitch openCloseVirtualControllerSwitch = headerViewMain
+                .findViewById(R.id.openCloseVirtualControllerSwitch);
         openCloseVirtualControllerSwitch.setOnClickListener((v) -> {
             boolean isControllerInput = getVirtualControllerXInput(selectedGameName);
 
@@ -245,20 +247,25 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             drawerLayout.closeDrawer(GravityCompat.START);
         });
 
-        MaterialButton editVirtualControllerMappingButton = headerViewMain.findViewById(R.id.editVirtualControllerMapping);
-        editVirtualControllerMappingButton.setOnClickListener((v) -> new VirtualControllerSettingsFragment().show(getSupportFragmentManager(), ""));
+        MaterialButton editVirtualControllerMappingButton = headerViewMain
+                .findViewById(R.id.editVirtualControllerMapping);
+        editVirtualControllerMappingButton.setOnClickListener(
+                (v) -> new VirtualControllerSettingsFragment().show(getSupportFragmentManager(), ""));
 
         MaterialButton editControllerMappingButton = headerViewMain.findViewById(R.id.editControllerMapping);
-        editControllerMappingButton.setOnClickListener((v) -> new ControllerSettingsFragment().show(getSupportFragmentManager(), ""));
+        editControllerMappingButton
+                .setOnClickListener((v) -> new ControllerSettingsFragment().show(getSupportFragmentManager(), ""));
 
-        MaterialButton startControllerPresetManagerButton = headerViewMain.findViewById(R.id.startControllerPresetManager);
+        MaterialButton startControllerPresetManagerButton = headerViewMain
+                .findViewById(R.id.startControllerPresetManager);
         startControllerPresetManagerButton.setOnClickListener((v) -> {
             Intent intent = new Intent(this, PresetManagerActivity.class);
             intent.putExtra("presetType", CONTROLLER_PRESET);
             startActivity(intent);
         });
 
-        MaterialButton startVirtualControllerPresetManagerButton = headerViewMain.findViewById(R.id.startVirtualControllerPresetManager);
+        MaterialButton startVirtualControllerPresetManagerButton = headerViewMain
+                .findViewById(R.id.startVirtualControllerPresetManager);
         startVirtualControllerPresetManagerButton.setOnClickListener((v) -> {
             Intent intent = new Intent(this, PresetManagerActivity.class);
             intent.putExtra("presetType", VIRTUAL_CONTROLLER_PRESET);
@@ -348,7 +355,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             }
 
             if (k == KeyEvent.KEYCODE_BACK) {
-                if (e.getScanCode() == 153 && e.getDevice().getKeyboardType() != InputDevice.KEYBOARD_TYPE_ALPHABETIC || e.getScanCode() == 0) {
+                if (e.getScanCode() == 153 && e.getDevice().getKeyboardType() != InputDevice.KEYBOARD_TYPE_ALPHABETIC
+                        || e.getScanCode() == 0) {
                     boolean pointerCaptured = lorieView.hasPointerCapture();
                     if (pointerCaptured) {
                         lorieView.releasePointerCapture();
@@ -366,10 +374,12 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
                     return true;
                 }
             } else if (k == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER,
+                        AudioManager.FLAG_SHOW_UI);
                 return true;
             } else if (k == KeyEvent.KEYCODE_VOLUME_UP) {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE,
+                        AudioManager.FLAG_SHOW_UI);
                 return true;
             }
 
@@ -380,7 +390,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
 
         lorieParent.setOnTouchListener((v, e) -> {
             // Avoid batched MotionEvent objects and reduce potential latency.
-            // For reference: https://developer.android.com/develop/ui/views/touch-and-input/stylus-input/advanced-stylus-features#rendering.
+            // For reference:
+            // https://developer.android.com/develop/ui/views/touch-and-input/stylus-input/advanced-stylus-features#rendering.
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 lorieParent.requestUnbufferedDispatch(e);
             }
@@ -442,7 +453,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             }
         });
 
-        registerReceiver(receiver, new IntentFilter(ACTION_START), SDK_INT >= VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
+        registerReceiver(receiver, new IntentFilter(ACTION_START),
+                SDK_INT >= VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
 
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -457,22 +469,23 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
 
         onReceiveConnection(getIntent());
 
-        getSupportFragmentManager().setFragmentResultListener("invalidateControllerType", this, (requestKey, result) -> {
-            boolean isControllerInput = getVirtualControllerXInput(selectedGameName);
+        getSupportFragmentManager().setFragmentResultListener("invalidateControllerType", this,
+                (requestKey, result) -> {
+                    boolean isControllerInput = getVirtualControllerXInput(selectedGameName);
 
-            virtualKeyboardInputView.loadPreset(getSelectedVirtualControllerPreset(selectedGameName));
-            virtualKeyboardInputView.invalidate();
+                    virtualKeyboardInputView.loadPreset(getSelectedVirtualControllerPreset(selectedGameName));
+                    virtualKeyboardInputView.invalidate();
 
-            if (openCloseVirtualControllerSwitch.isChecked()) {
-                if (isControllerInput) {
-                    virtualKeyboardInputView.setVisibility(View.INVISIBLE);
-                    virtualControllerInputView.setVisibility(View.VISIBLE);
-                } else {
-                    virtualKeyboardInputView.setVisibility(View.VISIBLE);
-                    virtualControllerInputView.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
+                    if (openCloseVirtualControllerSwitch.isChecked()) {
+                        if (isControllerInput) {
+                            virtualKeyboardInputView.setVisibility(View.INVISIBLE);
+                            virtualControllerInputView.setVisibility(View.VISIBLE);
+                        } else {
+                            virtualKeyboardInputView.setVisibility(View.VISIBLE);
+                            virtualControllerInputView.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -500,9 +513,11 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
 
     public void onReceiveConnection(Intent intent) {
         Bundle bundle = intent.getBundleExtra(null);
-        if (bundle == null) return;
+        if (bundle == null)
+            return;
         IBinder ibinder = bundle.getBinder(null);
-        if (ibinder == null) return;
+        if (ibinder == null)
+            return;
 
         service = ICmdEntryInterface.Stub.asInterface(ibinder);
         try {
@@ -510,9 +525,13 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
                 service = null;
 
                 Log.v("Lorie", "Disconnected");
-                runOnUiThread(() -> { LorieView.connect(-1); clientConnectedStateChanged();} );
+                runOnUiThread(() -> {
+                    LorieView.connect(-1);
+                    clientConnectedStateChanged();
+                });
             }, 0);
-        } catch (RemoteException ignored) {}
+        } catch (RemoteException ignored) {
+        }
 
         try {
             if (service != null && service.asBinder().isBinderAlive()) {
@@ -554,7 +573,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             Log.e("MainActivity", "Something went wrong while we were establishing connection", e);
             service = null;
 
-            // We should reset the View for the case if we have sent it's surface to the client.
+            // We should reset the View for the case if we have sent it's surface to the
+            // client.
             getLorieView().regenerate();
             handler.postDelayed(this::tryConnect, 250);
         }
@@ -585,6 +605,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         virtualKeyboardInputView.loadPreset(getSelectedVirtualControllerPreset(selectedGameName));
 
         prepareControllersMappings();
+
+        statsHandler.post(statsRunnable);
     }
 
     @Override
@@ -592,6 +614,7 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
 
         super.onPause();
+        statsHandler.removeCallbacks(statsRunnable);
     }
 
     public LorieView getLorieView() {
@@ -601,6 +624,7 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
     public boolean handleKey(KeyEvent e) {
         return mLorieKeyListener.onKey(getLorieView(), e.getKeyCode(), e);
     }
+
     @SuppressLint("WrongConstant")
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -608,15 +632,15 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(),
+                getWindow().getDecorView());
 
         controller.hide(WindowInsetsCompat.Type.systemBars());
         controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-        );
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         if (hasFocus) {
             getLorieView().regenerate();
@@ -633,15 +657,83 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
     }
 
     private void clientConnectedStateChanged() {
-        runOnUiThread(()-> {
+        runOnUiThread(() -> {
             boolean connected = LorieView.connected();
 
             getLorieView().setVisibility(connected ? View.VISIBLE : View.INVISIBLE);
             getLorieView().regenerate();
 
-            // We should recover connection in the case if file descriptor for some reason was broken...
+            // We should recover connection in the case if file descriptor for some reason
+            // was broken...
             if (!connected)
                 tryConnect();
         });
+    }
+
+    private Handler statsHandler = new Handler();
+    private Runnable statsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (enableRamCounter) {
+                updateMemoryInfo();
+            }
+            if (enableCpuCounter) {
+                updateCpuInfo();
+            }
+            statsHandler.postDelayed(this, 1000);
+        }
+    };
+
+    private void updateMemoryInfo() {
+        ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+
+        long totalMemory = memoryInfo.totalMem / (1024 * 1024);
+        long availableMemory = memoryInfo.availMem / (1024 * 1024);
+        long usedMemory = totalMemory - availableMemory;
+
+        memoryStats = usedMemory + "/" + totalMemory;
+    }
+
+    private long prevTotalCpuTime = 0;
+    private long prevIdleCpuTime = 0;
+
+    private void updateCpuInfo() {
+        try {
+            List<String> lines = Files.readAllLines(new File("/proc/stat").toPath());
+            String[] cpuStats = lines.get(0).split("\\s+");
+
+            // /proc/stat columns: cpu (0), user(1), nice(2), system(3), idle(4), iowait(5),
+            // irq(6), softirq(7), steal(8), guest(9), guest_nice(10)
+            long user = Long.parseLong(cpuStats[1]);
+            long nice = Long.parseLong(cpuStats[2]);
+            long system = Long.parseLong(cpuStats[3]);
+            long idle = Long.parseLong(cpuStats[4]);
+            long iowait = Long.parseLong(cpuStats[5]);
+            long irq = Long.parseLong(cpuStats[6]);
+            long softirq = Long.parseLong(cpuStats[7]);
+            long steal = Long.parseLong(cpuStats[8]);
+
+            long totalCpuTime = user + nice + system + idle + iowait + irq + softirq + steal;
+            long idleCpuTime = idle + iowait;
+
+            if (prevTotalCpuTime != 0) {
+                long totalDiff = totalCpuTime - prevTotalCpuTime;
+                long idleDiff = idleCpuTime - prevIdleCpuTime;
+                long usage = totalDiff - idleDiff;
+
+                // Avoid division by zero
+                if (totalDiff > 0) {
+                    int usagePercent = (int) ((usage * 100) / totalDiff);
+                    totalCpuUsage = usagePercent + "%";
+                }
+            }
+
+            prevTotalCpuTime = totalCpuTime;
+            prevIdleCpuTime = idleCpuTime;
+
+        } catch (IOException | NumberFormatException ignored) {
+        }
     }
 }

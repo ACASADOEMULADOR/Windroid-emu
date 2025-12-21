@@ -57,11 +57,8 @@ public class WineWrapper {
 
     public static void waitForProcess(String name) {
         while (true) {
-            List<ExeProcess> exeProcesses = getExeProcesses();
-            for (ExeProcess exeProcess : exeProcesses) {
-                if (exeProcess.name.equals(name)) {
-                    return;
-                }
+            if (isProcessRunning(name)) {
+                return;
             }
             try {
                 Thread.sleep(125);
@@ -70,18 +67,44 @@ public class WineWrapper {
         }
     }
 
+    private static boolean isProcessRunning(String name) {
+        File[] processes = new File("/proc").listFiles();
+        if (processes == null)
+            return false;
+
+        for (File process : processes) {
+            if (process.isDirectory()) {
+                try {
+                    // Fast check: just read cmdline, don't follow symlinks or read stats yet
+                    File cmdlineFile = new File(process, "cmdline");
+                    if (cmdlineFile.exists()) {
+                        String cmdline = Files.readAllLines(cmdlineFile.toPath()).toString();
+                        if (cmdline.toLowerCase().contains(name.toLowerCase())) {
+                            return true;
+                        }
+                    }
+                } catch (IOException | NumberFormatException ignored) {
+                    // Process might have died or access denied
+                }
+            }
+        }
+        return false;
+    }
+
     public static void wine(String args) {
         wine(args, null);
     }
 
     public static void wine(String args, String cwd) {
         runCommand(
-                ((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " wine " + args , true
-        );
+                ((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() + "WINEPREFIX='" + winePrefixesDir + "/"
+                        + winePrefix + "' " + IS_BOX64 + " wine " + args,
+                true);
     }
 
     public static void killAll() {
-        runCommand(getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " wineserver -k", false);
+        runCommand(getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " wineserver -k",
+                false);
         runCommand("pkill -SIGINT -f .exe", false);
         runCommand("pkill -SIGINT -f wineserver", false);
     }
@@ -121,8 +144,7 @@ public class WineWrapper {
     public static void extractIcon(String exePath, String output) {
         if (exePath.toLowerCase().endsWith(".exe")) {
             runCommand(
-                    getEnv() + "wrestool -x -t 14 '" + getSanitizedPath(exePath) + "' > '" + output + "'", false
-            );
+                    getEnv() + "wrestool -x -t 14 '" + getSanitizedPath(exePath) + "' > '" + output + "'", false);
         }
     }
 
@@ -193,8 +215,9 @@ public class WineWrapper {
 
     public static int getWinPidByName(String processName) {
         String[] taskList = runCommandWithOutput(
-                getEnv() + "BOX64_LOG=0 WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " wine tasklist" , false
-        ).split("\n");
+                getEnv() + "BOX64_LOG=0 WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64
+                        + " wine tasklist",
+                false).split("\n");
 
         for (String s : taskList) {
             if (s.contains(processName)) {
@@ -225,27 +248,42 @@ public class WineWrapper {
                     if (cmdlineFile.exists() && unixPid != null) {
                         try {
                             String cmdline = Files.readAllLines(cmdlineFile.toPath()).toString().trim();
-                            String processName = cmdline.split("\u0000")[0];
+
+                            // Handle null chars if present
+                            if (cmdline.contains("\u0000")) {
+                                cmdline = cmdline.split("\u0000")[0];
+                            }
+                            // Also handle [ ] array string representation if Files.readAllLines returns
+                            // that
+                            if (cmdline.startsWith("[") && cmdline.endsWith("]")) {
+                                cmdline = cmdline.substring(1, cmdline.length() - 1);
+                            }
+
+                            String processName = cmdline;
 
                             if (processName != null && processName.toLowerCase().endsWith(".exe")) {
-                                processName = processName.substring(1);
-                                String cwd = runCommandWithOutput("readlink " + process.toPath() + "/cwd", false).trim();
-                                String path = getProcessPath(processName, cwd);
-                                String iconPath = usrDir + "/icons/" + processName.substring(0, processName.indexOf(".exe")) + "-thumbnail";
-                                int ramUsageKB = getProcessRamUsageKB(unixPid);
-                                float cpuUsage;
+                                processName = new File(processName).getName(); // Ensure we get just the name
 
+                                String cwd = "";
                                 try {
-                                    cpuUsage = Float.parseFloat(runCommandWithOutput("ps -p " + unixPid + " -o %cpu=", false).trim());
-                                } catch (NumberFormatException ignored) {
-                                    cpuUsage = 0F;
+                                    cwd = Files.readSymbolicLink(new File(process, "cwd").toPath()).toString();
+                                } catch (IOException e) {
+                                    // Fallback or ignore
                                 }
 
-                                extractIcon(path, iconPath);
+                                String path = getProcessPath(processName, cwd);
+                                String iconPath = usrDir + "/icons/"
+                                        + processName.substring(0, processName.indexOf(".exe")) + "-thumbnail";
+                                int ramUsageKB = getProcessRamUsageKB(unixPid);
+                                float cpuUsage = getProcessCpuUsage(unixPid);
+
+                                if (!new File(iconPath).exists()) {
+                                    extractIcon(path, iconPath);
+                                }
 
                                 exeProcesses.add(
-                                        new ExeProcess(processName, unixPid, cwd, path, iconPath, ramUsageKB, cpuUsage / availableCPUs.length)
-                                );
+                                        new ExeProcess(processName, unixPid, cwd, path, iconPath, ramUsageKB,
+                                                cpuUsage / availableCPUs.length));
                             }
                         } catch (IOException ignored) {
                         }
@@ -257,6 +295,64 @@ public class WineWrapper {
         return exeProcesses;
     }
 
+    private static float getProcessCpuUsage(int pid) {
+        // Simplified CPU usage calculation based on lifetime stats
+        // To do real instantaneous usage we'd need to store previous state, which is
+        // overkill for this optimization pass.
+        // We will return (utime + stime) / (uptime - starttime) which is the lifetime
+        // average usage.
+        try {
+            File statFile = new File("/proc/" + pid + "/stat");
+            File uptimeFile = new File("/proc/uptime");
+
+            if (!statFile.exists() || !uptimeFile.exists())
+                return 0F;
+
+            String statContent = new String(Files.readAllBytes(statFile.toPath())).trim();
+            String uptimeContent = new String(Files.readAllBytes(uptimeFile.toPath())).trim();
+
+            // uptime is "total_seconds idle_seconds"
+            float uptime = Float.parseFloat(uptimeContent.split(" ")[0]);
+
+            // /proc/[pid]/stat format is complex, but fields are space separated.
+            // Field 14: utime, Field 15: stime, Field 22: starttime
+            // Wait, filename can have spaces and is in parenthesis ( ). We need to handle
+            // that.
+            int lastParenIndex = statContent.lastIndexOf(')');
+            if (lastParenIndex == -1)
+                return 0F;
+
+            String statsString = statContent.substring(lastParenIndex + 2); // Skip ") "
+            String[] stats = statsString.split(" ");
+
+            // Indexes in stats array (0-based) relative to after filename:
+            // Original 14 (utime) -> becomes index 11
+            // Original 15 (stime) -> becomes index 12
+            // Original 22 (starttime) -> becomes index 19
+
+            long utime = Long.parseLong(stats[11]);
+            long stime = Long.parseLong(stats[12]);
+            long starttime = Long.parseLong(stats[19]);
+
+            long clkTck = 100; // Android/Linux usually 100Hz. sysconf(_SC_CLK_TCK).
+            // NOTE: In Java we can't easily get CLK_TCK without JNI, but 100 is standard
+            // for ARM Android.
+            // If it's 1000, off by 10x.
+
+            float totalTimeSeconds = (utime + stime) / (float) clkTck;
+            float startTimeSeconds = starttime / (float) clkTck;
+
+            float secondsActive = uptime - startTimeSeconds;
+
+            if (secondsActive > 0) {
+                return (totalTimeSeconds / secondsActive) * 100F;
+            }
+
+        } catch (Exception ignored) {
+        }
+        return 0F;
+    }
+
     public static class ExeProcess {
         String name;
         int unixPid;
@@ -266,7 +362,8 @@ public class WineWrapper {
         int ramUsageKB;
         float cpuUsage;
 
-        public ExeProcess(String name, int unixPid, String cwd, String path, String iconPath, int ramUsageKB, float cpuUsage) {
+        public ExeProcess(String name, int unixPid, String cwd, String path, String iconPath, int ramUsageKB,
+                float cpuUsage) {
             this.name = name;
             this.unixPid = unixPid;
             this.cwd = cwd;

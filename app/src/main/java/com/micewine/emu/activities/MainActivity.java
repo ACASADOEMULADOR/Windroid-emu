@@ -140,6 +140,7 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.WindowManager;
+import android.os.Handler;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -182,7 +183,8 @@ public class MainActivity extends AppCompatActivity {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() == null) return;
+            if (intent.getAction() == null)
+                return;
             switch (intent.getAction()) {
                 case ACTION_RUN_WINE -> {
                     String exePath = intent.getStringExtra("exePath");
@@ -203,16 +205,26 @@ public class MainActivity extends AppCompatActivity {
                     boolean enableDInput = intent.getBooleanExtra("enableDInput", true);
                     String cpuAffinity = intent.getStringExtra("cpuAffinity");
 
-                    if (exeArguments == null) exeArguments = "";
-                    if (driverName == null) driverName = "Global";
-                    if (box64Version == null) box64Version = "Global";
-                    if (box64Preset == null) box64Preset = "default";
-                    if (displayResolution == null) displayResolution = "1280x720";
-                    if (d3dxRenderer == null) d3dxRenderer = "DXVK";
-                    if (wineD3D == null) wineD3D = listRatPackages("WineD3D").get(0).getFolderName();
-                    if (dxvk == null) dxvk = listRatPackages("DXVK").get(0).getFolderName();
-                    if (vkd3d == null) vkd3d = listRatPackages("VKD3D").get(0).getFolderName();
-                    if (cpuAffinity == null) cpuAffinity = String.join(",", availableCPUs);
+                    if (exeArguments == null)
+                        exeArguments = "";
+                    if (driverName == null)
+                        driverName = "Global";
+                    if (box64Version == null)
+                        box64Version = "Global";
+                    if (box64Preset == null)
+                        box64Preset = "default";
+                    if (displayResolution == null)
+                        displayResolution = "1280x720";
+                    if (d3dxRenderer == null)
+                        d3dxRenderer = "DXVK";
+                    if (wineD3D == null)
+                        wineD3D = listRatPackages("WineD3D").get(0).getFolderName();
+                    if (dxvk == null)
+                        dxvk = listRatPackages("DXVK").get(0).getFolderName();
+                    if (vkd3d == null)
+                        vkd3d = listRatPackages("VKD3D").get(0).getFolderName();
+                    if (cpuAffinity == null)
+                        cpuAffinity = String.join(",", availableCPUs);
 
                     deleteDirectoryRecursively(tmpDir.toPath());
                     tmpDir.mkdirs();
@@ -232,7 +244,8 @@ public class MainActivity extends AppCompatActivity {
                             driverLibPath = listRatPackages("AdrenoTools").get(0).getDriverLib();
                             adrenoToolsDriverPath = getPackageById(driverName).getDriverLib();
                         } catch (IndexOutOfBoundsException e) {
-                            Toast.makeText(MainActivity.this, "AdrenoTools Provider Not Found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "AdrenoTools Provider Not Found", Toast.LENGTH_SHORT)
+                                    .show();
                             return;
                         }
                     } else {
@@ -258,8 +271,7 @@ public class MainActivity extends AppCompatActivity {
                             enableXInput,
                             enableDInput,
                             cpuAffinity,
-                            adrenoToolsDriverPath
-                    );
+                            adrenoToolsDriverPath);
 
                     runXServer();
 
@@ -268,7 +280,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 case ACTION_SELECT_FILE_MANAGER -> {
                     String fileName = intent.getStringExtra("selectedFile");
-                    if (fileName == null) return;
+                    if (fileName == null)
+                        return;
                     if (fileName.equals("..")) {
                         fileManagerCwd = new File(fileManagerCwd).getParent();
                         refreshFiles(MainActivity.this);
@@ -285,15 +298,18 @@ public class MainActivity extends AppCompatActivity {
                                         ShellLink shellLink = new ShellLink(file);
                                         String parsedUnixPath = parseUnixPath(shellLink.resolveTarget());
                                         File targetFile = new File(parsedUnixPath);
-                                        new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, targetFile).show(getSupportFragmentManager(), "");
+                                        new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, targetFile)
+                                                .show(getSupportFragmentManager(), "");
                                         return;
                                     } catch (Exception ignored) {
-                                        Toast.makeText(MainActivity.this, R.string.lnk_read_fail, Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, R.string.lnk_read_fail, Toast.LENGTH_SHORT)
+                                                .show();
                                         return;
                                     }
                                 }
 
-                                new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, file).show(getSupportFragmentManager(), "");
+                                new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, file)
+                                        .show(getSupportFragmentManager(), "");
                             }
                             case "rat" -> {
                                 ratCandidate = new RatPackageManager.RatPackage(file.getPath());
@@ -306,7 +322,8 @@ public class MainActivity extends AppCompatActivity {
                                 adToolsDriverCandidate = new RatPackageManager.AdrenoToolsPackage(file.getPath());
 
                                 if (adToolsDriverCandidate.getName() != null) {
-                                    new AskInstallPackageFragment(ADTOOLS_DRIVER_PACKAGE).show(getSupportFragmentManager(), "");
+                                    new AskInstallPackageFragment(ADTOOLS_DRIVER_PACKAGE)
+                                            .show(getSupportFragmentManager(), "");
                                 }
                             }
                             case "mwp" -> {
@@ -320,12 +337,19 @@ public class MainActivity extends AppCompatActivity {
 
                                 if (mwpLines != null && !mwpLines.isEmpty()) {
                                     switch (mwpLines.get(0)) {
-                                        case "controllerPreset" -> mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(CONTROLLER_PRESET, file);
-                                        case "virtualControllerPreset" -> mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(VIRTUAL_CONTROLLER_PRESET, file);
-                                        case "box64Preset", "box64PresetV2" -> mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(BOX64_PRESET, file);
+                                        case "controllerPreset" ->
+                                            mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(
+                                                    CONTROLLER_PRESET, file);
+                                        case "virtualControllerPreset" ->
+                                            mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(
+                                                    VIRTUAL_CONTROLLER_PRESET, file);
+                                        case "box64Preset", "box64PresetV2" ->
+                                            mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(BOX64_PRESET,
+                                                    file);
                                     }
 
-                                    new AskInstallPackageFragment(MWP_PRESET_PACKAGE).show(getSupportFragmentManager(), "");
+                                    new AskInstallPackageFragment(MWP_PRESET_PACKAGE).show(getSupportFragmentManager(),
+                                            "");
                                 }
                             }
                         }
@@ -339,7 +363,9 @@ public class MainActivity extends AppCompatActivity {
                     setupMiceWine();
                 }).start();
                 case ACTION_INSTALL_RAT -> {
-                    if (!(ratCandidate.getArchitecture().equals(deviceArch) || ratCandidate.getArchitecture().equals("any")) && !ratCandidate.getCategory().equals("Wine")) {
+                    if (!(ratCandidate.getArchitecture().equals(deviceArch)
+                            || ratCandidate.getArchitecture().equals("any"))
+                            && !ratCandidate.getCategory().equals("Wine")) {
                         Toast.makeText(context, R.string.invalid_architecture_rat_file, Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -354,7 +380,8 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    if (checkPackageInstalled(ratCandidate.getName(), ratCandidate.getCategory(), ratCandidate.getVersion())) {
+                    if (checkPackageInstalled(ratCandidate.getName(), ratCandidate.getCategory(),
+                            ratCandidate.getVersion())) {
                         Toast.makeText(context, R.string.package_already_installed, Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -364,7 +391,8 @@ public class MainActivity extends AppCompatActivity {
 
                         new SetupFragment().show(getSupportFragmentManager(), "");
 
-                        dialogTitleText = "Installing " + ratCandidate.getName() + " (" + ratCandidate.getVersion() + ")...";
+                        dialogTitleText = "Installing " + ratCandidate.getName() + " (" + ratCandidate.getVersion()
+                                + ")...";
                         progressBarIsIndeterminate = true;
 
                         installRat(ratCandidate, context);
@@ -373,7 +401,9 @@ public class MainActivity extends AppCompatActivity {
                     }).start();
                 }
                 case ACTION_INSTALL_ADTOOLS_DRIVER -> {
-                    boolean isPackageInstalled = checkPackageInstalled(adToolsDriverCandidate.getName() + " (AdrenoTools)", "AdrenoToolsDriver", adToolsDriverCandidate.getVersion());
+                    boolean isPackageInstalled = checkPackageInstalled(
+                            adToolsDriverCandidate.getName() + " (AdrenoTools)", "AdrenoToolsDriver",
+                            adToolsDriverCandidate.getVersion());
 
                     if (isPackageInstalled) {
                         Toast.makeText(context, R.string.package_already_installed, Toast.LENGTH_SHORT).show();
@@ -385,7 +415,8 @@ public class MainActivity extends AppCompatActivity {
 
                         new SetupFragment().show(getSupportFragmentManager(), "");
 
-                        dialogTitleText = "Installing " + adToolsDriverCandidate.getName() + " (" + adToolsDriverCandidate.getVersion() + ")...";
+                        dialogTitleText = "Installing " + adToolsDriverCandidate.getName() + " ("
+                                + adToolsDriverCandidate.getVersion() + ")...";
                         progressBarIsIndeterminate = true;
 
                         installADToolsDriver(adToolsDriverCandidate);
@@ -393,8 +424,11 @@ public class MainActivity extends AppCompatActivity {
                         setupDone = true;
                     }).start();
                 }
-                case ACTION_SELECT_ICON -> new FloatingFileManagerFragment(OPERATION_SELECT_ICON, wineDisksFolder.getPath()).show(getSupportFragmentManager(), "");
-                case ACTION_SELECT_EXE_PATH -> new FloatingFileManagerFragment(OPERATION_SELECT_EXE, new File(getExePath(selectedGameName)).getParent()).show(getSupportFragmentManager(), "");
+                case ACTION_SELECT_ICON ->
+                    new FloatingFileManagerFragment(OPERATION_SELECT_ICON, wineDisksFolder.getPath())
+                            .show(getSupportFragmentManager(), "");
+                case ACTION_SELECT_EXE_PATH -> new FloatingFileManagerFragment(OPERATION_SELECT_EXE,
+                        new File(getExePath(selectedGameName)).getParent()).show(getSupportFragmentManager(), "");
                 case ACTION_CREATE_WINE_PREFIX -> {
                     String winePrefix = intent.getStringExtra("winePrefix");
                     String wine = intent.getStringExtra("wine");
@@ -430,13 +464,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onInputDeviceChanged(int deviceId) {
             InputDevice device = InputDevice.getDevice(deviceId);
-            if (device == null) return;
+            if (device == null)
+                return;
 
-            if (connectedPhysicalControllers.stream().anyMatch(c -> c.id == deviceId)) return;
+            if (connectedPhysicalControllers.stream().anyMatch(c -> c.id == deviceId))
+                return;
             if (((device.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
                     || ((device.getSources() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) {
                 if (!device.getName().contains("uinput")) {
-                    connectedPhysicalControllers.add(new ControllerUtils.PhysicalController(device.getName(), deviceId));
+                    connectedPhysicalControllers
+                            .add(new ControllerUtils.PhysicalController(device.getName(), deviceId));
                     prepareControllersMappings();
                     sendBroadcast(new Intent(ACTION_UPDATE_CONTROLLERS_STATUS));
                 }
@@ -453,7 +490,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            if (index == -1) return;
+            if (index == -1)
+                return;
 
             disconnectController(connectedPhysicalControllers.get(index).virtualControllerID);
             connectedPhysicalControllers.remove(index);
@@ -484,7 +522,8 @@ public class MainActivity extends AppCompatActivity {
 
         setSharedVars(this);
 
-        // On future here will have a code for check if app is updated and do specific data conversion if needed
+        // On future here will have a code for check if app is updated and do specific
+        // data conversion if needed
 
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -513,22 +552,25 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigation.post(() -> bottomNavigation.setSelectedItemId(R.id.nav_shortcuts));
 
-        registerReceiver(receiver, new IntentFilter() {{
-            addAction(ACTION_RUN_WINE);
-            addAction(ACTION_SETUP);
-            addAction(ACTION_INSTALL_RAT);
-            addAction(ACTION_INSTALL_ADTOOLS_DRIVER);
-            addAction(ACTION_SELECT_FILE_MANAGER);
-            addAction(ACTION_SELECT_ICON);
-            addAction(ACTION_SELECT_EXE_PATH);
-            addAction(ACTION_CREATE_WINE_PREFIX);
-        }});
+        registerReceiver(receiver, new IntentFilter() {
+            {
+                addAction(ACTION_RUN_WINE);
+                addAction(ACTION_SETUP);
+                addAction(ACTION_INSTALL_RAT);
+                addAction(ACTION_INSTALL_ADTOOLS_DRIVER);
+                addAction(ACTION_SELECT_FILE_MANAGER);
+                addAction(ACTION_SELECT_ICON);
+                addAction(ACTION_SELECT_EXE_PATH);
+                addAction(ACTION_CREATE_WINE_PREFIX);
+            }
+        });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (getWinePrefixFile(winePrefix).exists()) {
                 WineWrapper.clearDrives();
 
-                List<StorageVolume> storageVolumes = ((StorageManager) getSystemService(Context.STORAGE_SERVICE)).getStorageVolumes();
+                List<StorageVolume> storageVolumes = ((StorageManager) getSystemService(Context.STORAGE_SERVICE))
+                        .getStorageVolumes();
 
                 for (StorageVolume volume : storageVolumes) {
                     if (volume.isRemovable()) {
@@ -566,7 +608,8 @@ public class MainActivity extends AppCompatActivity {
             if (rootFSIsDownloaded) {
                 sendBroadcast(new Intent(ACTION_SETUP));
             } else {
-                new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0").show(getSupportFragmentManager(), "");
+                new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0")
+                        .show(getSupportFragmentManager(), "");
             }
         }
     }
@@ -654,7 +697,8 @@ public class MainActivity extends AppCompatActivity {
         boolean changedDpi = !(preferences.getBoolean(WINE_DPI_APPLIED, WINE_DPI_APPLIED_DEFAULT_VALUE));
         if (changedDpi) {
             int newDpi = preferences.getInt(WINE_DPI, WINE_DPI_DEFAULT_VALUE);
-            WineWrapper.wine("reg add HKCU\\\\Control\\\\ Panel\\\\Desktop /t REG_DWORD /v LogPixels /d " + newDpi + " /f");
+            WineWrapper.wine(
+                    "reg add HKCU\\\\Control\\\\ Panel\\\\Desktop /t REG_DWORD /v LogPixels /d " + newDpi + " /f");
 
             SharedPreferences.Editor editor = preferences.edit();
 
@@ -677,14 +721,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (exePath.isEmpty()) {
-            WineWrapper.wine("explorer /desktop=shell," + selectedResolution + " window_handler.exe " + getCpuHexMask(selectedCpuAffinity) + " TFM");
+            WineWrapper.wine("explorer /desktop=shell," + selectedResolution + " window_handler.exe "
+                    + getCpuHexMask(selectedCpuAffinity) + " TFM");
         } else {
             if (enableWineVirtualDesktop) {
-                WineWrapper.wine("explorer /desktop=shell," + selectedResolution + " window_handler.exe " + getCpuHexMask(selectedCpuAffinity) + " '" + getSanitizedPath(exePath) + "' " + exeArguments, "'" + getSanitizedPath(Objects.requireNonNull(new File(exePath).getParent())) + "'");
+                WineWrapper.wine("explorer /desktop=shell," + selectedResolution + " window_handler.exe "
+                        + getCpuHexMask(selectedCpuAffinity) + " '" + getSanitizedPath(exePath) + "' " + exeArguments,
+                        "'" + getSanitizedPath(Objects.requireNonNull(new File(exePath).getParent())) + "'");
             } else {
-                new Thread(() -> WineWrapper.wine("start /unix C:\\\\windows\\\\window_handler.exe " + getCpuHexMask(selectedCpuAffinity))).start();
+                new Thread(() -> WineWrapper
+                        .wine("start /unix C:\\\\windows\\\\window_handler.exe " + getCpuHexMask(selectedCpuAffinity)))
+                        .start();
 
-                WineWrapper.wine("'" + getSanitizedPath(exePath) + "' " + exeArguments, "'" + getSanitizedPath(new File(exePath).getParent()) + "'");
+                WineWrapper.wine("'" + getSanitizedPath(exePath) + "' " + exeArguments,
+                        "'" + getSanitizedPath(new File(exePath).getParent()) + "'");
             }
         }
 
@@ -696,13 +746,15 @@ public class MainActivity extends AppCompatActivity {
     private boolean runningXServer = false;
 
     private void runXServer() {
-        if (runningXServer || !setupDone) return;
+        if (runningXServer || !setupDone)
+            return;
 
         runningXServer = true;
 
         new Thread(() -> runCommand(
-                "env CLASSPATH=" + getClassPath() + " /system/bin/app_process / com.micewine.emu.CmdEntryPoint :0 &> /dev/null", true
-        )).start();
+                "env CLASSPATH=" + getClassPath()
+                        + " /system/bin/app_process / com.micewine.emu.CmdEntryPoint :0 &> /dev/null",
+                true)).start();
     }
 
     private String getClassPath() {
@@ -734,7 +786,8 @@ public class MainActivity extends AppCompatActivity {
 
             runOnUiThread(() -> Toast.makeText(this, R.string.invalid_rootfs_rat_file, Toast.LENGTH_SHORT).show());
 
-            new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0").show(getSupportFragmentManager(), "");
+            new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0")
+                    .show(getSupportFragmentManager(), "");
 
             return;
         }
@@ -742,9 +795,11 @@ public class MainActivity extends AppCompatActivity {
         if (!ratFile.getArchitecture().equals(deviceArch)) {
             abortSetup = true;
 
-            runOnUiThread(() -> Toast.makeText(this, R.string.invalid_architecture_rat_file, Toast.LENGTH_SHORT).show());
+            runOnUiThread(
+                    () -> Toast.makeText(this, R.string.invalid_architecture_rat_file, Toast.LENGTH_SHORT).show());
 
-            new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0").show(getSupportFragmentManager(), "");
+            new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0")
+                    .show(getSupportFragmentManager(), "");
 
             return;
         }
@@ -829,7 +884,8 @@ public class MainActivity extends AppCompatActivity {
             String filePath = FilePathResolver.resolvePath(this, uri);
 
             if (filePath != null) {
-                new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, new File(filePath)).show(getSupportFragmentManager(), "");
+                new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, new File(filePath))
+                        .show(getSupportFragmentManager(), "");
             }
         }
     }
@@ -899,7 +955,8 @@ public class MainActivity extends AppCompatActivity {
     public static String fileManagerCwd = null;
     public static String floatingFileManagerCwd = null;
     public static String selectedFilePath = "";
-    public static String miceWineVersion = "MiceWine " + BuildConfig.VERSION_NAME + (BuildConfig.DEBUG ? " (git-" + BuildConfig.GIT_SHORT_SHA + ")" : "");
+    public static String miceWineVersion = "MiceWine " + BuildConfig.VERSION_NAME
+            + (BuildConfig.DEBUG ? " (git-" + BuildConfig.GIT_SHORT_SHA + ")" : "");
     public static String vulkanDriverDeviceName = null;
     public static String vulkanDriverDriverVersion = null;
     public static int screenFpsLimit = 60;
@@ -933,13 +990,13 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String APP_VERSION = "appVersion";
 
-
     public static int strBoolToNum(boolean strBool) {
         return (strBool ? 1 : 0);
     }
 
     public static void setSharedVars(Activity activity, String adrenoToolsDriverPath) {
-        setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, adrenoToolsDriverPath);
+        setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                adrenoToolsDriverPath);
     }
 
     public static void setSharedVars(Activity activity) {
@@ -961,8 +1018,7 @@ public class MainActivity extends AppCompatActivity {
             Boolean enableXInputController,
             Boolean enableDInputController,
             String cpuAffinity,
-            String adrenoToolsDriverPath
-    ) {
+            String adrenoToolsDriverPath) {
         useAdrenoTools = (adrenoToolsDriverPath != null);
         adrenoToolsDriverFile = (adrenoToolsDriverPath != null ? new File(adrenoToolsDriverPath) : null);
 
@@ -991,7 +1047,8 @@ public class MainActivity extends AppCompatActivity {
         selectedDXVK = (dxvk != null ? dxvk : getDXVKVersion(selectedGameName));
         selectedVKD3D = (vkd3d != null ? vkd3d : getVKD3DVersion(selectedGameName));
 
-        selectedResolution = (displayResolution != null ? displayResolution : getDisplaySettings(selectedGameName).get(1));
+        selectedResolution = (displayResolution != null ? displayResolution
+                : getDisplaySettings(selectedGameName).get(1));
         wineESync = (esync != null ? esync : getWineESync(selectedGameName));
         wineServices = (services != null ? services : getWineServices(selectedGameName));
         enableWineVirtualDesktop = (virtualDesktop != null ? virtualDesktop : getWineVirtualDesktop(selectedGameName));
@@ -1001,14 +1058,16 @@ public class MainActivity extends AppCompatActivity {
 
         selectedGLProfile = preferences.getString(SELECTED_GL_PROFILE, SELECTED_GL_PROFILE_DEFAULT_VALUE);
         selectedDXVKHud = preferences.getString(SELECTED_DXVK_HUD_PRESET, SELECTED_DXVK_HUD_PRESET_DEFAULT_VALUE);
-        selectedMesaVkWsiPresentMode = preferences.getString(SELECTED_MESA_VK_WSI_PRESENT_MODE, SELECTED_MESA_VK_WSI_PRESENT_MODE_DEFAULT_VALUE);
+        selectedMesaVkWsiPresentMode = preferences.getString(SELECTED_MESA_VK_WSI_PRESENT_MODE,
+                SELECTED_MESA_VK_WSI_PRESENT_MODE_DEFAULT_VALUE);
         selectedTuDebugPreset = preferences.getString(SELECTED_TU_DEBUG_PRESET, SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE);
 
         enableRamCounter = preferences.getBoolean(RAM_COUNTER, RAM_COUNTER_DEFAULT_VALUE);
         enableCpuCounter = preferences.getBoolean(CPU_COUNTER, CPU_COUNTER_DEFAULT_VALUE);
         enableDebugInfo = preferences.getBoolean(ENABLE_DEBUG_INFO, ENABLE_DEBUG_INFO_DEFAULT_VALUE);
 
-        screenFpsLimit = (int) ((WindowManager) activity.getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getRefreshRate();
+        screenFpsLimit = (int) ((WindowManager) activity.getSystemService(WINDOW_SERVICE)).getDefaultDisplay()
+                .getRefreshRate();
         fpsLimit = preferences.getInt(FPS_LIMIT, screenFpsLimit);
 
         vulkanDriverDeviceName = getVulkanDriverInfo("deviceName", false) + (useAdrenoTools ? " (AdrenoTools)" : "");
@@ -1032,7 +1091,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void setBox64Preset(String box64Preset) {
-        String selectedBox64Preset = ((box64Preset != null && !box64Preset.equals("--")) ? box64Preset : preferences.getString(SELECTED_BOX64_PRESET, "default"));
+        String selectedBox64Preset = ((box64Preset != null && !box64Preset.equals("--")) ? box64Preset
+                : preferences.getString(SELECTED_BOX64_PRESET, "default"));
 
         box64MMap32 = strBoolToNum(getBox64MMap32(selectedBox64Preset));
         box64Avx = getBox64Avx(selectedBox64Preset);
@@ -1063,52 +1123,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static String getVulkanDriverInfo(String info, boolean stdErr) {
-        return runCommandWithOutput("echo $(" + getEnv() + " DISPLAY= vulkaninfo | grep " + info + " | cut -d '=' -f 2)", stdErr);
-    }
-
-    public static void getMemoryInfo(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
-        long totalMemory;
-        long availableMemory;
-        long usedMemory;
-
-        while (enableRamCounter) {
-            activityManager.getMemoryInfo(memoryInfo);
-
-            totalMemory = memoryInfo.totalMem / (1024 * 1024);
-            availableMemory = memoryInfo.availMem / (1024 * 1024);
-            usedMemory = totalMemory - availableMemory;
-
-            memoryStats = usedMemory + "/" + totalMemory;
-
-            try {
-                Thread.sleep(800);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public static void getCpuInfo() {
-        int availProcessors = Runtime.getRuntime().availableProcessors();
-
-        while (enableCpuCounter) {
-            String[] usageInfo = runCommandWithOutput("top -bqn 1 -o %CPU", false).split("\n");
-            float usagePercentage = 0F;
-
-            for (String usage : usageInfo) {
-                usagePercentage += Float.parseFloat(usage.trim());
-            }
-
-            totalCpuUsage = usagePercentage / availProcessors + "%";
-
-            try {
-                Thread.sleep(800);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        return runCommandWithOutput(
+                "echo $(" + getEnv() + " DISPLAY= vulkaninfo | grep " + info + " | cut -d '=' -f 2)", stdErr);
     }
 
     public static String[] resolutions16_9 = new String[] {
@@ -1126,7 +1142,7 @@ public class MainActivity extends AppCompatActivity {
             "2160x1080", "2880x1440",
             "4320x2160", "8640x4320"
     };
-    
+
     public static String[] resolutions4_3 = new String[] {
             "640x480", "800x600",
             "1024x768", "1280x960",
