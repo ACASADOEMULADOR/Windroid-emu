@@ -40,7 +40,8 @@ public class WinePrefixManagerFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_general_settings, container, false);
         recyclerView = rootView.findViewById(R.id.recyclerViewGeneralSettings);
 
@@ -51,12 +52,12 @@ public class WinePrefixManagerFragment extends Fragment {
     }
 
     private void setAdapter() {
-        recyclerView.setAdapter(new AdapterPreset(prefixListNames, requireContext(), requireActivity().getSupportFragmentManager()));
+        recyclerView.setAdapter(
+                new AdapterPreset(prefixListNames, requireContext(), requireActivity().getSupportFragmentManager()));
 
         prefixListNames.clear();
         prefixList.forEach((name) -> prefixListNames.add(
-                new AdapterPreset.Item(name, WINE_PREFIX_PRESET, true, true)
-        ));
+                new AdapterPreset.Item(name, WINE_PREFIX_PRESET, true, true)));
     }
 
     private static final ArrayList<AdapterPreset.Item> prefixListNames = new ArrayList<>();
@@ -91,7 +92,8 @@ public class WinePrefixManagerFragment extends Fragment {
     }
 
     public static void putSelectedWinePrefix(String name) {
-        if (preferences == null) return;
+        if (preferences == null)
+            return;
 
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -107,7 +109,7 @@ public class WinePrefixManagerFragment extends Fragment {
             File driveC = new File(winePrefix, "drive_c");
             File wineUtils = new File(appRootDir, "wine-utils");
             File startMenu = new File(driveC, "ProgramData/Microsoft/Windows/Start Menu");
-            File userSharedFolder = new File("/storage/emulated/0/MiceWine");
+            File userSharedFolder = new File("/storage/emulated/0/Windroid");
             boolean isProton = new File(driveC, "users/steamuser").exists();
 
             File wineUserDir;
@@ -161,12 +163,14 @@ public class WinePrefixManagerFragment extends Fragment {
             wine("regedit '" + driveC + "/Addons/Themes/DarkBlue/DarkBlue.reg'");
             wine("reg add HKCU\\\\Software\\\\Wine\\\\X11\\ Driver /t REG_SZ /v Decorated /d N /f");
             wine("reg add HKCU\\\\Software\\\\Wine\\\\X11\\ Driver /t REG_SZ /v Managed /d N /f");
-            wine("reg add HKCU\\\\Control\\ Panel\\\\Desktop /t REG_DWORD /v LogPixels /d " + (preferences != null ? preferences.getInt(WINE_DPI, WINE_DPI_DEFAULT_VALUE) : WINE_DPI_DEFAULT_VALUE) + " /f");
+            wine("reg add HKCU\\\\Control\\ Panel\\\\Desktop /t REG_DWORD /v LogPixels /d "
+                    + (preferences != null ? preferences.getInt(WINE_DPI, WINE_DPI_DEFAULT_VALUE)
+                            : WINE_DPI_DEFAULT_VALUE)
+                    + " /f");
 
             prefixList.add(name);
             prefixListNames.add(
-                    new AdapterPreset.Item(name, WINE_PREFIX_PRESET, true, true)
-            );
+                    new AdapterPreset.Item(name, WINE_PREFIX_PRESET, true, true));
 
             if (recyclerView != null) {
                 recyclerView.post(() -> {
@@ -180,7 +184,8 @@ public class WinePrefixManagerFragment extends Fragment {
     }
 
     public static boolean deleteWinePrefix(String name) {
-        if (prefixList.size() == 1) return false;
+        if (prefixList.size() == 1)
+            return false;
 
         int index = -1;
         for (int i = 0; i < prefixList.size(); i++) {
@@ -190,7 +195,8 @@ public class WinePrefixManagerFragment extends Fragment {
             }
         }
 
-        if (index == -1) return false;
+        if (index == -1)
+            return false;
 
         runCommand("rm -rf " + winePrefixesDir + "/" + name, false);
 

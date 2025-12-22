@@ -955,7 +955,7 @@ public class MainActivity extends AppCompatActivity {
     public static String fileManagerCwd = null;
     public static String floatingFileManagerCwd = null;
     public static String selectedFilePath = "";
-    public static String miceWineVersion = "MiceWine " + BuildConfig.VERSION_NAME
+    public static String miceWineVersion = "Windroid " + BuildConfig.VERSION_NAME
             + (BuildConfig.DEBUG ? " (git-" + BuildConfig.GIT_SHORT_SHA + ")" : "");
     public static String vulkanDriverDeviceName = null;
     public static String vulkanDriverDriverVersion = null;
@@ -980,13 +980,13 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_CREATE_WINE_PREFIX = "com.micewine.emu.ACTION_CREATE_WINE_PREFIX";
 
     public static final String RAM_COUNTER = "ramCounter";
-    public static final boolean RAM_COUNTER_DEFAULT_VALUE = true;
+    public static final boolean RAM_COUNTER_DEFAULT_VALUE = false;
 
     public static final String CPU_COUNTER = "cpuCounter";
     public static final boolean CPU_COUNTER_DEFAULT_VALUE = false;
 
     public static final String ENABLE_DEBUG_INFO = "debugInfo";
-    public static final boolean ENABLE_DEBUG_INFO_DEFAULT_VALUE = true;
+    public static final boolean ENABLE_DEBUG_INFO_DEFAULT_VALUE = false;
 
     public static final String APP_VERSION = "appVersion";
 
