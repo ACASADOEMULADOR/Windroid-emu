@@ -116,6 +116,7 @@ import static com.micewine.emu.fragments.WinePrefixManagerFragment.getSelectedWi
 import static com.micewine.emu.fragments.SetupFragment.progressBarIsIndeterminate;
 import static com.micewine.emu.fragments.SetupFragment.dialogTitleText;
 import static com.micewine.emu.fragments.WinePrefixManagerFragment.getWinePrefixFile;
+import static com.micewine.emu.utils.AppKiller.killBackgroundApps;
 import static com.micewine.emu.utils.DriveUtils.parseUnixPath;
 import static com.micewine.emu.utils.FileUtils.copyRecursively;
 import static com.micewine.emu.utils.FileUtils.deleteDirectoryRecursively;
@@ -521,6 +522,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSharedVars(this);
+
+        // Fecha apps em segundo plano para liberar recursos
+        new Thread(() -> killBackgroundApps(this)).start();
 
         // On future here will have a code for check if app is updated and do specific
         // data conversion if needed
