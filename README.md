@@ -1,8 +1,8 @@
 ![MiceWine Logo](logo.png "MiceWine Logo")
 
-### MiceWine Emulator
+### Windroid Emulator
 
-MiceWine is a project that aims to run Windows applications and games on Android smartphones.
+Windroid is a project that aims to run Windows applications and games on Android smartphones.
 
 It uses a customized build of Wine compiled for Android and Box64 to run in the best possible way.
 
@@ -45,7 +45,7 @@ Actually in constant development.
 
 ### Controller Support
 
-MiceWine Supports Up To 4 Physical Controllers. With XInput and DInput Automatic Mapping.
+Windroid Supports Up To 4 Physical Controllers. With XInput and DInput Automatic Mapping.
 
 Any Xbox Like Controller May Works.
 
@@ -55,7 +55,7 @@ Tested with Ipega 9021s, Ipega 9078, Altomex AL-G7, Xbox One Controller, Xbox Se
 
 ### Keyboard and Mouse Support
 
-MiceWine Should Work Out of Box with Any QWERTY ABNT2 Keyboard and Mouse.
+Windroid Should Work Out of Box with Any QWERTY ABNT2 Keyboard and Mouse.
 
 When Mouse is Captured Press Alt+Q on Keyboard to Release or Press Back on Device.
 
@@ -74,3 +74,4 @@ You can download the required **RootFS** file from this repository:
 - [WineHQ](https://gitlab.winehq.org/wine/wine)
 - [Termux-X11](https://github.com/termux/termux-x11)
 - [Mesa](https://gitlab.freedesktop.org/mesa/mesa)
+- Windroid apenas um fork do Micewine modificado pela A CASA DO EMULADOR
