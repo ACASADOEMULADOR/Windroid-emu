@@ -122,6 +122,8 @@ public class WinePrefixManagerFragment extends Fragment {
             File localAppData = new File(wineUserDir, "AppData");
             File sharedAppData = new File(userSharedFolder, "AppData");
             File localSavedGames = new File(wineUserDir, "Saved Games");
+            File localDocuments = new File(wineUserDir, "Documents");
+            File sharedDocuments = new File(userSharedFolder, "Documents");
             File system32 = new File(driveC, "windows/system32");
             File syswow64 = new File(driveC, "windows/syswow64");
             File winePrefixConfigFile = new File(winePrefix, "config");
@@ -141,12 +143,15 @@ public class WinePrefixManagerFragment extends Fragment {
 
             copyRecursively(coreFonts, wineFontsDir);
             copyRecursively(localAppData, sharedAppData);
+            copyRecursively(localDocuments, sharedDocuments);
 
             deleteDirectoryRecursively(localAppData.toPath());
             deleteDirectoryRecursively(localSavedGames.toPath());
+            deleteDirectoryRecursively(localDocuments.toPath());
 
             runCommand("ln -sf '" + userSharedFolder + "/AppData' '" + localAppData + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Saved Games' '" + localSavedGames + "'", false);
+            runCommand("ln -sf '" + userSharedFolder + "/Documents' '" + localDocuments + "'", false);
 
             deleteDirectoryRecursively(startMenu.toPath());
 
