@@ -64,7 +64,8 @@ public class FileManagerFragment extends Fragment {
         @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent == null) return;
+            if (intent == null)
+                return;
             if (ACTION_REFRESH_FILES.equals(intent.getAction())) {
                 String currentWorkingDir = fileManagerCwd.replaceFirst(wineDisksFolder.getPath(), "") + "/";
                 if (currentWorkingDir.length() > 1) {
@@ -80,8 +81,7 @@ public class FileManagerFragment extends Fragment {
 
                     if (!fileManagerCwd.equals(fileManagerDefaultDir)) {
                         fileList.add(
-                                new AdapterFiles.FileList(new File(".."))
-                        );
+                                new AdapterFiles.FileList(new File("..")));
                     }
 
                     if (newFileList != null) {
@@ -90,15 +90,18 @@ public class FileManagerFragment extends Fragment {
                         for (File file : newFileList) {
                             if (file.isDirectory()) {
                                 fileList.add(
-                                        new AdapterFiles.FileList(file)
-                                );
+                                        new AdapterFiles.FileList(file));
                             }
                         }
                         for (File file : newFileList) {
                             if (file.isFile()) {
-                                fileList.add(
-                                        new AdapterFiles.FileList(file)
-                                );
+                                String fileExtension = getFileExtension(file).toLowerCase();
+                                // Apenas mostrar arquivos .exe, .rat e .zip
+                                if (fileExtension.equals("exe") || fileExtension.equals("rat")
+                                        || fileExtension.equals("zip")) {
+                                    fileList.add(
+                                            new AdapterFiles.FileList(file));
+                                }
                             }
                         }
                     }
@@ -110,7 +113,8 @@ public class FileManagerFragment extends Fragment {
                         animator.setDuration(70L);
                         animator.withEndAction(() -> {
                             RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
-                            if (adapter != null) adapter.notifyDataSetChanged();
+                            if (adapter != null)
+                                adapter.notifyDataSetChanged();
                             animator.alpha(1F);
                             animator.setDuration(70L);
                             animator.start();
@@ -124,14 +128,16 @@ public class FileManagerFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_file_manager, container, false);
         recyclerView = rootView.findViewById(R.id.recyclerViewFiles);
 
         recyclerView.setAdapter(new AdapterFiles(fileList, requireContext(), false));
         currentFolderText = rootView.findViewById(R.id.currentFolder);
 
-        if (fileManagerCwd == null) fileManagerCwd = fileManagerDefaultDir;
+        if (fileManagerCwd == null)
+            fileManagerCwd = fileManagerDefaultDir;
 
         registerForContextMenu(recyclerView);
 
@@ -156,7 +162,8 @@ public class FileManagerFragment extends Fragment {
     }
 
     @Override
-    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
+            @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
         File file = new File(selectedFilePath);
@@ -179,9 +186,13 @@ public class FileManagerFragment extends Fragment {
 
                 if (!mwpLines.isEmpty()) {
                     switch (mwpLines.get(0)) {
-                        case "controllerPreset" -> mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(CONTROLLER_PRESET, file);
-                        case "virtualControllerPreset" -> mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(VIRTUAL_CONTROLLER_PRESET, file);
-                        case "box64Preset", "box64PresetV2" -> mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(BOX64_PRESET, file);
+                        case "controllerPreset" ->
+                            mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(CONTROLLER_PRESET, file);
+                        case "virtualControllerPreset" ->
+                            mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(VIRTUAL_CONTROLLER_PRESET,
+                                    file);
+                        case "box64Preset", "box64PresetV2" ->
+                            mwpPresetCandidate = new AskInstallPackageFragment.MwpPreset(BOX64_PRESET, file);
                     }
                     requireActivity().getMenuInflater().inflate(R.menu.file_list_context_menu_package, menu);
                     return;
@@ -189,13 +200,16 @@ public class FileManagerFragment extends Fragment {
 
                 requireActivity().getMenuInflater().inflate(R.menu.file_list_context_menu_default, menu);
             }
-            case "exe", "msi", "bat", "lnk" -> requireActivity().getMenuInflater().inflate(R.menu.file_list_context_menu_exe, menu);
+            case "exe", "msi", "bat", "lnk" ->
+                requireActivity().getMenuInflater().inflate(R.menu.file_list_context_menu_exe, menu);
             case "zip" -> {
                 adToolsDriverCandidate = new RatPackageManager.AdrenoToolsPackage(selectedFilePath);
 
                 boolean isValidAdToolsPackage = (adToolsDriverCandidate.getName() != null);
 
-                requireActivity().getMenuInflater().inflate(isValidAdToolsPackage ? R.menu.file_list_context_menu_package : R.menu.file_list_context_menu_default, menu);
+                requireActivity().getMenuInflater()
+                        .inflate(isValidAdToolsPackage ? R.menu.file_list_context_menu_package
+                                : R.menu.file_list_context_menu_default, menu);
             }
             default -> requireActivity().getMenuInflater().inflate(R.menu.file_list_context_menu_default, menu);
         }
@@ -216,14 +230,16 @@ public class FileManagerFragment extends Fragment {
 
                 addGameToList(selectedFilePath, fileNameWithoutExtension, iconPath);
 
-                Toast.makeText(requireContext(), "'" + fileNameWithoutExtension + "' Added to Home Screen.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "'" + fileNameWithoutExtension + "' Added to Home Screen.",
+                        Toast.LENGTH_SHORT).show();
             } else if (fileExtension.equals("bat") || fileExtension.equals("msi")) {
                 addGameToList(selectedFilePath, fileNameWithoutExtension, "");
             } else {
                 Toast.makeText(requireContext(), R.string.incompatible_selected_file, Toast.LENGTH_SHORT).show();
             }
         } else if (item.getItemId() == R.id.createLnk) {
-            new FloatingFileManagerFragment(OPERATION_CREATE_LNK, "/storage/emulated/0").show(requireActivity().getSupportFragmentManager(), "");
+            new FloatingFileManagerFragment(OPERATION_CREATE_LNK, "/storage/emulated/0")
+                    .show(requireActivity().getSupportFragmentManager(), "");
         } else if (item.getItemId() == R.id.executeExe) {
             File targetFile = file;
 
@@ -238,7 +254,8 @@ public class FileManagerFragment extends Fragment {
                 }
             }
 
-            new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, targetFile).show(requireActivity().getSupportFragmentManager(), "");
+            new EditGamePreferencesFragment(FILE_MANAGER_START_PREFERENCES, targetFile)
+                    .show(requireActivity().getSupportFragmentManager(), "");
 
         } else if (item.getItemId() == R.id.deleteFile) {
             new DeleteItemFragment(DELETE_GAME_ITEM).show(requireActivity().getSupportFragmentManager(), "");
@@ -246,9 +263,12 @@ public class FileManagerFragment extends Fragment {
             new RenameFragment(RENAME_FILE, file.getName()).show(requireActivity().getSupportFragmentManager(), "");
         } else if (item.getItemId() == R.id.installPackage) {
             switch (fileExtension) {
-                case "rat" -> new AskInstallPackageFragment(RAT_PACKAGE).show(requireActivity().getSupportFragmentManager(), "");
-                case "mwp" -> new AskInstallPackageFragment(MWP_PRESET_PACKAGE).show(requireActivity().getSupportFragmentManager(), "");
-                case "zip" -> new AskInstallPackageFragment(ADTOOLS_DRIVER_PACKAGE).show(requireActivity().getSupportFragmentManager(), "");
+                case "rat" ->
+                    new AskInstallPackageFragment(RAT_PACKAGE).show(requireActivity().getSupportFragmentManager(), "");
+                case "mwp" -> new AskInstallPackageFragment(MWP_PRESET_PACKAGE)
+                        .show(requireActivity().getSupportFragmentManager(), "");
+                case "zip" -> new AskInstallPackageFragment(ADTOOLS_DRIVER_PACKAGE)
+                        .show(requireActivity().getSupportFragmentManager(), "");
             }
         }
 
@@ -280,7 +300,6 @@ public class FileManagerFragment extends Fragment {
             }
         }
     }
-
 
     public static void renameFile(String filePath, String destFilePath, Context context) {
         File originalFile = new File(filePath);
