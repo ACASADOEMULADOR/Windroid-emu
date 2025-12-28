@@ -4,6 +4,8 @@ import static android.os.Build.VERSION.SDK_INT;
 
 import static com.micewine.emu.activities.MainActivity.setSharedVars;
 
+import java.io.File;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -43,7 +45,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String preference = intent.getStringExtra("preference");
-            if (preference == null) return;
+            if (preference == null)
+                return;
 
             generalSettingsToolbar.setTitle(preference);
 
@@ -62,10 +65,111 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                     fragmentLoader(soundSettingsFragment, false);
                 } else if (preference.equals(getString(R.string.wine_settings_title))) {
                     fragmentLoader(wineSettingsFragment, false);
+                } else if (preference.equals(getString(R.string.scan_games_title))) {
+                    String startPath = com.micewine.emu.activities.MainActivity.wineDisksFolder != null
+                            ? com.micewine.emu.activities.MainActivity.wineDisksFolder.getPath()
+                            : "/storage/emulated/0";
+                    new com.micewine.emu.fragments.FloatingFileManagerFragment(
+                            com.micewine.emu.fragments.FloatingFileManagerFragment.OPERATION_SELECT_FOLDER, startPath)
+                            .show(getSupportFragmentManager(), "");
                 }
             }
         }
     };
+
+    public static void scanGames(File folder, Context context) {
+        if (folder == null)
+            return;
+
+        File[] files = folder.listFiles();
+        if (files == null) {
+            android.util.Log.e("GameScanner", "Failed to list files in: " + folder.getPath());
+            return;
+        }
+
+        // Show start Toast on UI thread
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> android.widget.Toast
+                .makeText(context, "Scanning Games...", android.widget.Toast.LENGTH_SHORT).show());
+
+        scanGamesRecursive(folder);
+
+        // Show completion Toast on UI thread
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+            com.micewine.emu.fragments.ShortcutsFragment.updateShortcuts();
+            android.widget.Toast.makeText(context, "Scan Completed", android.widget.Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private static final long MIN_GAME_SIZE = 5 * 1024 * 1024; // 5MB
+
+    private static final String[] BLACKLISTED_FOLDERS = {
+            "__Installer", "CommonRedist", "Redist", "DirectX", "Support", "Prerequisites", "installers",
+            "redist", "directx", "support", "prerequisites"
+    };
+
+    private static final String[] BLACKLISTED_EXECUTABLES = {
+            "unins", "setup", "config", "dxwebsetup", "vcredist", "crash", "redist", "unitycrashhandler",
+            "cleanup", "touchup", "activation", "regist", "eapatch", "easyanticheat", "testeapp",
+            "gmlive-server", "pbsvc", "eaproxyinstaller", "eacoreserver", "patchprogress", "pnkbstra",
+            "createdump", "testapp",
+    };
+
+    private static void scanGamesRecursive(File folder) {
+        File[] files = folder.listFiles();
+        if (files == null)
+            return;
+
+        for (File file : files) {
+            String name = file.getName();
+
+            if (file.isDirectory()) {
+                boolean isBlacklistedFolder = false;
+                for (String badFolder : BLACKLISTED_FOLDERS) {
+                    if (name.equalsIgnoreCase(badFolder)) {
+                        isBlacklistedFolder = true;
+                        break;
+                    }
+                }
+                if (!isBlacklistedFolder) {
+                    scanGamesRecursive(file);
+                }
+            } else if (name.toLowerCase().endsWith(".exe")) {
+                // Size Check: Ignore files smaller than 5MB
+                if (file.length() < MIN_GAME_SIZE) {
+                    continue;
+                }
+
+                String lowerName = name.toLowerCase();
+
+                boolean isBlacklisted = false;
+                for (String badWord : BLACKLISTED_EXECUTABLES) {
+                    if (lowerName.contains(badWord)) {
+                        isBlacklisted = true;
+                        break;
+                    }
+                }
+
+                if (isBlacklisted)
+                    continue;
+
+                name = name.substring(0, name.length() - 4);
+
+                String iconPath = "";
+                try {
+                    File iconFile = new File(com.micewine.emu.activities.MainActivity.usrDir,
+                            "icons/" + name + "-thumbnail");
+                    com.micewine.emu.core.WineWrapper.extractIcon(file.getPath(), iconFile.getPath());
+                    if (iconFile.exists() && iconFile.length() > 0) {
+                        iconPath = iconFile.getPath();
+                    }
+                } catch (Exception e) {
+                    // Ignore icon extraction errors
+                }
+
+                com.micewine.emu.fragments.ShortcutsFragment.addGameToList(file.getPath(), name, iconPath);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,7 +186,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener((v) -> onKeyDown(KeyEvent.KEYCODE_BACK, null));
 
-        registerReceiver(receiver, new IntentFilter(ACTION_PREFERENCE_SELECT), SDK_INT >= Build.VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
+        registerReceiver(receiver, new IntentFilter(ACTION_PREFERENCE_SELECT),
+                SDK_INT >= Build.VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
     }
 
     @Override
@@ -113,11 +218,11 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                 R.anim.slide_in,
                 R.anim.fade_out,
                 R.anim.fade_in,
-                R.anim.slide_out
-        );
+                R.anim.slide_out);
 
         transaction.replace(R.id.settings_content, fragment);
-        if (!appInit) transaction.addToBackStack(null);
+        if (!appInit)
+            transaction.addToBackStack(null);
         transaction.commit();
     }
 

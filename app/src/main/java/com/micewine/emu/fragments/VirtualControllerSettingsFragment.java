@@ -9,7 +9,6 @@ import static com.micewine.emu.fragments.ShortcutsFragment.putVirtualControllerX
 import static com.micewine.emu.fragments.VirtualControllerPresetManagerFragment.getVirtualControllerPresets;
 import static com.micewine.emu.fragments.VirtualControllerPresetManagerFragment.VirtualControllerPreset;
 
-
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -33,11 +32,9 @@ import java.util.stream.Collectors;
 
 public class VirtualControllerSettingsFragment extends DialogFragment {
     private final List<String> mappingTypes = List.of("MiceWine Controller", "Keyboard/Mouse");
-    private final List<String> virtualControllerProfilesNames =
-            getVirtualControllerPresets().stream()
-                    .map(VirtualControllerPreset::getName)
-                    .collect(Collectors.toList());
-
+    private final List<String> virtualControllerProfilesNames = getVirtualControllerPresets().stream()
+            .map(VirtualControllerPreset::getName)
+            .collect(Collectors.toList());
 
     @NonNull
     @Override
@@ -52,7 +49,8 @@ public class VirtualControllerSettingsFragment extends DialogFragment {
         Spinner controllerKeyboardPresetSpinner = view.findViewById(R.id.controllerKeyboardPresetSpinner);
         Spinner controllerMappingTypeSpinner = view.findViewById(R.id.controllerMappingTypeSpinner);
 
-        controllerMappingTypeSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, mappingTypes));
+        controllerMappingTypeSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, mappingTypes));
         controllerMappingTypeSpinner.setSelection(getVirtualControllerXInput(selectedGameName) ? 0 : 1);
         controllerMappingTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -69,8 +67,10 @@ public class VirtualControllerSettingsFragment extends DialogFragment {
             }
         });
 
-        controllerKeyboardPresetSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, virtualControllerProfilesNames));
-        controllerKeyboardPresetSpinner.setSelection(virtualControllerProfilesNames.indexOf(getSelectedVirtualControllerPreset(selectedGameName)));
+        controllerKeyboardPresetSpinner.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, virtualControllerProfilesNames));
+        controllerKeyboardPresetSpinner.setSelection(
+                virtualControllerProfilesNames.indexOf(getSelectedVirtualControllerPreset(selectedGameName)));
         controllerKeyboardPresetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

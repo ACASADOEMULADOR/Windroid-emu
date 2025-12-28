@@ -21,7 +21,8 @@ public class GeneralSettingsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_general_settings, container, false);
         recyclerView = rootView.findViewById(R.id.recyclerViewGeneralSettings);
 
@@ -41,11 +42,11 @@ public class GeneralSettingsFragment extends Fragment {
         addToAdapter(R.string.driver_info_title, R.string.driver_info_desc, R.drawable.ic_gpu);
         addToAdapter(R.string.env_settings_title, R.string.env_settings_desc, R.drawable.ic_globe);
         addToAdapter(R.string.wine_settings_title, R.string.wine_settings_desc, R.drawable.ic_wine);
+        addToAdapter(R.string.scan_games_title, R.string.scan_games_desc, R.drawable.ic_folder);
     }
 
     private void addToAdapter(int titleId, int descriptionId, int iconId) {
         settingsList.add(
-                new SettingsList(getString(titleId), getString(descriptionId), iconId)
-        );
+                new SettingsList(getString(titleId), getString(descriptionId), iconId));
     }
 }

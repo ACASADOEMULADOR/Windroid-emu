@@ -36,7 +36,8 @@ import java.util.stream.Collectors;
 public class DriverInfoFragment extends Fragment {
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_driver_info, container, false);
 
         Spinner driverSpinner = rootView.findViewById(R.id.driverSpinner);
@@ -45,9 +46,11 @@ public class DriverInfoFragment extends Fragment {
 
         List<String> vulkanDriversId = listRatPackagesId("VulkanDriver", "AdrenoToolsDriver");
         List<RatPackage> vulkanDrivers = listRatPackages("VulkanDriver", "AdrenoToolsDriver");
-        List<String> vulkanDriversStr = vulkanDrivers.stream().map(p -> p.getName() + " " + p.getVersion()).collect(Collectors.toList());
+        List<String> vulkanDriversStr = vulkanDrivers.stream().map(p -> p.getName() + " " + p.getVersion())
+                .collect(Collectors.toList());
 
-        driverSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vulkanDriversStr));
+        driverSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vulkanDriversStr));
         driverSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -83,10 +86,10 @@ public class DriverInfoFragment extends Fragment {
                         animator.alpha(0F);
                         animator.setDuration(100L);
                         animator.withEndAction(() -> {
-                           driverInfoText.setText(driverInfo);
-                           animator.alpha(1F);
-                           animator.setDuration(100L);
-                           animator.start();
+                            driverInfoText.setText(driverInfo);
+                            animator.alpha(1F);
+                            animator.setDuration(100L);
+                            animator.start();
                         });
                         animator.start();
 

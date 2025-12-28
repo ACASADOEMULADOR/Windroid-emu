@@ -141,8 +141,7 @@ public class VirtualControllerInputView extends View {
 
     private void addButton(int id, float x, float y, float radius, int shape) {
         buttonList.add(
-                new VirtualControllerButton(id, x, y, radius, shape)
-        );
+                new VirtualControllerButton(id, x, y, radius, shape));
     }
 
     private String getButtonName(int id) {
@@ -197,8 +196,7 @@ public class VirtualControllerInputView extends View {
                         i.y + i.radius / 4F,
                         32F,
                         32F,
-                        paint
-                );
+                        paint);
             }
 
             switch (i.id) {
@@ -290,8 +288,7 @@ public class VirtualControllerInputView extends View {
                 rightTouchPad.y + rightTouchPad.radius / 2,
                 32F,
                 32F,
-                paint
-        );
+                paint);
 
         // D-Pad Left
         dpadLeft.reset();
@@ -300,8 +297,7 @@ public class VirtualControllerInputView extends View {
         dpadLeft.lineTo(dpad.x - 20F - dpad.radius / 4F - dpad.radius / 2F, dpad.y - dpad.radius / 4F);
         dpadLeft.lineTo(
                 dpad.x - 20F - dpad.radius / 4F - dpad.radius / 2F,
-                dpad.y - dpad.radius / 4F + dpad.radius / 2F
-        );
+                dpad.y - dpad.radius / 4F + dpad.radius / 2F);
         dpadLeft.lineTo(dpad.x - 20F - dpad.radius / 4F, dpad.y - dpad.radius / 4F + dpad.radius / 2F);
         dpadLeft.lineTo(dpad.x - 20F, dpad.y);
         dpadLeft.close();
@@ -313,8 +309,7 @@ public class VirtualControllerInputView extends View {
         dpadUp.lineTo(dpad.x - dpad.radius / 4F, dpad.y - 20F - dpad.radius / 4F - dpad.radius / 2F);
         dpadUp.lineTo(
                 dpad.x - dpad.radius / 4F + dpad.radius / 2F,
-                dpad.y - 20F - dpad.radius / 4F - dpad.radius / 2F
-        );
+                dpad.y - 20F - dpad.radius / 4F - dpad.radius / 2F);
         dpadUp.lineTo(dpad.x - dpad.radius / 4 + dpad.radius / 2F, dpad.y - 20F - dpad.radius / 4F);
         dpadUp.lineTo(dpad.x, dpad.y - 20F);
         dpadUp.close();
@@ -326,8 +321,7 @@ public class VirtualControllerInputView extends View {
         dpadRight.lineTo(dpad.x + 20F + dpad.radius / 4F + dpad.radius / 2F, dpad.y - dpad.radius / 4F);
         dpadRight.lineTo(
                 dpad.x + 20 + dpad.radius / 4 + dpad.radius / 2,
-                dpad.y - dpad.radius / 4 + dpad.radius / 2
-        );
+                dpad.y - dpad.radius / 4 + dpad.radius / 2);
         dpadRight.lineTo(dpad.x + 20F + dpad.radius / 4F, dpad.y - dpad.radius / 4F + dpad.radius / 2F);
         dpadRight.lineTo(dpad.x + 20F, dpad.y);
         dpadRight.close();
@@ -339,22 +333,25 @@ public class VirtualControllerInputView extends View {
         dpadDown.lineTo(dpad.x - dpad.radius / 4F, dpad.y + 20F + dpad.radius / 4F + dpad.radius / 2F);
         dpadDown.lineTo(
                 dpad.x - dpad.radius / 4F + dpad.radius / 2F,
-                dpad.y + 20F + dpad.radius / 4F + dpad.radius / 2F
-        );
+                dpad.y + 20F + dpad.radius / 4F + dpad.radius / 2F);
         dpadDown.lineTo(dpad.x - dpad.radius / 4F + dpad.radius / 2F, dpad.y + 20F + dpad.radius / 4F);
         dpadDown.lineTo(dpad.x, dpad.y + 20F);
         dpadDown.close();
 
-        drawDPad(dpadUp, dpad.dpadStatus == UP || dpad.dpadStatus == RIGHT_UP || dpad.dpadStatus == LEFT_UP,  canvas);
-        drawDPad(dpadDown, dpad.dpadStatus == DOWN || dpad.dpadStatus == RIGHT_DOWN || dpad.dpadStatus == LEFT_DOWN, canvas);
-        drawDPad(dpadLeft, dpad.dpadStatus == LEFT || dpad.dpadStatus == LEFT_DOWN || dpad.dpadStatus == LEFT_UP, canvas);
-        drawDPad(dpadRight, dpad.dpadStatus == RIGHT || dpad.dpadStatus == RIGHT_DOWN || dpad.dpadStatus == RIGHT_UP, canvas);
+        drawDPad(dpadUp, dpad.dpadStatus == UP || dpad.dpadStatus == RIGHT_UP || dpad.dpadStatus == LEFT_UP, canvas);
+        drawDPad(dpadDown, dpad.dpadStatus == DOWN || dpad.dpadStatus == RIGHT_DOWN || dpad.dpadStatus == LEFT_DOWN,
+                canvas);
+        drawDPad(dpadLeft, dpad.dpadStatus == LEFT || dpad.dpadStatus == LEFT_DOWN || dpad.dpadStatus == LEFT_UP,
+                canvas);
+        drawDPad(dpadRight, dpad.dpadStatus == RIGHT || dpad.dpadStatus == RIGHT_DOWN || dpad.dpadStatus == RIGHT_UP,
+                canvas);
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (virtualXInputControllerId == -1) return true;
+        if (virtualXInputControllerId == -1)
+            return true;
 
         float lx = 0F;
         float ly = 0F;
@@ -373,7 +370,8 @@ public class VirtualControllerInputView extends View {
                     }
                 }
 
-                if (detectClick(event, event.getActionIndex(), leftAnalog.x, leftAnalog.y, leftAnalog.radius, SHAPE_CIRCLE)) {
+                if (detectClick(event, event.getActionIndex(), leftAnalog.x, leftAnalog.y, leftAnalog.radius,
+                        SHAPE_CIRCLE)) {
                     float posX = event.getX(event.getActionIndex()) - leftAnalog.x;
                     float posY = event.getY(event.getActionIndex()) - leftAnalog.y;
 
@@ -386,7 +384,8 @@ public class VirtualControllerInputView extends View {
                     ly = (posY / (leftAnalog.radius / 4));
                 }
 
-                if (detectClick(event, event.getActionIndex(), rightTouchPad.x, rightTouchPad.y, rightTouchPad.radius, SHAPE_SQUARE)) {
+                if (detectClick(event, event.getActionIndex(), rightTouchPad.x, rightTouchPad.y, rightTouchPad.radius,
+                        SHAPE_SQUARE)) {
                     rightTouchPad.fingerId = event.getPointerId(event.getActionIndex());
                     rightTouchPad.isPressed = true;
                 }
@@ -540,7 +539,7 @@ public class VirtualControllerInputView extends View {
             }
         }
 
-        updateAxisStateNative(virtualXInputControllerId, lx, ly, rx, ry, lt ,rt, dpadStatus);
+        updateAxisStateNative(virtualXInputControllerId, lx, ly, rx, ry, lt, rt, dpadStatus);
         updateButtonsStateNative(virtualXInputControllerId, buttonsStateA, buttonsStateB);
 
         return true;
@@ -551,46 +550,66 @@ public class VirtualControllerInputView extends View {
 
         switch (button.id) {
             case A_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.A_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.A_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.A_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.A_BUTTON;
             }
             case B_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.B_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.B_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.B_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.B_BUTTON;
             }
             case X_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.X_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.X_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.X_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.X_BUTTON;
             }
             case Y_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.Y_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.Y_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.Y_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.Y_BUTTON;
             }
             case START_BUTTON -> {
-                if (isPressed) buttonsStateB |= ControllerUtils.START_BUTTON;
-                else buttonsStateB &= ~ControllerUtils.START_BUTTON;
+                if (isPressed)
+                    buttonsStateB |= ControllerUtils.START_BUTTON;
+                else
+                    buttonsStateB &= ~ControllerUtils.START_BUTTON;
             }
             case SELECT_BUTTON -> {
-                if (isPressed) buttonsStateB |= ControllerUtils.SELECT_BUTTON;
-                else buttonsStateB &= ~ControllerUtils.SELECT_BUTTON;
+                if (isPressed)
+                    buttonsStateB |= ControllerUtils.SELECT_BUTTON;
+                else
+                    buttonsStateB &= ~ControllerUtils.SELECT_BUTTON;
             }
             case LB_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.LB_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.LB_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.LB_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.LB_BUTTON;
             }
             case LT_BUTTON -> lt = isPressed ? 1F : 0F;
             case RB_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.RB_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.RB_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.RB_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.RB_BUTTON;
             }
             case RT_BUTTON -> rt = isPressed ? 1F : 0F;
             case LS_BUTTON -> {
-                if (isPressed) buttonsStateA |= ControllerUtils.LS_BUTTON;
-                else buttonsStateA &= ~ControllerUtils.LS_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= ControllerUtils.LS_BUTTON;
+                else
+                    buttonsStateA &= ~ControllerUtils.LS_BUTTON;
             }
             case RS_BUTTON -> {
-                if (isPressed) buttonsStateA |= (byte) ControllerUtils.RS_BUTTON;
-                else buttonsStateA &= (byte) ~ControllerUtils.RS_BUTTON;
+                if (isPressed)
+                    buttonsStateA |= (byte) ControllerUtils.RS_BUTTON;
+                else
+                    buttonsStateA &= (byte) ~ControllerUtils.RS_BUTTON;
             }
         }
     }

@@ -88,8 +88,7 @@ public class ControllerUtils {
                         lastAxisY * mouseSensibility,
                         InputStub.BUTTON_UNDEFINED,
                         false,
-                        true
-                );
+                        true);
             }
             handler.postDelayed(this, 16L);
         }
@@ -156,8 +155,7 @@ public class ControllerUtils {
                         detectKey(presetName, AXIS_Y_MINUS_KEY),
                         detectKey(presetName, AXIS_Y_PLUS_KEY),
                         detectKey(presetName, AXIS_X_MINUS_KEY),
-                        detectKey(presetName, AXIS_X_PLUS_KEY)
-                ).anyMatch(key -> key.type == MOUSE);
+                        detectKey(presetName, AXIS_X_PLUS_KEY)).anyMatch(key -> key.type == MOUSE);
 
                 physicalController.keyboardMapping.rightAnalog.up = detectKey(presetName, AXIS_Z_MINUS_KEY);
                 physicalController.keyboardMapping.rightAnalog.down = detectKey(presetName, AXIS_Z_PLUS_KEY);
@@ -168,8 +166,7 @@ public class ControllerUtils {
                         detectKey(presetName, AXIS_Z_MINUS_KEY),
                         detectKey(presetName, AXIS_Z_PLUS_KEY),
                         detectKey(presetName, AXIS_RZ_MINUS_KEY),
-                        detectKey(presetName, AXIS_RZ_PLUS_KEY)
-                ).anyMatch(key -> key.type == MOUSE);
+                        detectKey(presetName, AXIS_RZ_PLUS_KEY)).anyMatch(key -> key.type == MOUSE);
 
                 physicalController.keyboardMapping.dpad.up = detectKey(presetName, AXIS_Z_MINUS_KEY);
                 physicalController.keyboardMapping.dpad.down = detectKey(presetName, AXIS_Z_PLUS_KEY);
@@ -180,8 +177,7 @@ public class ControllerUtils {
                         detectKey(presetName, AXIS_HAT_Y_MINUS_KEY),
                         detectKey(presetName, AXIS_HAT_Y_PLUS_KEY),
                         detectKey(presetName, AXIS_HAT_X_MINUS_KEY),
-                        detectKey(presetName, AXIS_HAT_X_PLUS_KEY)
-                ).anyMatch(key -> key.type == MOUSE);
+                        detectKey(presetName, AXIS_HAT_X_PLUS_KEY)).anyMatch(key -> key.type == MOUSE);
 
                 physicalController.deadZone = getDeadZone(presetName) / 100F;
                 physicalController.mouseSensibility = getMouseSensibility(presetName) / 100F;
@@ -196,7 +192,8 @@ public class ControllerUtils {
         for (int id : devicesIds) {
             InputDevice device = InputDevice.getDevice(id);
 
-            if (device == null) continue;
+            if (device == null)
+                continue;
             if (((device.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
                     || ((device.getSources() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) {
                 if (!device.getName().contains("uinput")) {
@@ -214,10 +211,12 @@ public class ControllerUtils {
             case MOUSE -> {
                 switch (mapping.scanCode) {
                     case SCROLL_UP -> {
-                        if (pressed) lorieView.sendMouseWheelEvent(0F, -100F);
+                        if (pressed)
+                            lorieView.sendMouseWheelEvent(0F, -100F);
                     }
                     case SCROLL_DOWN -> {
-                        if (pressed) lorieView.sendMouseWheelEvent(0F, 100F);
+                        if (pressed)
+                            lorieView.sendMouseWheelEvent(0F, 100F);
                     }
                     default -> lorieView.sendMouseEvent(0F, 0F, mapping.scanCode, pressed, true);
                 }
@@ -236,7 +235,8 @@ public class ControllerUtils {
             }
         }
 
-        if (pController == null) return;
+        if (pController == null)
+            return;
 
         byte buttonsStateA = 0;
         byte buttonsStateB = 0;
@@ -299,7 +299,8 @@ public class ControllerUtils {
                 }
             }
             case KeyEvent.KEYCODE_BUTTON_R2 -> {
-                if (pController.supportAxisTrigger) return;
+                if (pController.supportAxisTrigger)
+                    return;
 
                 pController.state.rt = pressed ? 1F : 0F;
 
@@ -308,7 +309,8 @@ public class ControllerUtils {
                 }
             }
             case KeyEvent.KEYCODE_BUTTON_L2 -> {
-                if (pController.supportAxisTrigger) return;
+                if (pController.supportAxisTrigger)
+                    return;
 
                 pController.state.lt = pressed ? 1F : 0F;
 
@@ -450,7 +452,8 @@ public class ControllerUtils {
             }
         }
 
-        if (controllerIndex == -1) return;
+        if (controllerIndex == -1)
+            return;
 
         PhysicalController pController = connectedPhysicalControllers.get(controllerIndex);
 
@@ -476,16 +479,23 @@ public class ControllerUtils {
                 int index = pController.virtualControllerID;
                 if (index != -1) {
                     if (pController.swapAnalogs) {
-                        updateAxisStateNative(index, pController.state.rx, pController.state.ry, pController.state.lx, pController.state.ly, pController.state.lt, pController.state.rt, (byte) getAxisStatus(pController.state.dpadX, pController.state.dpadY, 0.25F));
+                        updateAxisStateNative(index, pController.state.rx, pController.state.ry, pController.state.lx,
+                                pController.state.ly, pController.state.lt, pController.state.rt,
+                                (byte) getAxisStatus(pController.state.dpadX, pController.state.dpadY, 0.25F));
                     } else {
-                        updateAxisStateNative(index, pController.state.lx, pController.state.ly, pController.state.rx, pController.state.ry, pController.state.lt, pController.state.rt, (byte) getAxisStatus(pController.state.dpadX, pController.state.dpadY, 0.25F));
+                        updateAxisStateNative(index, pController.state.lx, pController.state.ly, pController.state.rx,
+                                pController.state.ry, pController.state.lt, pController.state.rt,
+                                (byte) getAxisStatus(pController.state.dpadX, pController.state.dpadY, 0.25F));
                     }
                 }
             }
             case MAPPING_TYPE_KEYBOARD_MOUSE: {
-                handleAxis(pController.state.lx, pController.state.ly, pController.keyboardMapping.leftAnalog, pController.deadZone);
-                handleAxis(pController.state.rx, pController.state.ry, pController.keyboardMapping.rightAnalog, pController.deadZone);
-                handleAxis(pController.state.dpadX, pController.state.dpadY, pController.keyboardMapping.dpad, pController.deadZone);
+                handleAxis(pController.state.lx, pController.state.ly, pController.keyboardMapping.leftAnalog,
+                        pController.deadZone);
+                handleAxis(pController.state.rx, pController.state.ry, pController.keyboardMapping.rightAnalog,
+                        pController.deadZone);
+                handleAxis(pController.state.dpadX, pController.state.dpadY, pController.keyboardMapping.dpad,
+                        pController.deadZone);
 
                 if (pController.supportAxisTrigger) {
                     handleKey(pController.state.lt > pController.deadZone, pController.keyboardMapping.ltButton);
@@ -589,7 +599,8 @@ public class ControllerUtils {
             this.right = new ButtonMapping();
         }
 
-        public Analog(boolean isMouseMapping, ButtonMapping up, ButtonMapping down, ButtonMapping left, ButtonMapping right) {
+        public Analog(boolean isMouseMapping, ButtonMapping up, ButtonMapping down, ButtonMapping left,
+                ButtonMapping right) {
             this.isMouseMapping = isMouseMapping;
             this.up = up;
             this.down = down;
@@ -615,14 +626,20 @@ public class ControllerUtils {
 
     @FastNative
     public static native int connectController();
+
     @FastNative
     public static native void disconnectController(int index);
+
     @FastNative
-    public static native void updateAxisStateNative(int index, float lx, float ly, float rx, float ry, float lt, float rt, byte dpadStatus);
+    public static native void updateAxisStateNative(int index, float lx, float ly, float rx, float ry, float lt,
+            float rt, byte dpadStatus);
+
     @FastNative
     public static native void updateButtonsStateNative(int index, int buttons, int buttonsB);
+
     @FastNative
     public static native void startInputServer();
+
     @FastNative
     public static native void stopInputServer();
 }

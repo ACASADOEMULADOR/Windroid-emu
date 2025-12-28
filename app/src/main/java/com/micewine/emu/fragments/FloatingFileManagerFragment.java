@@ -81,7 +81,7 @@ public class FloatingFileManagerFragment extends DialogFragment {
         EditText editText = view.findViewById(R.id.editText);
         MaterialButton saveButton = view.findViewById(R.id.saveButton);
 
-        recyclerView  = view.findViewById(R.id.recyclerViewFiles);
+        recyclerView = view.findViewById(R.id.recyclerViewFiles);
         recyclerView.setAdapter(new AdapterFiles(fileList, requireContext(), true));
 
         floatingFileManagerCwd = initialCwd;
@@ -114,7 +114,8 @@ public class FloatingFileManagerFragment extends DialogFragment {
                 saveButton.setVisibility(View.VISIBLE);
 
                 switch (clickedPresetType) {
-                    case VIRTUAL_CONTROLLER_PRESET -> editText.setText("VirtualController-" + clickedPresetName + ".mwp");
+                    case VIRTUAL_CONTROLLER_PRESET ->
+                        editText.setText("VirtualController-" + clickedPresetName + ".mwp");
                     case CONTROLLER_PRESET -> editText.setText("PhysicalController-" + clickedPresetName + ".mwp");
                     case BOX64_PRESET -> editText.setText("Box64-" + clickedPresetName + ".mwp");
                 }
@@ -123,7 +124,9 @@ public class FloatingFileManagerFragment extends DialogFragment {
                     outputFile = new File(floatingFileManagerCwd, editText.getText().toString());
 
                     if (outputFile.exists()) {
-                        Toast.makeText(requireContext(), outputFile.getPath() + " " + getString(R.string.already_exists), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(),
+                                outputFile.getPath() + " " + getString(R.string.already_exists), Toast.LENGTH_SHORT)
+                                .show();
                         return;
                     }
 
@@ -135,7 +138,8 @@ public class FloatingFileManagerFragment extends DialogFragment {
 
                     outputFile = null;
 
-                    Toast.makeText(requireContext(), getString(R.string.preset_exported, clickedPresetName), Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireContext(), getString(R.string.preset_exported, clickedPresetName),
+                            Toast.LENGTH_LONG).show();
 
                     dismiss();
                 });
@@ -156,15 +160,21 @@ public class FloatingFileManagerFragment extends DialogFragment {
                     switch (clickedPresetType) {
                         case VIRTUAL_CONTROLLER_PRESET -> {
                             boolean ret = importVirtualControllerPreset(requireContext(), outputFile);
-                            if (!ret) Toast.makeText(requireContext(), R.string.invalid_virtual_controller_preset_file, Toast.LENGTH_SHORT).show();
+                            if (!ret)
+                                Toast.makeText(requireContext(), R.string.invalid_virtual_controller_preset_file,
+                                        Toast.LENGTH_SHORT).show();
                         }
                         case CONTROLLER_PRESET -> {
                             boolean ret = importControllerPreset(outputFile);
-                            if (!ret) Toast.makeText(requireContext(), R.string.invalid_controller_preset_file, Toast.LENGTH_SHORT).show();
+                            if (!ret)
+                                Toast.makeText(requireContext(), R.string.invalid_controller_preset_file,
+                                        Toast.LENGTH_SHORT).show();
                         }
                         case BOX64_PRESET -> {
                             boolean ret = importBox64Preset(outputFile);
-                            if (!ret) Toast.makeText(requireContext(), R.string.invalid_box64_preset_file, Toast.LENGTH_SHORT).show();
+                            if (!ret)
+                                Toast.makeText(requireContext(), R.string.invalid_box64_preset_file, Toast.LENGTH_SHORT)
+                                        .show();
                         }
                     }
 
@@ -224,7 +234,9 @@ public class FloatingFileManagerFragment extends DialogFragment {
                     outputFile = new File(floatingFileManagerCwd, editText.getText().toString());
 
                     if (outputFile.exists()) {
-                        Toast.makeText(requireContext(), outputFile.getPath() + " " + getString(R.string.already_exists), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(),
+                                outputFile.getPath() + " " + getString(R.string.already_exists), Toast.LENGTH_SHORT)
+                                .show();
                         return;
                     }
 
@@ -276,6 +288,23 @@ public class FloatingFileManagerFragment extends DialogFragment {
                     dismiss();
                 });
             }
+            case OPERATION_SELECT_FOLDER -> {
+                selectRootFSText.setVisibility(View.GONE);
+                editText.setVisibility(View.GONE);
+                saveButton.setVisibility(View.VISIBLE);
+
+                saveButton.setText("Select Current Directory");
+
+                saveButton.setOnClickListener((v) -> {
+                    outputFile = new File(floatingFileManagerCwd);
+
+                    new Thread(() -> {
+                        com.micewine.emu.activities.GeneralSettingsActivity.scanGames(outputFile, requireContext());
+                        outputFile = null;
+                        dismiss();
+                    }).start();
+                });
+            }
         }
 
         return new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog).setView(view).create();
@@ -301,11 +330,16 @@ public class FloatingFileManagerFragment extends DialogFragment {
     public final static int OPERATION_SELECT_EXE = 3;
     public final static int OPERATION_SELECT_ICON = 4;
     public final static int OPERATION_CREATE_LNK = 5;
+    public final static int OPERATION_SELECT_FOLDER = 6;
 
     public static void refreshFiles() {
         recyclerView.post(() -> {
+            if (floatingFileManagerCwd == null)
+                floatingFileManagerCwd = "/";
             File[] newFileList = new File(floatingFileManagerCwd).listFiles();
-            if (newFileList == null) return;
+            if (newFileList == null)
+                newFileList = new File[0];
+
             Arrays.sort(newFileList, (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()));
 
             RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
@@ -317,16 +351,14 @@ public class FloatingFileManagerFragment extends DialogFragment {
 
             if (!floatingFileManagerCwd.equals(fileManagerDefaultDir)) {
                 fileList.add(
-                        new AdapterFiles.FileList(new File(".."))
-                );
+                        new AdapterFiles.FileList(new File("..")));
             }
 
             for (File file : newFileList) {
-               if (file.isDirectory()) {
-                   fileList.add(
-                           new AdapterFiles.FileList(file)
-                   );
-               }
+                if (file.isDirectory()) {
+                    fileList.add(
+                            new AdapterFiles.FileList(file));
+                }
             }
             for (File file : newFileList) {
                 if (file.isFile()) {
@@ -334,8 +366,7 @@ public class FloatingFileManagerFragment extends DialogFragment {
                         case OPERATION_SELECT_RAT -> {
                             if (file.getName().toLowerCase().endsWith(".rat")) {
                                 fileList.add(
-                                        new AdapterFiles.FileList(file)
-                                );
+                                        new AdapterFiles.FileList(file));
                             }
                         }
                         case OPERATION_IMPORT_PRESET -> {
@@ -347,22 +378,19 @@ public class FloatingFileManagerFragment extends DialogFragment {
                                         case CONTROLLER_PRESET -> {
                                             if (mwpType.equals("controllerPreset")) {
                                                 fileList.add(
-                                                        new AdapterFiles.FileList(file)
-                                                );
+                                                        new AdapterFiles.FileList(file));
                                             }
                                         }
                                         case VIRTUAL_CONTROLLER_PRESET -> {
                                             if (mwpType.equals("virtualControllerPreset")) {
                                                 fileList.add(
-                                                        new AdapterFiles.FileList(file)
-                                                );
+                                                        new AdapterFiles.FileList(file));
                                             }
                                         }
                                         case BOX64_PRESET -> {
                                             if (mwpType.equals("box64Preset") || mwpType.equals("box64PresetV2")) {
                                                 fileList.add(
-                                                        new AdapterFiles.FileList(file)
-                                                );
+                                                        new AdapterFiles.FileList(file));
                                             }
                                         }
                                     }
@@ -374,21 +402,18 @@ public class FloatingFileManagerFragment extends DialogFragment {
                             String fileExtension = getFileExtension(file);
                             if (fileExtension.equalsIgnoreCase("exe")) {
                                 fileList.add(
-                                        new AdapterFiles.FileList(file)
-                                );
+                                        new AdapterFiles.FileList(file));
                             }
                         }
                         case OPERATION_SELECT_ICON -> {
                             String fileExtension = getFileExtension(file).toLowerCase();
                             switch (fileExtension) {
                                 case "exe", "ico", "png", "jpg", "jpeg", "bmp" -> fileList.add(
-                                        new AdapterFiles.FileList(file)
-                                );
+                                        new AdapterFiles.FileList(file));
                             }
                         }
                         default -> fileList.add(
-                                new AdapterFiles.FileList(file)
-                        );
+                                new AdapterFiles.FileList(file));
                     }
                 }
             }

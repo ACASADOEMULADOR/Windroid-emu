@@ -78,7 +78,8 @@ public class ShortcutsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_shortcuts, container, false);
         recyclerView = rootView.findViewById(R.id.recyclerViewGame);
 
@@ -154,14 +155,17 @@ public class ShortcutsFragment extends Fragment {
     private void setupDragAndDrop() {
         ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
             @Override
-            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            public int getMovementFlags(@NonNull RecyclerView recyclerView,
+                    @NonNull RecyclerView.ViewHolder viewHolder) {
                 int flags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
                 return makeMovementFlags(flags, 0);
             }
 
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                if (target.getAdapterPosition() == 0 || viewHolder.getAdapterPosition() == 0) return false;
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                    @NonNull RecyclerView.ViewHolder target) {
+                if (target.getAdapterPosition() == 0 || viewHolder.getAdapterPosition() == 0)
+                    return false;
 
                 requireActivity().closeContextMenu();
 
@@ -202,9 +206,9 @@ public class ShortcutsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-
     @Override
-    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
+            @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
         if (selectedGameName.equals(getString(R.string.desktop_mode_init))) {
@@ -213,8 +217,10 @@ public class ShortcutsFragment extends Fragment {
             requireActivity().getMenuInflater().inflate(R.menu.game_list_context_menu, menu);
         }
 
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(selectedGameName)).findFirst().orElse(-1);
-        if (index == 0) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(selectedGameName))
+                .findFirst().orElse(-1);
+        if (index == 0)
+            return;
 
         RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(index);
 
@@ -230,7 +236,8 @@ public class ShortcutsFragment extends Fragment {
         } else if (item.getItemId() == R.id.removeGameItem) {
             new DeleteItemFragment(DELETE_GAME_ITEM).show(requireActivity().getSupportFragmentManager(), "");
         } else if (item.getItemId() == R.id.editGameItem) {
-            new EditGamePreferencesFragment(EDIT_GAME_PREFERENCES).show(requireActivity().getSupportFragmentManager(), "");
+            new EditGamePreferencesFragment(EDIT_GAME_PREFERENCES).show(requireActivity().getSupportFragmentManager(),
+                    "");
         }
         return super.onContextItemSelected(item);
     }
@@ -243,7 +250,8 @@ public class ShortcutsFragment extends Fragment {
         }
 
         @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
+                @NonNull RecyclerView.State state) {
             outRect.left = spacing;
             outRect.right = spacing;
             outRect.top = spacing;
@@ -258,7 +266,8 @@ public class ShortcutsFragment extends Fragment {
         public boolean virtualControllerIsXInput = true;
         public String virtualControllerPreset = "default";
         public boolean[] controllerIsXInput = new boolean[] { true, true, true, true };
-        public ArrayList<String> controllerPreset = new ArrayList<>(Arrays.asList("default", "default", "default", "default"));
+        public ArrayList<String> controllerPreset = new ArrayList<>(
+                Arrays.asList("default", "default", "default", "default"));
         public boolean[] controllerSwapAnalogs = new boolean[] { false, false, false, false };
     }
 
@@ -270,8 +279,10 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void putWineVirtualDesktop(String name, boolean enabled) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).wineVirtualDesktop = enabled;
 
@@ -279,15 +290,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getWineVirtualDesktop(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return false;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return false;
 
         return gameList.get(index).wineVirtualDesktop;
     }
 
     public static void putCpuAffinity(String name, String cpuAffinity) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).cpuAffinityCores = cpuAffinity;
 
@@ -295,15 +310,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getCpuAffinity(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return String.join(",", availableCPUs);
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return String.join(",", availableCPUs);
 
         return gameList.get(index).cpuAffinityCores;
     }
 
     public static void putWineServices(String name, boolean enabled) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).wineServices = enabled;
 
@@ -311,15 +330,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getWineServices(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return false;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return false;
 
         return gameList.get(index).wineServices;
     }
 
     public static void putWineESync(String name, boolean enabled) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).wineESync = enabled;
 
@@ -327,14 +350,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getWineESync(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return true;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return true;
 
         return gameList.get(index).wineESync;
     }
+
     public static void putVKD3DVersion(String name, String vkd3dVersion) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).vkd3dVersion = vkd3dVersion;
 
@@ -342,15 +370,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getVKD3DVersion(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).vkd3dVersion;
     }
 
     public static void putWineD3DVersion(String name, String wineD3DVersion) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).wineD3DVersion = wineD3DVersion;
 
@@ -358,15 +390,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getWineD3DVersion(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).wineD3DVersion;
     }
 
     public static void putDXVKVersion(String name, String dxvkVersion) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).dxvkVersion = dxvkVersion;
 
@@ -374,15 +410,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getDXVKVersion(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).dxvkVersion;
     }
 
     public static void putD3DXRenderer(String name, String d3dxRenderer) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).d3dxRenderer = d3dxRenderer;
 
@@ -390,15 +430,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getD3DXRenderer(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "DXVK";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "DXVK";
 
         return gameList.get(index).d3dxRenderer;
     }
 
     public static void putVulkanDriverType(String name, int driverType) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).vulkanDriverType = driverType;
 
@@ -406,15 +450,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static int getVulkanDriverType(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return MESA_DRIVER;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return MESA_DRIVER;
 
         return gameList.get(index).vulkanDriverType;
     }
 
     public static void putVulkanDriver(String name, String driverName) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).vulkanDriver = driverName;
 
@@ -428,15 +476,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getVulkanDriver(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).vulkanDriver;
     }
 
     public static void putDisplaySettings(String name, String displayMode, String displayResolution) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).displayMode = displayMode;
         gameList.get(index).displayResolution = displayResolution;
@@ -445,15 +497,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static List<String> getDisplaySettings(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return List.of("16:9", "1280x720");
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return List.of("16:9", "1280x720");
 
         return List.of(gameList.get(index).displayMode, gameList.get(index).displayResolution);
     }
 
     public static void putBox64Version(String name, String box64VersionId) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).box64Version = box64VersionId;
 
@@ -461,10 +517,12 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getBox64Version(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
         if (index == -1) {
             List<String> box64Packages = listRatPackagesId("Box64");
-            if (box64Packages.isEmpty()) return null;
+            if (box64Packages.isEmpty())
+                return null;
             return box64Packages.get(0);
         }
 
@@ -472,8 +530,10 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void putBox64Preset(String name, String presetName) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).box64Preset = presetName;
 
@@ -481,15 +541,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getBox64Preset(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "default";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "default";
 
         return gameList.get(index).box64Preset;
     }
 
     public static void putControllerXInputSwapAnalogs(String name, boolean enabled, int controllerIndex) {
-        if (controllerIndex == -1) return;
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (controllerIndex == -1)
+            return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.controllerSwapAnalogs[controllerIndex] = enabled;
             return;
@@ -501,16 +565,21 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getControllerXInputSwapAnalogs(String name, int controllerIndex) {
-        if (controllerIndex == -1) return false;
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return fileManagerControllerSettings.controllerSwapAnalogs[controllerIndex];
+        if (controllerIndex == -1)
+            return false;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return fileManagerControllerSettings.controllerSwapAnalogs[controllerIndex];
 
         return gameList.get(index).controllersXInputSwapAnalogs.get(controllerIndex);
     }
 
     public static void putControllerXInput(String name, boolean enabled, int controllerIndex) {
-        if (controllerIndex == -1) return;
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (controllerIndex == -1)
+            return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.controllerIsXInput[controllerIndex] = enabled;
             return;
@@ -522,16 +591,21 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getControllerXInput(String name, int controllerIndex) {
-        if (controllerIndex == -1) return true;
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return fileManagerControllerSettings.controllerIsXInput[controllerIndex];
+        if (controllerIndex == -1)
+            return true;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return fileManagerControllerSettings.controllerIsXInput[controllerIndex];
 
         return gameList.get(index).controllersEnableXInput.get(controllerIndex);
     }
 
     public static void putControllerPreset(String name, String presetName, int controllerIndex) {
-        if (controllerIndex == -1) return;
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (controllerIndex == -1)
+            return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.controllerPreset.set(controllerIndex, presetName);
             return;
@@ -543,14 +617,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getControllerPreset(String name, int controllerIndex) {
-        if (controllerIndex == -1) return "";
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return fileManagerControllerSettings.controllerPreset.get(controllerIndex);
+        if (controllerIndex == -1)
+            return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return fileManagerControllerSettings.controllerPreset.get(controllerIndex);
 
         return gameList.get(index).controllersPreset.get(controllerIndex);
     }
+
     public static void putVirtualControllerXInput(String name, boolean enabled) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.virtualControllerIsXInput = enabled;
             return;
@@ -562,14 +641,17 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getVirtualControllerXInput(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return fileManagerControllerSettings.virtualControllerIsXInput;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return fileManagerControllerSettings.virtualControllerIsXInput;
 
         return gameList.get(index).virtualControllerEnableXInput;
     }
 
     public static void putSelectedVirtualControllerPreset(String name, String presetName) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.virtualControllerPreset = presetName;
             return;
@@ -581,15 +663,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getSelectedVirtualControllerPreset(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return fileManagerControllerSettings.virtualControllerPreset;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return fileManagerControllerSettings.virtualControllerPreset;
 
         return gameList.get(index).virtualControllerPreset;
     }
 
     public static void putExeArguments(String name, String exeArguments) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).exeArguments = exeArguments;
 
@@ -597,15 +683,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getExeArguments(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).exeArguments;
     }
 
     public static void putExePath(String name, String exePath) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).exePath = exePath;
 
@@ -613,15 +703,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static String getExePath(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).exePath;
     }
 
     public static void putEnableXInput(String name, boolean enabled) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).enableXInput = enabled;
 
@@ -629,15 +723,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getEnableXInput(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return true;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return true;
 
         return gameList.get(index).enableXInput;
     }
 
     public static void putEnableDInput(String name, boolean enabled) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).enableDInput = enabled;
 
@@ -645,15 +743,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static boolean getEnableDInput(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return true;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return true;
 
         return gameList.get(index).enableDInput;
     }
 
     public static void addEnvVar(String name, AdapterEnvVar.EnvVar envVar) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).envVars.add(envVar);
 
@@ -661,11 +763,15 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void editEnvVar(String name, String varName, String newKey, String newValue) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
-        int bIndex = IntStream.range(0, gameList.get(index).envVars.size()).filter(i -> gameList.get(index).envVars.get(i).key.equals(varName)).findFirst().orElse(-1);
-        if (bIndex == -1) return;
+        int bIndex = IntStream.range(0, gameList.get(index).envVars.size())
+                .filter(i -> gameList.get(index).envVars.get(i).key.equals(varName)).findFirst().orElse(-1);
+        if (bIndex == -1)
+            return;
 
         gameList.get(index).envVars.get(bIndex).key = newKey;
         gameList.get(index).envVars.get(bIndex).value = newValue;
@@ -674,11 +780,15 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void removeEnvVar(String name, String varName) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
-        int bIndex = IntStream.range(0, gameList.get(index).envVars.size()).filter(i -> gameList.get(index).envVars.get(i).key.equals(varName)).findFirst().orElse(-1);
-        if (bIndex == -1) return;
+        int bIndex = IntStream.range(0, gameList.get(index).envVars.size())
+                .filter(i -> gameList.get(index).envVars.get(i).key.equals(varName)).findFirst().orElse(-1);
+        if (bIndex == -1)
+            return;
 
         gameList.get(index).envVars.remove(bIndex);
 
@@ -686,8 +796,10 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void putEnvVars(String name, List<AdapterEnvVar.EnvVar> envVars) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).envVars.clear();
         gameList.get(index).envVars.addAll(envVars);
@@ -696,23 +808,26 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static List<AdapterEnvVar.EnvVar> getEnvVars(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return new ArrayList<>();
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return new ArrayList<>();
 
         return gameList.get(index).envVars;
     }
 
     public static void addGameToList(String path, String prettyName, String iconPath) {
-        boolean gameExists = gameList.stream().anyMatch(i -> i.name.equals(prettyName));
-        if (gameExists) return;
+        boolean gameExists = gameList.stream().anyMatch(i -> i.name.equals(prettyName) || i.exePath.equals(path));
+        if (gameExists)
+            return;
 
         gameList.add(
-                new AdapterGame.GameItem(prettyName, path, "", iconPath)
-        );
+                new AdapterGame.GameItem(prettyName, path, "", iconPath));
 
         saveShortcuts();
 
-        if (recyclerView == null) return;
+        if (recyclerView == null)
+            return;
 
         recyclerView.post(() -> {
             AdapterGame adapter = (AdapterGame) recyclerView.getAdapter();
@@ -724,8 +839,10 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void removeGameFromList(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.remove(index);
 
@@ -739,7 +856,8 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void updateShortcuts() {
-        if (recyclerView == null) return;
+        if (recyclerView == null)
+            return;
         AdapterGame adapter = (AdapterGame) recyclerView.getAdapter();
         if (adapter != null) {
             adapter.filterList("");
@@ -747,8 +865,10 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void setGameName(String name, String newName) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         gameList.get(index).name = newName;
 
@@ -761,8 +881,10 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static void setIconToGame(String name, File iconFile) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
 
         String fileExtension = getFileExtension(iconFile).toLowerCase();
 
@@ -789,7 +911,8 @@ public class ShortcutsFragment extends Fragment {
 
         saveShortcuts();
 
-        if (recyclerView == null) return;
+        if (recyclerView == null)
+            return;
 
         recyclerView.post(() -> {
             RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
@@ -800,15 +923,19 @@ public class ShortcutsFragment extends Fragment {
     }
 
     public static Bitmap getGameIcon(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return null;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return null;
 
         return BitmapFactory.decodeFile(gameList.get(index).iconPath);
     }
 
     public static String getGameExeArguments(String name) {
-        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst().orElse(-1);
-        if (index == -1) return "";
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "";
 
         return gameList.get(index).exeArguments;
     }
@@ -822,15 +949,18 @@ public class ShortcutsFragment extends Fragment {
 
     private static ArrayList<AdapterGame.GameItem> getGameList() {
         String json = preferences.getString("gameList", "");
-        Type listType = new TypeToken<ArrayList<AdapterGame.GameItem>>() {}.getType();
+        Type listType = new TypeToken<ArrayList<AdapterGame.GameItem>>() {
+        }.getType();
         ArrayList<AdapterGame.GameItem> gameList = gson.fromJson(json, listType);
 
         return (gameList != null ? gameList : new ArrayList<>());
     }
 
     public static void addGameToLauncher(Context context, String name) {
-        int index =IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(selectedGameName)).findFirst().orElse(-1);
-        if (index == -1) return;
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(selectedGameName))
+                .findFirst().orElse(-1);
+        if (index == -1)
+            return;
 
         ShortcutManager shortcutManager = (ShortcutManager) context.getSystemService(SHORTCUT_SERVICE);
 
@@ -843,15 +973,15 @@ public class ShortcutsFragment extends Fragment {
             ShortcutInfo pinShortcutInfo = new ShortcutInfo.Builder(context, name)
                     .setShortLabel(name)
                     .setIcon(
-                            new File(gameList.get(index).iconPath).exists() ?
-                                    Icon.createWithBitmap(BitmapFactory.decodeFile(gameList.get(index).iconPath)) :
-                                    Icon.createWithResource(context, R.drawable.default_icon)
-                    )
+                            new File(gameList.get(index).iconPath).exists()
+                                    ? Icon.createWithBitmap(BitmapFactory.decodeFile(gameList.get(index).iconPath))
+                                    : Icon.createWithResource(context, R.drawable.default_icon))
                     .setIntent(intent)
                     .build();
 
             Intent pinnedShortcutCallbackIntent = shortcutManager.createShortcutResultIntent(pinShortcutInfo);
-            PendingIntent successCallback = PendingIntent.getBroadcast(context, 0, pinnedShortcutCallbackIntent, PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent successCallback = PendingIntent.getBroadcast(context, 0, pinnedShortcutCallbackIntent,
+                    PendingIntent.FLAG_IMMUTABLE);
 
             shortcutManager.requestPinShortcut(pinShortcutInfo, successCallback.getIntentSender());
         }

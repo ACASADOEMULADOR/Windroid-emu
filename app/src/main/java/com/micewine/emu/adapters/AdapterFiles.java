@@ -59,7 +59,8 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
 
         holder.fileIcon.setImageResource(0);
 
-        if (isFloatFilesDialog ? floatingFileManagerCwd.equals(fileManagerDefaultDir) : fileManagerCwd.equals(fileManagerDefaultDir)) {
+        if (isFloatFilesDialog ? floatingFileManagerCwd.equals(fileManagerDefaultDir)
+                : fileManagerCwd.equals(fileManagerDefaultDir)) {
             holder.fileName.setText(item.file.getName().toUpperCase());
         } else {
             holder.fileName.setText(item.file.getName());
@@ -73,7 +74,8 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
 
             new Thread(() -> {
                 File[] fileList = item.file.listFiles();
-                if (fileList == null) return;
+                if (fileList == null)
+                    return;
 
                 int fileCount = fileList.length;
 
@@ -96,12 +98,14 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
 
             switch (fileExtension.toLowerCase()) {
                 case "exe" -> new Thread(() -> {
-                    File iconFile = new File(usrDir, "icons/" + item.file.getName().replace("." + fileExtension, "") + "-thumbnail");
+                    File iconFile = new File(usrDir,
+                            "icons/" + item.file.getName().replace("." + fileExtension, "") + "-thumbnail");
 
                     extractIcon(item.file.getPath(), iconFile.getPath());
 
                     if (iconFile.exists() && iconFile.length() > 0) {
-                        Bitmap parsedIcon = decodeFileThumbnail(iconFile, holder.fileIcon.getLayoutParams().width, holder.fileIcon.getLayoutParams().height);
+                        Bitmap parsedIcon = decodeFileThumbnail(iconFile, holder.fileIcon.getLayoutParams().width,
+                                holder.fileIcon.getLayoutParams().height);
                         holder.fileIcon.post(() -> holder.fileIcon.setImageBitmap(parsedIcon));
                     } else {
                         holder.fileIcon.post(() -> holder.fileIcon.setImageResource(R.drawable.unknown_exe));
@@ -113,12 +117,14 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
                         String parsedUnixPath = parseUnixPath(shellLink.resolveTarget());
                         File targetFile = new File(parsedUnixPath);
                         String targetFileExtension = getFileExtension(targetFile);
-                        File iconFile = new File(usrDir, "icons/" + targetFile.getName().replace("." + targetFileExtension, "") + "-thumbnail");
+                        File iconFile = new File(usrDir,
+                                "icons/" + targetFile.getName().replace("." + targetFileExtension, "") + "-thumbnail");
 
                         extractIcon(targetFile.getPath(), iconFile.getPath());
 
                         if (iconFile.exists() && iconFile.length() > 0) {
-                            holder.fileIcon.post(() -> holder.fileIcon.setImageBitmap(BitmapFactory.decodeFile(iconFile.getPath())));
+                            holder.fileIcon.post(
+                                    () -> holder.fileIcon.setImageBitmap(BitmapFactory.decodeFile(iconFile.getPath())));
                         } else {
                             holder.fileIcon.post(() -> holder.fileIcon.setImageResource(R.drawable.unknown_exe));
                         }
@@ -128,17 +134,21 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
                 }).start();
                 case "rat", "mwp" -> holder.fileIcon.setImageResource(R.drawable.ic_rat_package);
                 case "zip" -> new Thread(() -> {
-                    boolean isAdrenoToolsPackage = new RatPackageManager.AdrenoToolsPackage(item.file.getPath()).getName() != null;
+                    boolean isAdrenoToolsPackage = new RatPackageManager.AdrenoToolsPackage(item.file.getPath())
+                            .getName() != null;
 
-                    holder.fileIcon.post(() -> holder.fileIcon.setImageResource(isAdrenoToolsPackage ? R.drawable.ic_rat_package : R.drawable.ic_log));
+                    holder.fileIcon.post(() -> holder.fileIcon
+                            .setImageResource(isAdrenoToolsPackage ? R.drawable.ic_rat_package : R.drawable.ic_log));
                 }).start();
                 case "dll" -> holder.fileIcon.setImageResource(R.drawable.ic_dll);
                 case "bat" -> holder.fileIcon.setImageResource(R.drawable.ic_batch);
                 case "ico", "png", "jpg", "jpeg", "bmp" -> new Thread(() -> {
-                    Bitmap parsedIcon = decodeFileThumbnail(item.file, holder.fileIcon.getLayoutParams().width, holder.fileIcon.getLayoutParams().height);
+                    Bitmap parsedIcon = decodeFileThumbnail(item.file, holder.fileIcon.getLayoutParams().width,
+                            holder.fileIcon.getLayoutParams().height);
                     holder.fileIcon.post(() -> holder.fileIcon.setImageBitmap(parsedIcon));
                 }).start();
-                case "mp3", "ogg", "wav", "flac", "aac", "wma", "aiff" -> holder.fileIcon.setImageResource(R.drawable.ic_music);
+                case "mp3", "ogg", "wav", "flac", "aac", "wma", "aiff" ->
+                    holder.fileIcon.setImageResource(R.drawable.ic_music);
                 default -> holder.fileIcon.setImageResource(R.drawable.ic_log);
             }
         }
@@ -184,7 +194,7 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         private final TextView fileName = itemView.findViewById(R.id.title_preferences_model);
         private final TextView fileDescription = itemView.findViewById(R.id.description_preferences_model);
-        private final ImageView fileIcon =  itemView.findViewById(R.id.set_img);
+        private final ImageView fileIcon = itemView.findViewById(R.id.set_img);
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -194,14 +204,22 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
 
         @Override
         public void onClick(View view) {
-            if (getAdapterPosition() < 0) return;
+            if (getAdapterPosition() < 0)
+                return;
 
             FileList item = fileList.get(getAdapterPosition());
 
             if (isFloatFilesDialog) {
                 if (item.file.getName().equals("..")) {
-                    floatingFileManagerCwd = new File(floatingFileManagerCwd).getParent();
-                    FloatingFileManagerFragment.refreshFiles();
+                    File parentFile = new File(floatingFileManagerCwd).getParentFile();
+                    if (parentFile != null && parentFile.canRead() && !parentFile.getPath().equals("/")) {
+                        floatingFileManagerCwd = parentFile.getPath();
+                        FloatingFileManagerFragment.refreshFiles();
+                    } else {
+                        android.widget.Toast
+                                .makeText(context, "Cannot access system root", android.widget.Toast.LENGTH_SHORT)
+                                .show();
+                    }
                 } else if (item.file.isFile()) {
                     if (item.file.getName().toLowerCase().endsWith(".rat")) {
                         customRootFSPath = item.file.getPath();
@@ -223,7 +241,8 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
 
         @Override
         public boolean onLongClick(View view) {
-            if (getAdapterPosition() < 0) return false;
+            if (getAdapterPosition() < 0)
+                return false;
 
             FileList item = fileList.get(getAdapterPosition());
 
@@ -246,9 +265,12 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
     public final static int KILOBYTE = 1024;
 
     public static String formatSize(double value) {
-        if (value < KILOBYTE) return Math.round(value * 100F) / 100F + "B";
-        if (value < MEGABYTE) return Math.round(value * 100F / KILOBYTE) / 100F + "KB";
-        if (value < GIGABYTE) return Math.round(value * 100F / MEGABYTE) / 100F + "MB";
+        if (value < KILOBYTE)
+            return Math.round(value * 100F) / 100F + "B";
+        if (value < MEGABYTE)
+            return Math.round(value * 100F / KILOBYTE) / 100F + "KB";
+        if (value < GIGABYTE)
+            return Math.round(value * 100F / MEGABYTE) / 100F + "MB";
         return Math.round(value * 100F / GIGABYTE) / 100F + "GB";
     }
 }
