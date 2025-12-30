@@ -18,6 +18,7 @@ import com.google.android.material.button.MaterialButton;
 import com.micewine.emu.R;
 import com.micewine.emu.core.ShellLoader;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -29,7 +30,8 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_log_viewer, container, false);
 
         logTextView = rootView.findViewById(R.id.logsTextView);
@@ -41,14 +43,20 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
         scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 
         exportLogButton.setOnClickListener((v) -> {
-            String logPath = "/storage/emulated/0/MiceWine/MiceWine-" + selectedGameName + "-Log-" + System.currentTimeMillis() / 1000 + ".txt";
+            String logPath = "/storage/emulated/0/Windroid/windroid-log.txt";
+            File logFile = new File(logPath);
 
-            try (FileWriter writer = new FileWriter(logPath)) {
+            if (!logFile.getParentFile().exists()) {
+                logFile.getParentFile().mkdirs();
+            }
+
+            try (FileWriter writer = new FileWriter(logFile)) {
                 writer.write(logs.toString());
             } catch (IOException ignored) {
             }
 
-            exportLogButton.post(() -> Toast.makeText(getContext(), "Log Exported to " + logPath.substring(logPath.lastIndexOf("/") + 1), Toast.LENGTH_SHORT).show());
+            exportLogButton.post(() -> Toast.makeText(getContext(),
+                    "Log Exported to " + logPath.substring(logPath.lastIndexOf("/") + 1), Toast.LENGTH_SHORT).show());
         });
 
         return rootView;
@@ -84,7 +92,8 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
     public void appendLogs(String text) {
         logs.append(text);
 
-        if (!logViewerIsOpened) return;
+        if (!logViewerIsOpened)
+            return;
 
         requireActivity().runOnUiThread(() -> {
             logTextView.append(text);
