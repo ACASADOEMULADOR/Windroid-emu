@@ -260,7 +260,7 @@ public class ShortcutsFragment extends Fragment {
     }
 
     private static ArrayList<AdapterGame.GameItem> gameList = new ArrayList<>();
-    private static final FileManagerControllerSettings fileManagerControllerSettings = new FileManagerControllerSettings();
+    private static FileManagerControllerSettings fileManagerControllerSettings = new FileManagerControllerSettings();
 
     public static class FileManagerControllerSettings {
         public boolean virtualControllerIsXInput = true;
@@ -276,6 +276,7 @@ public class ShortcutsFragment extends Fragment {
 
     public static void initialize() {
         gameList = getGameList();
+        fileManagerControllerSettings = getFileManagerControllerSettings();
     }
 
     public static void putWineVirtualDesktop(String name, boolean enabled) {
@@ -556,10 +557,11 @@ public class ShortcutsFragment extends Fragment {
                 .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.controllerSwapAnalogs[controllerIndex] = enabled;
+            saveShortcuts();
             return;
         }
 
-        gameList.get(index).wineVirtualDesktop = enabled;
+        gameList.get(index).controllersXInputSwapAnalogs.set(controllerIndex, enabled);
 
         saveShortcuts();
     }
@@ -582,6 +584,7 @@ public class ShortcutsFragment extends Fragment {
                 .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.controllerIsXInput[controllerIndex] = enabled;
+            saveShortcuts();
             return;
         }
 
@@ -608,6 +611,7 @@ public class ShortcutsFragment extends Fragment {
                 .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.controllerPreset.set(controllerIndex, presetName);
+            saveShortcuts();
             return;
         }
 
@@ -632,6 +636,7 @@ public class ShortcutsFragment extends Fragment {
                 .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.virtualControllerIsXInput = enabled;
+            saveShortcuts();
             return;
         }
 
@@ -654,6 +659,7 @@ public class ShortcutsFragment extends Fragment {
                 .orElse(-1);
         if (index == -1) {
             fileManagerControllerSettings.virtualControllerPreset = presetName;
+            saveShortcuts();
             return;
         }
 
@@ -944,7 +950,17 @@ public class ShortcutsFragment extends Fragment {
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.putString("gameList", gson.toJson(gameList));
+        editor.putString("fileManagerControllerSettings", gson.toJson(fileManagerControllerSettings));
         editor.apply();
+    }
+
+    private static FileManagerControllerSettings getFileManagerControllerSettings() {
+        String json = preferences.getString("fileManagerControllerSettings", "");
+        Type type = new TypeToken<FileManagerControllerSettings>() {
+        }.getType();
+        FileManagerControllerSettings settings = gson.fromJson(json, type);
+
+        return (settings != null ? settings : new FileManagerControllerSettings());
     }
 
     private static ArrayList<AdapterGame.GameItem> getGameList() {
