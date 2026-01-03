@@ -28,6 +28,7 @@ import static com.micewine.emu.activities.PresetManagerActivity.BUTTON_X_KEY;
 import static com.micewine.emu.activities.PresetManagerActivity.BUTTON_Y_KEY;
 import static com.micewine.emu.activities.PresetManagerActivity.SELECTED_CONTROLLER_PRESET;
 import static com.micewine.emu.adapters.AdapterPreset.selectedPresetId;
+import static com.micewine.emu.fragments.CreatePresetFragment.BOX64_PRESET;
 import static com.micewine.emu.fragments.CreatePresetFragment.CONTROLLER_PRESET;
 
 import android.content.Context;
@@ -66,8 +67,7 @@ public class ControllerPresetManagerFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_general_settings, container, false);
         recyclerView = rootView.findViewById(R.id.recyclerViewGeneralSettings);
 
@@ -77,39 +77,34 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     private void setAdapter() {
-        recyclerView.setAdapter(
-                new AdapterPreset(presetListNames, requireContext(), requireActivity().getSupportFragmentManager()));
+        recyclerView.setAdapter(new AdapterPreset(presetListAdapters, requireContext(), requireActivity().getSupportFragmentManager()));
 
-        presetListNames.clear();
-        presetList.forEach((i) -> presetListNames.add(
-                new AdapterPreset.Item(i.name, CONTROLLER_PRESET, true, editShortcut)));
+        presetListAdapters.clear();
+        presetList.forEach((i) -> presetListAdapters.add(
+                new AdapterPreset.Item(i.name, CONTROLLER_PRESET, true)
+        ));
     }
 
-    private final static ArrayList<AdapterPreset.Item> presetListNames = new ArrayList<>();
+    private final static ArrayList<AdapterPreset.Item> presetListAdapters = new ArrayList<>();
     private static ArrayList<ControllerPreset> presetList = new ArrayList<>();
     private static boolean editShortcut = false;
-    private final static Type listType = new TypeToken<ControllerPreset>() {
-    }.getType();
+    private final static Type listType = new TypeToken<ArrayList<ControllerPreset>>() {}.getType();
 
     public static void initialize(boolean editable) {
-        presetList = getControllerPresets();
         editShortcut = editable;
+        presetList = getControllerPresets();
     }
 
     public static int getMouseSensibility(String name) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return 100;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return 100;
 
         return presetList.get(index).mouseSensibility;
     }
 
     public static void putMouseSensibility(String name, int value) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return;
 
         presetList.get(index).mouseSensibility = value;
 
@@ -117,19 +112,15 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static int getDeadZone(String name) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return 25;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return 25;
 
         return presetList.get(index).deadZone;
     }
 
     public static void putDeadZone(String name, int value) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return;
 
         presetList.get(index).deadZone = value;
 
@@ -137,10 +128,8 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static XKeyCodes.ButtonMapping getControllerPreset(String name, String key) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return null;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return null;
 
         return switch (key) {
             case BUTTON_A_KEY -> presetList.get(index).aButton;
@@ -172,10 +161,8 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static void editControllerPreset(String name, String key, XKeyCodes.ButtonMapping buttonMapping) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return;
 
         switch (key) {
             case BUTTON_A_KEY -> presetList.get(index).aButton = buttonMapping;
@@ -208,22 +195,22 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static void addControllerPreset(Context context, String name) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
         if (index != -1) {
             Toast.makeText(context, R.string.executable_already_added, Toast.LENGTH_SHORT).show();
             return;
         }
 
         presetList.add(
-                new ControllerPreset(name));
-        presetListNames.add(
-                new AdapterPreset.Item(name, CONTROLLER_PRESET, true, editShortcut));
+                new ControllerPreset(name)
+        );
+        presetListAdapters.add(
+                new AdapterPreset.Item(name, CONTROLLER_PRESET, true, editShortcut)
+        );
 
         saveControllerPresets();
 
-        if (recyclerView == null)
-            return;
+        if (recyclerView == null) return;
         RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
         if (adapter != null) {
             adapter.notifyItemInserted(presetList.size());
@@ -231,13 +218,11 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static void deleteControllerPreset(String name) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return;
 
         presetList.remove(index);
-        presetListNames.remove(index);
+        presetListAdapters.remove(index);
 
         saveControllerPresets();
 
@@ -248,8 +233,7 @@ public class ControllerPresetManagerFragment extends Fragment {
             editor.apply();
         }
 
-        if (recyclerView == null)
-            return;
+        if (recyclerView == null) return;
 
         RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
         if (adapter != null) {
@@ -261,18 +245,15 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static void renameControllerPreset(String name, String newName) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return;
 
         presetList.get(index).name = newName;
-        presetListNames.get(index).titleSettings = newName;
+        presetListAdapters.get(index).titleSettings = newName;
 
         saveControllerPresets();
 
-        if (recyclerView == null)
-            return;
+        if (recyclerView == null) return;
 
         recyclerView.post(() -> {
             RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
@@ -291,12 +272,10 @@ public class ControllerPresetManagerFragment extends Fragment {
             return false;
         }
 
-        if (lines.size() < 2)
-            return false;
+        if (lines.size() < 2) return false;
 
         String type = lines.get(0);
-        if (!type.equals("controllerPreset"))
-            return false;
+        if (!type.equals("controllerPreset")) return false;
 
         String json = lines.get(1);
         ControllerPreset preset = gson.fromJson(json, listType);
@@ -316,13 +295,13 @@ public class ControllerPresetManagerFragment extends Fragment {
         preset.name = presetName;
 
         presetList.add(preset);
-        presetListNames.add(
-                new AdapterPreset.Item(preset.name, CONTROLLER_PRESET, true));
+        presetListAdapters.add(
+                new AdapterPreset.Item(preset.name, CONTROLLER_PRESET, true)
+        );
 
         saveControllerPresets();
 
-        if (recyclerView == null)
-            return true;
+        if (recyclerView == null) return true;
 
         recyclerView.post(() -> {
             RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
@@ -335,10 +314,8 @@ public class ControllerPresetManagerFragment extends Fragment {
     }
 
     public static void exportControllerPreset(String name, File file) {
-        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst()
-                .orElse(-1);
-        if (index == -1)
-            return;
+        int index = IntStream.range(0, presetList.size()).filter(i -> presetList.get(i).name.equals(name)).findFirst().orElse(-1);
+        if (index == -1) return;
 
         try (FileWriter writer = new FileWriter(file)) {
             writer.write("controllerPreset\n" + gson.toJson(presetList.get(index)));
@@ -355,12 +332,12 @@ public class ControllerPresetManagerFragment extends Fragment {
 
     public static ArrayList<ControllerPreset> getControllerPresets() {
         String json = preferences.getString("controllerPresetList", "");
-        Type listType = new TypeToken<ArrayList<ControllerPreset>>() {
-        }.getType();
+        Type listType = new TypeToken<ArrayList<ControllerPreset>>() {}.getType();
         ArrayList<ControllerPreset> controllerPresetList = gson.fromJson(json, listType);
 
         return controllerPresetList != null ? controllerPresetList : new ArrayList<>();
     }
+
 
     public static class ControllerPreset {
         String name;
