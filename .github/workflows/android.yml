@@ -64,12 +64,12 @@ jobs:
         fi
           
     - name: "Create Release"
-      if: env.VERSION_CHANGED == '1' && github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request'
       uses: softprops/action-gh-release@v2
       with:
         name: "Windroid Application (${{ env.VERSION }})"
         tag_name: ${{ env.SHORT_SHA }}
-        prerelease: false
+        prerelease: ${{ env.VERSION_CHANGED == '0' }}
         files: ./Windroid-universal.apk
     
     - name: "Upload Artifact"
