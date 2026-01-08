@@ -1,4 +1,4 @@
-name: Android CI
+name: Windroid CI
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
   pull_request:
     paths-ignore:
       - '**.md'
+  workflow_dispatch:
+
 
 jobs:
   build:
@@ -43,29 +45,36 @@ jobs:
     
     - name: "Sign APK (Debug)"
       run: |
-        $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks micewine-key.jks --ks-key-alias ${{ secrets.KEYSTORE_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --out app-universal-debug.apk app/build/outputs/apk/debug/app-universal-debug.apk || cp app/build/outputs/apk/debug/app-universal-debug.apk .
+        $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks micewine-key.jks --ks-key-alias ${{ secrets.KEYSTORE_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --out Windroid-universal.apk app/build/outputs/apk/debug/app-universal-debug.apk || cp app/build/outputs/apk/debug/app-universal-debug.apk Windroid-universal.apk
 
     - name: "Get Short SHA"
       run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
     - name: "Get Version"
-      run: echo "VERSION=$(echo $(cat app/build.gradle | grep versionName | cut -d "=" -f 2 | sed "s/\"//g"))" >> $GITHUB_ENV
+      run: echo "VERSION=$(grep 'versionName' app/build.gradle | head -n 1 | sed 's/.*versionName[[:space:]=]*\"\([^"]*\)\".*/\1/')" >> $GITHUB_ENV
       
     - name: "Check If It's New Release"
-      run: if [ -n "$(git diff HEAD~1 HEAD app/build.gradle | grep versionName)" ]; then echo "VERSION_CHANGED=1" >> $GITHUB_ENV; else echo "VERSION_CHANGED=0" >> $GITHUB_ENV; fi
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION_CHANGED=1" >> $GITHUB_ENV
+        elif [ -n "$(git diff HEAD~1 HEAD app/build.gradle | grep versionName)" ]; then
+          echo "VERSION_CHANGED=1" >> $GITHUB_ENV
+        else
+          echo "VERSION_CHANGED=0" >> $GITHUB_ENV
+        fi
           
     - name: "Create Release"
       if: env.VERSION_CHANGED == '1' && github.event_name != 'pull_request'
       uses: softprops/action-gh-release@v2
       with:
-        name: "MiceWine Application (${{ env.VERSION }})"
+        name: "Windroid Application (${{ env.VERSION }})"
         tag_name: ${{ env.SHORT_SHA }}
         prerelease: false
-        files: ./app-universal-debug.apk
+        files: ./Windroid-universal.apk
     
     - name: "Upload Artifact"
       if: env.VERSION_CHANGED == '0' || github.event_name == 'pull_request'
       uses: actions/upload-artifact@v4
       with:
-        name: MiceWine-Application-(git-${{ env.SHORT_SHA }})
-        path: ./app-universal-debug.apk
+        name: Windroid-Application-(git-${{ env.SHORT_SHA }})
+        path: ./Windroid-universal.apk
