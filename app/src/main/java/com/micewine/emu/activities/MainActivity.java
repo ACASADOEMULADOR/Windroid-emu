@@ -158,6 +158,7 @@ import com.micewine.emu.adapters.AdapterBottomNavigation;
 import com.micewine.emu.controller.ControllerUtils;
 import com.micewine.emu.core.RatPackageManager;
 import com.micewine.emu.core.WineWrapper;
+import com.micewine.emu.core.Updater;
 import com.micewine.emu.databinding.ActivityMainBinding;
 import com.micewine.emu.fragments.AskInstallPackageFragment;
 import com.micewine.emu.fragments.Box64PresetManagerFragment;
@@ -526,8 +527,8 @@ public class MainActivity extends AppCompatActivity {
         // Fecha apps em segundo plano para liberar recursos
         new Thread(() -> killBackgroundApps(this)).start();
 
-        // On future here will have a code for check if app is updated and do specific
-        // data conversion if needed
+        // Check for updates
+        Updater.check(this);
 
         SharedPreferences.Editor editor = preferences.edit();
 

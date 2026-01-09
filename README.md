@@ -1,4 +1,4 @@
-![MiceWine Logo](logo.png "MiceWine Logo")
+![Windroid Logo](logo.png "Windroid Logo")
 
 ### Windroid Emulator
 
@@ -64,7 +64,7 @@ When Mouse is Captured Press Alt+Q on Keyboard to Release or Press Back on Devic
 ### RootFS Download
 
 You can download the required **RootFS** file from this repository:  
-- [MiceWine RootFS Generator](https://github.com/KreitinnSoftware/MiceWine-RootFS-Generator)
+- [Windroid RootFS Generator](https://github.com/KreitinnSoftware/MiceWine-RootFS-Generator)
 
 ---
 
