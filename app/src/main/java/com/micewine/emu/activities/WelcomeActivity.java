@@ -76,6 +76,12 @@ public class WelcomeActivity extends AppCompatActivity {
                 }
             } else if (viewPager.getCurrentItem() == 2) {
                 RootFSDownloaderFragment downloader = (RootFSDownloaderFragment) getCurrentFragment();
+
+                if (selectedItemId == -1) {
+                    Toast.makeText(this, R.string.select_rootfs, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 boolean selectCustomRootFS = (selectedItemId == downloader.rootFsList.size() - 1);
 
                 if (rootFSIsDownloaded || selectCustomRootFS) {
@@ -95,11 +101,13 @@ public class WelcomeActivity extends AppCompatActivity {
             viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
         });
 
-        registerReceiver(broadcastReceiver, new IntentFilter() {{
-            addAction(DOWNLOAD_DONE);
-            addAction(DOWNLOAD_START);
-            addAction(DOWNLOAD_FAILED);
-        }});
+        registerReceiver(broadcastReceiver, new IntentFilter() {
+            {
+                addAction(DOWNLOAD_DONE);
+                addAction(DOWNLOAD_START);
+                addAction(DOWNLOAD_FAILED);
+            }
+        });
     }
 
     @Override
@@ -146,7 +154,8 @@ public class WelcomeActivity extends AppCompatActivity {
                 intent.setData(uri);
                 startActivity(intent);
             } else {
-                String[] permissions = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };
+                String[] permissions = { Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
                 ActivityCompat.requestPermissions(this, permissions, 1000);
             }
@@ -160,7 +169,8 @@ public class WelcomeActivity extends AppCompatActivity {
             int readPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
             int writePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-            return (readPermission != PackageManager.PERMISSION_GRANTED) || (writePermission != PackageManager.PERMISSION_GRANTED);
+            return (readPermission != PackageManager.PERMISSION_GRANTED)
+                    || (writePermission != PackageManager.PERMISSION_GRANTED);
         }
     }
 

@@ -252,9 +252,6 @@
     <string name="select_rootfs_file">Select RootFS File</string>
     <string name="scan_games_title">Scan Games Folder</string>
     <string name="scan_games_desc">Scan a folder for .exe files and create shortcuts</string>
-    <string name="update_available_title">Update Available</string>
-    <string name="update_available_message">A new version %s is available!</string>
-    <string name="channel_updates">Updates</string>
 
     <plurals name="seconds_ago">
         <item quantity="one">%d second ago</item>

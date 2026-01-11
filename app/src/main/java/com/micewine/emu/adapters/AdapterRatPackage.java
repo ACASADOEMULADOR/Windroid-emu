@@ -49,7 +49,8 @@ public class AdapterRatPackage extends RecyclerView.Adapter<AdapterRatPackage.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.adapter_rat_package_item, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.adapter_rat_package_item, parent,
+                false);
         return new ViewHolder(itemView);
     }
 
@@ -97,20 +98,17 @@ public class AdapterRatPackage extends RecyclerView.Adapter<AdapterRatPackage.Vi
             case DXVK -> {
                 holder.radioButton.setVisibility(View.GONE);
                 holder.imageView.setImageBitmap(
-                        textAsBitmap("DXVK", 80F, Color.WHITE)
-                );
+                        textAsBitmap("DXVK", 80F, Color.WHITE));
             }
             case WINED3D -> {
                 holder.radioButton.setVisibility(View.GONE);
                 holder.imageView.setImageBitmap(
-                        textAsBitmap("WineD3D", 80F, Color.WHITE)
-                );
+                        textAsBitmap("WineD3D", 80F, Color.WHITE));
             }
             case VKD3D -> {
                 holder.radioButton.setVisibility(View.GONE);
                 holder.imageView.setImageBitmap(
-                        textAsBitmap("VKD3D", 80F, Color.WHITE)
-                );
+                        textAsBitmap("VKD3D", 80F, Color.WHITE));
             }
             case ROOTFS -> {
                 holder.radioButton.setVisibility(View.VISIBLE);
@@ -148,7 +146,8 @@ public class AdapterRatPackage extends RecyclerView.Adapter<AdapterRatPackage.Vi
         });
 
         holder.deleteRatPackageButton.setOnClickListener((v) -> {
-            if (holder.getAdapterPosition() == -1) return;
+            if (holder.getAdapterPosition() == -1)
+                return;
 
             if (selectedItemId == holder.getAdapterPosition()) {
                 selectedItemId = 0;
@@ -157,7 +156,8 @@ public class AdapterRatPackage extends RecyclerView.Adapter<AdapterRatPackage.Vi
 
                 switch (item.type) {
                     case BOX64 -> editor.putString(SELECTED_BOX64, listRatPackages("Box64").get(0).getFolderName());
-                    case VK_DRIVER -> editor.putString(SELECTED_VULKAN_DRIVER, listRatPackages("VulkanDriver").get(0).getFolderName());
+                    case VK_DRIVER -> editor.putString(SELECTED_VULKAN_DRIVER,
+                            listRatPackages("VulkanDriver").get(0).getFolderName());
                 }
 
                 editor.apply();
@@ -223,6 +223,9 @@ public class AdapterRatPackage extends RecyclerView.Adapter<AdapterRatPackage.Vi
 
         @Override
         public void onClick(View view) {
+            if (radioButton.getVisibility() == View.VISIBLE) {
+                radioButton.performClick();
+            }
         }
     }
 
@@ -235,7 +238,8 @@ public class AdapterRatPackage extends RecyclerView.Adapter<AdapterRatPackage.Vi
         public String repoRatName;
         public boolean isInstalled;
 
-        public Item(String titleSettings, String descriptionSettings, String itemFolderId, int type, boolean isExternalPackage, String repoRatName, boolean isInstalled) {
+        public Item(String titleSettings, String descriptionSettings, String itemFolderId, int type,
+                boolean isExternalPackage, String repoRatName, boolean isInstalled) {
             this.titleSettings = titleSettings;
             this.descriptionSettings = descriptionSettings;
             this.itemFolderId = itemFolderId;

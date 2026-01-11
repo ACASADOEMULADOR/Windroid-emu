@@ -23,7 +23,8 @@ public class SettingsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_settings, container, false);
         recyclerView = rootView.findViewById(R.id.recyclerViewSettings);
 
@@ -39,7 +40,8 @@ public class SettingsFragment extends Fragment {
 
         addToAdapter(R.string.general_settings, R.string.settings_desc, R.drawable.ic_settings_outline);
         addToAdapter(R.string.controller_mapper_title, R.string.controller_mapper_desc, R.drawable.ic_joystick);
-        addToAdapter(R.string.virtual_controller_mapper_title, R.string.controller_virtual_mapper_desc, R.drawable.ic_joystick);
+        addToAdapter(R.string.virtual_controller_mapper_title, R.string.controller_virtual_mapper_desc,
+                R.drawable.ic_joystick);
 
         if (!deviceArch.equals("x86_64")) {
             addToAdapter(R.string.box64_preset_manager_title, R.string.box64_preset_manager_desc, R.drawable.ic_box64);
@@ -53,7 +55,6 @@ public class SettingsFragment extends Fragment {
 
     private void addToAdapter(int titleId, int descriptionId, int iconId) {
         settingsList.add(
-                new SettingsList(getString(titleId), getString(descriptionId), iconId)
-        );
+                new SettingsList(getString(titleId), getString(descriptionId), iconId));
     }
 }
