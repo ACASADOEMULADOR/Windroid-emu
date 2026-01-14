@@ -80,7 +80,10 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
 
     public void populate() {
         logViewerIsOpened = true;
-        logTextView.post(() -> logTextView.setText(getLastLines(logs)));
+        logTextView.post(() -> {
+            logTextView.setText(getLastLines(logs));
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+        });
     }
 
     public void cleanup() {
