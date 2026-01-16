@@ -40,8 +40,6 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
 
         ShellLoader.connectOutput(this);
 
-        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-
         exportLogButton.setOnClickListener((v) -> {
             String logPath = "/storage/emulated/0/Windroid/windroid-log.txt";
             File logFile = new File(logPath);
@@ -82,7 +80,14 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
         logViewerIsOpened = true;
         logTextView.post(() -> {
             logTextView.setText(getLastLines(logs));
-            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+            logTextView.getViewTreeObserver()
+                    .addOnGlobalLayoutListener(new android.view.ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            logTextView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+                        }
+                    });
         });
     }
 

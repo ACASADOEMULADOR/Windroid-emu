@@ -67,7 +67,7 @@ public class VirtualControllerInputView extends View {
     private final ArrayList<VirtualControllerButton> buttonList = new ArrayList<>();
     private VirtualXInputDPad dpad;
     private VirtualXInputAnalog leftAnalog;
-    private VirtualXInputTouchPad rightTouchPad;
+    private VirtualXInputAnalog rightAnalog;
 
     private byte buttonsStateA = 0;
     private byte buttonsStateB = 0;
@@ -100,8 +100,8 @@ public class VirtualControllerInputView extends View {
         addButton(RS_BUTTON, 1560F, 980F, 180F, SHAPE_CIRCLE);
 
         leftAnalog = new VirtualXInputAnalog(LEFT_ANALOG, 280F, 840F, 275F);
+        rightAnalog = new VirtualXInputAnalog(RIGHT_ANALOG, 1750F, 480F, 275F);
         dpad = new VirtualXInputDPad(0, 640F, 480F, 250F);
-        rightTouchPad = new VirtualXInputTouchPad(0, 1750F, 480F, 275F);
 
         adjustButtons();
     }
@@ -131,8 +131,8 @@ public class VirtualControllerInputView extends View {
             leftAnalog.x = Math.round(leftAnalog.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
             leftAnalog.y = Math.round(leftAnalog.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
 
-            rightTouchPad.x = Math.round(rightTouchPad.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-            rightTouchPad.y = Math.round(rightTouchPad.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            rightAnalog.x = Math.round(rightAnalog.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+            rightAnalog.y = Math.round(rightAnalog.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
 
             dpad.x = Math.round(dpad.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
             dpad.y = Math.round(dpad.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
@@ -280,15 +280,39 @@ public class VirtualControllerInputView extends View {
 
         canvas.drawCircle(analogX, analogY, leftAnalog.radius / 4F, paint);
 
-        // Right Analog TouchPad
+        // Right Analog
+        float rightAnalogX = rightAnalog.x + rightAnalog.fingerX;
+        float rightAnalogY = rightAnalog.y + rightAnalog.fingerY;
+
+        float rightDistSquared = (rightAnalog.fingerX * rightAnalog.fingerX)
+                + (rightAnalog.fingerY * rightAnalog.fingerY);
+        float rightMaxDist = (rightAnalog.radius / 4F) * (rightAnalog.radius / 4F);
+
+        if (rightDistSquared > rightMaxDist) {
+            float dist = (float) Math.sqrt(rightDistSquared);
+            float scale = (rightAnalog.radius / 4F) / dist;
+            rightAnalogX = rightAnalog.x + (rightAnalog.fingerX * scale);
+            rightAnalogY = rightAnalog.y + (rightAnalog.fingerY * scale);
+        }
+
+        paint.setColor(Color.WHITE);
+        paint.setAlpha(200);
+
         paint.setStyle(Paint.Style.STROKE);
-        canvas.drawRoundRect(rightTouchPad.x - rightTouchPad.radius / 2,
-                rightTouchPad.y - rightTouchPad.radius / 2,
-                rightTouchPad.x + rightTouchPad.radius / 2,
-                rightTouchPad.y + rightTouchPad.radius / 2,
-                32F,
-                32F,
-                paint);
+        canvas.drawCircle(rightAnalog.x, rightAnalog.y, rightAnalog.radius / 2F, paint);
+
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(rightAnalogX, rightAnalogY, rightAnalog.radius / 4F, paint);
+
+        paint.setColor(Color.WHITE);
+        paint.setAlpha(200);
+        paint.setStyle(Paint.Style.STROKE);
+
+        canvas.drawCircle(rightAnalog.x, rightAnalog.y, rightAnalog.radius / 2F, paint);
+
+        paint.setStyle(Paint.Style.FILL);
+
+        canvas.drawCircle(rightAnalogX, rightAnalogY, rightAnalog.radius / 4F, paint);
 
         // D-Pad Left
         dpadLeft.reset();
@@ -353,11 +377,11 @@ public class VirtualControllerInputView extends View {
         if (virtualXInputControllerId == -1)
             return true;
 
-        float lx = 0F;
-        float ly = 0F;
-        float rx = 0F;
-        float ry = 0F;
-        byte dpadStatus = 0;
+        float lx = leftAnalog.isPressed ? (leftAnalog.fingerX / (leftAnalog.radius / 4)) : 0F;
+        float ly = leftAnalog.isPressed ? (leftAnalog.fingerY / (leftAnalog.radius / 4)) : 0F;
+        float rx = rightAnalog.isPressed ? (rightAnalog.fingerX / (rightAnalog.radius / 4)) : 0F;
+        float ry = rightAnalog.isPressed ? (rightAnalog.fingerY / (rightAnalog.radius / 4)) : 0F;
+        byte dpadStatus = (byte) dpad.dpadStatus;
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
@@ -376,18 +400,46 @@ public class VirtualControllerInputView extends View {
                     float posY = event.getY(event.getActionIndex()) - leftAnalog.y;
 
                     leftAnalog.fingerId = event.getPointerId(event.getActionIndex());
+
+                    float maxDist = leftAnalog.radius / 4F;
+                    float dist = (float) Math.sqrt(posX * posX + posY * posY);
+
+                    if (dist > maxDist) {
+                        float scale = maxDist / dist;
+                        posX *= scale;
+                        posY *= scale;
+                    }
+
                     leftAnalog.fingerX = posX;
                     leftAnalog.fingerY = posY;
                     leftAnalog.isPressed = true;
 
-                    lx = (posX / (leftAnalog.radius / 4));
-                    ly = (posY / (leftAnalog.radius / 4));
+                    lx = (posX / maxDist);
+                    ly = (posY / maxDist);
                 }
 
-                if (detectClick(event, event.getActionIndex(), rightTouchPad.x, rightTouchPad.y, rightTouchPad.radius,
-                        SHAPE_SQUARE)) {
-                    rightTouchPad.fingerId = event.getPointerId(event.getActionIndex());
-                    rightTouchPad.isPressed = true;
+                if (detectClick(event, event.getActionIndex(), rightAnalog.x, rightAnalog.y, rightAnalog.radius,
+                        SHAPE_CIRCLE)) {
+                    float posX = event.getX(event.getActionIndex()) - rightAnalog.x;
+                    float posY = event.getY(event.getActionIndex()) - rightAnalog.y;
+
+                    rightAnalog.fingerId = event.getPointerId(event.getActionIndex());
+
+                    float maxDist = rightAnalog.radius / 4F;
+                    float dist = (float) Math.sqrt(posX * posX + posY * posY);
+
+                    if (dist > maxDist) {
+                        float scale = maxDist / dist;
+                        posX *= scale;
+                        posY *= scale;
+                    }
+
+                    rightAnalog.fingerX = posX;
+                    rightAnalog.fingerY = posY;
+                    rightAnalog.isPressed = true;
+
+                    rx = (posX / maxDist);
+                    ry = (posY / maxDist);
                 }
 
                 if (detectClick(event, event.getActionIndex(), dpad.x, dpad.y, dpad.radius, SHAPE_DPAD)) {
@@ -420,25 +472,44 @@ public class VirtualControllerInputView extends View {
                         float posX = event.getX(i) - leftAnalog.x;
                         float posY = event.getY(i) - leftAnalog.y;
 
+                        float maxDist = leftAnalog.radius / 4F;
+                        float dist = (float) Math.sqrt(posX * posX + posY * posY);
+
+                        if (dist > maxDist) {
+                            float scale = maxDist / dist;
+                            posX *= scale;
+                            posY *= scale;
+                        }
+
                         leftAnalog.fingerX = posX;
                         leftAnalog.fingerY = posY;
 
-                        lx = (posX / (leftAnalog.radius / 4));
-                        ly = (posY / (leftAnalog.radius / 4));
+                        lx = (posX / maxDist);
+                        ly = (posY / maxDist);
 
                         isFingerPressingButton = true;
                     }
 
-                    if (rightTouchPad.isPressed && rightTouchPad.fingerId == event.getPointerId(i)) {
-                        if (event.getHistorySize() > 0) {
-                            float dx = (event.getX(i) - event.getHistoricalX(i, event.getHistorySize() - 1));
-                            float dy = (event.getY(i) - event.getHistoricalY(i, event.getHistorySize() - 1));
+                    if (rightAnalog.isPressed && rightAnalog.fingerId == event.getPointerId(i)) {
+                        float posX = event.getX(i) - rightAnalog.x;
+                        float posY = event.getY(i) - rightAnalog.y;
 
-                            rx = dx;
-                            ry = dy;
+                        float maxDist = rightAnalog.radius / 4F;
+                        float dist = (float) Math.sqrt(posX * posX + posY * posY);
 
-                            isFingerPressingButton = true;
+                        if (dist > maxDist) {
+                            float scale = maxDist / dist;
+                            posX *= scale;
+                            posY *= scale;
                         }
+
+                        rightAnalog.fingerX = posX;
+                        rightAnalog.fingerY = posY;
+
+                        rx = (posX / maxDist);
+                        ry = (posY / maxDist);
+
+                        isFingerPressingButton = true;
                     }
 
                     if (dpad.isPressed && dpad.fingerId == event.getPointerId(i)) {
@@ -482,9 +553,11 @@ public class VirtualControllerInputView extends View {
                     ly = 0F;
                 }
 
-                if (rightTouchPad.fingerId == event.getPointerId(event.getActionIndex())) {
-                    rightTouchPad.fingerId = -1;
-                    rightTouchPad.isPressed = false;
+                if (rightAnalog.fingerId == event.getPointerId(event.getActionIndex())) {
+                    rightAnalog.fingerId = -1;
+                    rightAnalog.fingerX = 0F;
+                    rightAnalog.fingerY = 0F;
+                    rightAnalog.isPressed = false;
 
                     rx = 0F;
                     ry = 0F;
@@ -519,9 +592,11 @@ public class VirtualControllerInputView extends View {
                 lx = 0F;
                 ly = 0F;
 
-                // Right Analog TouchPad
-                rightTouchPad.fingerId = -1;
-                rightTouchPad.isPressed = false;
+                // Right Analog
+                rightAnalog.fingerId = -1;
+                rightAnalog.fingerX = 0F;
+                rightAnalog.fingerY = 0F;
+                rightAnalog.isPressed = false;
 
                 rx = 0F;
                 ry = 0F;
@@ -701,6 +776,7 @@ public class VirtualControllerInputView extends View {
     private final static int LEFT_ANALOG = 11;
     private final static int LS_BUTTON = 12;
     private final static int RS_BUTTON = 13;
+    private final static int RIGHT_ANALOG = 14;
 
     public static int virtualXInputControllerId = -1;
 }
