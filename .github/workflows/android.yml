@@ -45,7 +45,7 @@ jobs:
     
     - name: "Sign APK (Debug)"
       run: |
-        $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks micewine-key.jks --ks-key-alias ${{ secrets.KEYSTORE_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --out Windroid-universal.apk app/build/outputs/apk/debug/app-universal-debug.apk || cp app/build/outputs/apk/debug/app-universal-debug.apk Windroid-universal.apk
+        $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks micewine-key.jks --ks-key-alias ${{ secrets.KEYSTORE_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --out Windroid-universal.apk app/build/outputs/apk/debug/app-universal-debug.apk
 
     - name: "Get Short SHA"
       run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV

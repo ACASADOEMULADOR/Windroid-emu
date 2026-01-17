@@ -4,6 +4,8 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.view.WindowManager.LayoutParams.*;
 import static com.micewine.emu.CmdEntryPoint.ACTION_START;
+import static com.micewine.emu.activities.GeneralSettingsActivity.DISPLAY_STRETCH;
+import static com.micewine.emu.activities.GeneralSettingsActivity.DISPLAY_STRETCH_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_MANGOHUD;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_MANGOHUD_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
