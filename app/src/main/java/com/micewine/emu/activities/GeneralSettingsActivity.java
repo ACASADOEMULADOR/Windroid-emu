@@ -294,7 +294,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String SELECTED_GL_PROFILE_DEFAULT_VALUE = "GL 3.2";
 
     public final static String SELECTED_DXVK_HUD_PRESET = "selectedDXVKHudPreset";
-    public final static String SELECTED_DXVK_HUD_PRESET_DEFAULT_VALUE = "";
+    public final static String SELECTED_DXVK_HUD_PRESET_DEFAULT_VALUE = "fps,gpuload";
     public final static String SELECTED_MESA_VK_WSI_PRESENT_MODE = "MESA_VK_WSI_PRESENT_MODE";
     public final static String SELECTED_MESA_VK_WSI_PRESENT_MODE_DEFAULT_VALUE = "mailbox";
 
@@ -307,4 +307,6 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static int WINE_DPI_DEFAULT_VALUE = 96;
     public final static String WINE_DPI_APPLIED = "wineDpiApplied";
     public final static boolean WINE_DPI_APPLIED_DEFAULT_VALUE = false;
+    public final static String DISPLAY_STRETCH = "displayStretch";
+    public final static boolean DISPLAY_STRETCH_DEFAULT_VALUE = true;
 }

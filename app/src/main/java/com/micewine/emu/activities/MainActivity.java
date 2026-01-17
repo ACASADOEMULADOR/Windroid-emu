@@ -1072,7 +1072,7 @@ public class MainActivity extends AppCompatActivity {
 
         screenFpsLimit = (int) ((WindowManager) activity.getSystemService(WINDOW_SERVICE)).getDefaultDisplay()
                 .getRefreshRate();
-        fpsLimit = preferences.getInt(FPS_LIMIT, screenFpsLimit);
+        fpsLimit = preferences.getInt(FPS_LIMIT, 0);
 
         vulkanDriverDeviceName = getVulkanDriverInfo("deviceName", false) + (useAdrenoTools ? " (AdrenoTools)" : "");
         vulkanDriverDriverVersion = getVulkanDriverInfo("driverVersion", false).split(" ")[0];

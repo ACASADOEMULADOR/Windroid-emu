@@ -1,5 +1,7 @@
 package com.micewine.emu;
 
+import static com.micewine.emu.activities.GeneralSettingsActivity.DISPLAY_STRETCH;
+import static com.micewine.emu.activities.GeneralSettingsActivity.DISPLAY_STRETCH_DEFAULT_VALUE;
 import static com.micewine.emu.activities.MainActivity.preferences;
 import static com.micewine.emu.activities.MainActivity.selectedResolution;
 
@@ -172,7 +174,7 @@ public class LorieView extends SurfaceView implements InputStub {
          */
 
         if (preferences != null) {
-            if (preferences.getBoolean("displayStretch", false)) {
+            if (preferences.getBoolean(DISPLAY_STRETCH, DISPLAY_STRETCH_DEFAULT_VALUE)) {
                 getHolder().setSizeFromLayout();
                 return;
             }

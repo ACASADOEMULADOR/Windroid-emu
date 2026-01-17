@@ -226,10 +226,10 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         });
 
         MaterialSwitch stretchDisplaySwitch = headerViewMain.findViewById(R.id.stretchDisplaySwitch);
-        stretchDisplaySwitch.setChecked(preferences != null && preferences.getBoolean("displayStretch", false));
+        stretchDisplaySwitch.setChecked(preferences != null && preferences.getBoolean(DISPLAY_STRETCH, DISPLAY_STRETCH_DEFAULT_VALUE));
         stretchDisplaySwitch.setOnClickListener((v) -> {
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean("displayStretch", stretchDisplaySwitch.isChecked());
+            editor.putBoolean(DISPLAY_STRETCH, stretchDisplaySwitch.isChecked());
             editor.apply();
 
             getLorieView().requestLayout();
@@ -316,7 +316,7 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
 
         fpsLimitSeekbar.setMin(0);
         fpsLimitSeekbar.setMax(screenFpsLimit);
-        fpsLimitSeekbar.setProgress(preferences != null ? preferences.getInt(FPS_LIMIT, screenFpsLimit) : 0);
+        fpsLimitSeekbar.setProgress(preferences != null ? preferences.getInt(FPS_LIMIT, 0) : 0);
 
         if (fpsLimitSeekbar.getProgress() == 0) {
             fpsLimitText.setText(R.string.unlimited);
