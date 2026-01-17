@@ -38,16 +38,13 @@ jobs:
     - name: "Build Debug"
       run: ./gradlew assembleDebug
 
-    - name: "Get Keystore for Signing"
-      if: github.event_name != 'pull_request'
+    - name: "Sign APK"
       run: |
-        echo "${{ secrets.KEYSTORE_BASE64_MICEWINE }}" | base64 -d > micewine-key.jks
-    
-    - name: "Sign APK (Debug)"
-      run: |
-        if [ -f micewine-key.jks ]; then
+        if [ -n "${{ secrets.KEYSTORE_BASE64_MICEWINE }}" ]; then
+          echo "${{ secrets.KEYSTORE_BASE64_MICEWINE }}" | base64 -d > micewine-key.jks
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks micewine-key.jks --ks-key-alias "${{ secrets.KEYSTORE_ALIAS }}" --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" --out Windroid-universal.apk app/build/outputs/apk/debug/app-universal-debug.apk
         else
+          echo "Signing secret not found, skipping signing and using debug APK."
           cp app/build/outputs/apk/debug/app-universal-debug.apk Windroid-universal.apk
         fi
 
