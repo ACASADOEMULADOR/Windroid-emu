@@ -984,7 +984,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_CREATE_WINE_PREFIX = "com.micewine.emu.ACTION_CREATE_WINE_PREFIX";
 
     public static final String RAM_COUNTER = "ramCounter";
-    public static final boolean RAM_COUNTER_DEFAULT_VALUE = false;
+    public static final boolean RAM_COUNTER_DEFAULT_VALUE = true;
 
     public static final String CPU_COUNTER = "cpuCounter";
     public static final boolean CPU_COUNTER_DEFAULT_VALUE = false;

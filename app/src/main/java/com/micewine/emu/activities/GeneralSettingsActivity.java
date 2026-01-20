@@ -287,7 +287,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String ENABLE_DRI3 = "enableDRI3";
     public final static boolean ENABLE_DRI3_DEFAULT_VALUE = true;
     public final static String ENABLE_MANGOHUD = "enableMangoHUD";
-    public final static boolean ENABLE_MANGOHUD_DEFAULT_VALUE = true;
+    public final static boolean ENABLE_MANGOHUD_DEFAULT_VALUE = false;
     public final static String WINE_LOG_LEVEL = "wineLogLevel";
     public final static String WINE_LOG_LEVEL_DEFAULT_VALUE = "default";
     public final static String SELECTED_GL_PROFILE = "selectedGLProfile";
