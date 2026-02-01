@@ -284,6 +284,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String SELECTED_WINE_PREFIX = "selectedWinePrefix";
     public final static String SELECTED_TU_DEBUG_PRESET = "selectedTuDebugPreset";
     public final static String SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE = "noconform,sysmem";
+    public final static String SELECTED_VRAM_LIMIT = "selectedVramLimit";
+    public final static String SELECTED_VRAM_LIMIT_DEFAULT_VALUE = "Auto";
     public final static String ENABLE_DRI3 = "enableDRI3";
     public final static boolean ENABLE_DRI3_DEFAULT_VALUE = true;
     public final static String ENABLE_MANGOHUD = "enableMangoHUD";

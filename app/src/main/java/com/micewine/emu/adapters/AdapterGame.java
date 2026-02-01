@@ -19,6 +19,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getSelectedVirtualCon
 import static com.micewine.emu.fragments.ShortcutsFragment.getVKD3DVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVulkanDriver;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVulkanDriverType;
+import static com.micewine.emu.fragments.ShortcutsFragment.getVramLimit;
 import static com.micewine.emu.fragments.ShortcutsFragment.getWineD3DVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getWineESync;
 import static com.micewine.emu.fragments.ShortcutsFragment.getWineServices;
@@ -84,18 +85,18 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             if (imgBitmap != null) {
                 Bitmap newBitmap;
                 if (new File(item.exePath).exists()) {
-                    newBitmap = Bitmap.createScaledBitmap(imgBitmap, holder.itemView.getLayoutParams().width - 10, holder.itemView.getLayoutParams().width - 10, false);
+                    newBitmap = Bitmap.createScaledBitmap(imgBitmap, holder.itemView.getLayoutParams().width - 10,
+                            holder.itemView.getLayoutParams().width - 10, false);
                 } else {
                     newBitmap = toGrayScale(
-                            Bitmap.createScaledBitmap(imgBitmap, holder.itemView.getLayoutParams().width - 10, holder.itemView.getLayoutParams().width - 10, false)
-                    );
+                            Bitmap.createScaledBitmap(imgBitmap, holder.itemView.getLayoutParams().width - 10,
+                                    holder.itemView.getLayoutParams().width - 10, false));
                 }
                 holder.gameImage.setImageBitmap(newBitmap);
             }
         } else if (item.iconPath.isEmpty()) {
             holder.gameImage.setImageBitmap(
-                    BitmapFactory.decodeResource(activity.getResources(), R.drawable.default_icon)
-            );
+                    BitmapFactory.decodeResource(activity.getResources(), R.drawable.default_icon));
         } else {
             holder.gameImage.setImageResource(R.drawable.unknown_exe);
         }
@@ -151,7 +152,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
 
             selectedGameName = gameItem.name;
 
-            File exeFile =  new File(gameItem.exePath);
+            File exeFile = new File(gameItem.exePath);
 
             String exePath = gameItem.exePath;
             String exeArguments = gameItem.exeArguments;
@@ -161,8 +162,10 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
                     exePath = "";
                     exeArguments = "";
                 } else {
-                    activity.runOnUiThread(() -> Toast.makeText(activity, R.string.executable_file_not_found, Toast.LENGTH_SHORT).show());
-                    new EditGamePreferencesFragment(EditGamePreferencesFragment.EDIT_GAME_PREFERENCES, null).show(activity.getSupportFragmentManager(), "");
+                    activity.runOnUiThread(() -> Toast
+                            .makeText(activity, R.string.executable_file_not_found, Toast.LENGTH_SHORT).show());
+                    new EditGamePreferencesFragment(EditGamePreferencesFragment.EDIT_GAME_PREFERENCES, null)
+                            .show(activity.getSupportFragmentManager(), "");
                     return;
                 }
             }
@@ -192,6 +195,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             runWineIntent.putExtra("enableXInput", getEnableXInput(selectedGameName));
             runWineIntent.putExtra("enableDInput", getEnableDInput(selectedGameName));
             runWineIntent.putExtra("cpuAffinity", getCpuAffinity(selectedGameName));
+            runWineIntent.putExtra("vramLimit", getVramLimit(selectedGameName));
 
             activity.sendBroadcast(runWineIntent);
             activity.startActivity(runActivityIntent);
@@ -232,6 +236,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
         public boolean wineVirtualDesktop;
         public boolean enableXInput;
         public boolean enableDInput;
+        public String vramLimit;
         public ArrayList<AdapterEnvVar.EnvVar> envVars;
 
         public GameItem(String name, String exePath, String exeArguments, String iconPath) {
@@ -260,6 +265,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             this.wineVirtualDesktop = false;
             this.enableXInput = true;
             this.enableDInput = true;
+            this.vramLimit = "Auto";
             this.envVars = new ArrayList<>();
         }
     }

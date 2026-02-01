@@ -27,6 +27,8 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_MESA_
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VULKAN_DRIVER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI_APPLIED;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI_APPLIED_DEFAULT_VALUE;
@@ -205,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean enableXInput = intent.getBooleanExtra("enableXInput", true);
                     boolean enableDInput = intent.getBooleanExtra("enableDInput", true);
                     String cpuAffinity = intent.getStringExtra("cpuAffinity");
+                    String vramLimit = intent.getStringExtra("vramLimit");
 
                     if (exeArguments == null)
                         exeArguments = "";
@@ -226,6 +229,8 @@ public class MainActivity extends AppCompatActivity {
                         vkd3d = listRatPackages("VKD3D").get(0).getFolderName();
                     if (cpuAffinity == null)
                         cpuAffinity = String.join(",", availableCPUs);
+                    if (vramLimit == null)
+                        vramLimit = "Auto";
 
                     deleteDirectoryRecursively(tmpDir.toPath());
                     tmpDir.mkdirs();
@@ -272,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
                             enableXInput,
                             enableDInput,
                             cpuAffinity,
+                            vramLimit,
                             adrenoToolsDriverPath);
 
                     runXServer();
@@ -944,6 +950,7 @@ public class MainActivity extends AppCompatActivity {
     public static String selectedDXVKHud = null;
     public static String selectedMesaVkWsiPresentMode = null;
     public static String selectedTuDebugPreset = null;
+    public static String selectedVramLimit = null;
     public static int selectedFragmentId = 0;
     public static String memoryStats = "??/??";
     public static String totalCpuUsage = "???%";
@@ -999,12 +1006,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void setSharedVars(Activity activity, String adrenoToolsDriverPath) {
-        setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null,
+        setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 adrenoToolsDriverPath);
     }
 
     public static void setSharedVars(Activity activity) {
-        setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null);
     }
 
     public static void setSharedVars(
@@ -1022,6 +1030,7 @@ public class MainActivity extends AppCompatActivity {
             Boolean enableXInputController,
             Boolean enableDInputController,
             String cpuAffinity,
+            String vramLimit,
             String adrenoToolsDriverPath) {
         useAdrenoTools = (adrenoToolsDriverPath != null);
         adrenoToolsDriverFile = (adrenoToolsDriverPath != null ? new File(adrenoToolsDriverPath) : null);
@@ -1065,6 +1074,8 @@ public class MainActivity extends AppCompatActivity {
         selectedMesaVkWsiPresentMode = preferences.getString(SELECTED_MESA_VK_WSI_PRESENT_MODE,
                 SELECTED_MESA_VK_WSI_PRESENT_MODE_DEFAULT_VALUE);
         selectedTuDebugPreset = preferences.getString(SELECTED_TU_DEBUG_PRESET, SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE);
+        selectedVramLimit = (vramLimit != null ? vramLimit
+                : preferences.getString(SELECTED_VRAM_LIMIT, SELECTED_VRAM_LIMIT_DEFAULT_VALUE));
 
         enableRamCounter = preferences.getBoolean(RAM_COUNTER, RAM_COUNTER_DEFAULT_VALUE);
         enableCpuCounter = preferences.getBoolean(CPU_COUNTER, CPU_COUNTER_DEFAULT_VALUE);

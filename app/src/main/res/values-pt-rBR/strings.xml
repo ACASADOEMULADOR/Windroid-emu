@@ -227,6 +227,8 @@
     <string name="downloading_rootfs">Baixando RootFS</string>
     <string name="download_successful">Download Concluido!</string>
     <string name="select_rootfs_file">Selecionar Arquivo RootFS</string>
+    <string name="vram_limit_title">Limite de VRAM</string>
+    <string name="vram_limit_desc">Definir limite máximo de memória de vídeo para drivers Mesa</string>
 
     <plurals name="seconds_ago">
         <item quantity="one">há %d segundo</item>

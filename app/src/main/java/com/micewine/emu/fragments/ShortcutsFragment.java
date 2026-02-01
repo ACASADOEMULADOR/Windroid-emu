@@ -822,6 +822,26 @@ public class ShortcutsFragment extends Fragment {
         return gameList.get(index).envVars;
     }
 
+    public static void putVramLimit(String name, String limit) {
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
+
+        gameList.get(index).vramLimit = limit;
+
+        saveShortcuts();
+    }
+
+    public static String getVramLimit(String name) {
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "Auto";
+
+        return gameList.get(index).vramLimit;
+    }
+
     public static void addGameToList(String path, String prettyName, String iconPath) {
         boolean gameExists = gameList.stream().anyMatch(i -> i.name.equals(prettyName) || i.exePath.equals(path));
         if (gameExists)

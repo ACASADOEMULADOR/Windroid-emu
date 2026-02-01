@@ -37,6 +37,7 @@ import static com.micewine.emu.activities.MainActivity.selectedDXVKHud;
 import static com.micewine.emu.activities.MainActivity.selectedGLProfile;
 import static com.micewine.emu.activities.MainActivity.selectedMesaVkWsiPresentMode;
 import static com.micewine.emu.activities.MainActivity.selectedTuDebugPreset;
+import static com.micewine.emu.activities.MainActivity.selectedVramLimit;
 import static com.micewine.emu.activities.MainActivity.selectedWine;
 import static com.micewine.emu.activities.MainActivity.strBoolToNum;
 import static com.micewine.emu.activities.MainActivity.tmpDir;
@@ -104,7 +105,16 @@ public class EnvVars {
         vars.add("VK_ICD_FILENAMES=" + appRootDir + "/vulkan_icd.json");
 
         vars.add("GALLIUM_DRIVER=zink");
-        vars.add("TU_DEBUG=" + selectedTuDebugPreset);
+
+        // Build TU_DEBUG with VRAM limit if specified
+        String tuDebug = selectedTuDebugPreset;
+        if (selectedVramLimit != null && !selectedVramLimit.equals("Auto")) {
+            // Extract the numeric value from the limit (e.g., "512 MB" -> "512")
+            String vramValue = selectedVramLimit.replace(" MB", "").trim();
+            tuDebug = tuDebug + ",max_vram:" + vramValue;
+        }
+        vars.add("TU_DEBUG=" + tuDebug);
+
         vars.add("ZINK_DEBUG=compact");
         vars.add("ZINK_DESCRIPTORS=lazy");
 

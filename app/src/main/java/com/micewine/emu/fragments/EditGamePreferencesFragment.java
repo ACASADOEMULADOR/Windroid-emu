@@ -40,6 +40,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getGameExeArguments;
 import static com.micewine.emu.fragments.ShortcutsFragment.getGameIcon;
 import static com.micewine.emu.fragments.ShortcutsFragment.getSelectedVirtualControllerPreset;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVKD3DVersion;
+import static com.micewine.emu.fragments.ShortcutsFragment.getVramLimit;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVirtualControllerXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVulkanDriver;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVulkanDriverType;
@@ -61,6 +62,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.putExeArguments;
 import static com.micewine.emu.fragments.ShortcutsFragment.putSelectedVirtualControllerPreset;
 import static com.micewine.emu.fragments.ShortcutsFragment.putVKD3DVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.putVirtualControllerXInput;
+import static com.micewine.emu.fragments.ShortcutsFragment.putVramLimit;
 import static com.micewine.emu.fragments.ShortcutsFragment.putVulkanDriver;
 import static com.micewine.emu.fragments.ShortcutsFragment.putWineD3DVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.putWineESync;
@@ -145,6 +147,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
     private Spinner selectedDXVKSpinner;
     private Spinner selectedWineD3DSpinner;
     private Spinner selectedVKD3DSpinner;
+    private Spinner selectedVramLimitSpinner;
     private MaterialSwitch wineESyncSwitch;
     private MaterialSwitch wineServicesSwitch;
     private MaterialSwitch enableWineVirtualDesktopSwitch;
@@ -168,14 +171,12 @@ public class EditGamePreferencesFragment extends DialogFragment {
     private MaterialButton addEnvVarButton;
     public static final ArrayList<AdapterEnvVar.EnvVar> envVars = new ArrayList<>();
     private final List<String> mappingTypes = List.of("MiceWine Controller", "Keyboard/Mouse");
-    private final List<String> virtualControllerProfilesNames =
-            getVirtualControllerPresets().stream()
-                    .map(VirtualControllerPresetManagerFragment.VirtualControllerPreset::getName)
-                    .collect(Collectors.toList());
-    private final List<String> controllerProfilesNames =
-            getControllerPresets().stream()
-                    .map(ControllerPresetManagerFragment.ControllerPreset::getName)
-                    .collect(Collectors.toList());
+    private final List<String> virtualControllerProfilesNames = getVirtualControllerPresets().stream()
+            .map(VirtualControllerPresetManagerFragment.VirtualControllerPreset::getName)
+            .collect(Collectors.toList());
+    private final List<String> controllerProfilesNames = getControllerPresets().stream()
+            .map(ControllerPresetManagerFragment.ControllerPreset::getName)
+            .collect(Collectors.toList());
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -218,7 +219,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         for (int i = 0; i < controllersMappingTypeSpinners.size(); i++) {
-            controllersMappingTypeSpinners.get(i).setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, mappingTypes));
+            controllersMappingTypeSpinners.get(i).setAdapter(
+                    new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, mappingTypes));
             controllersMappingTypeSpinners.get(i).setSelection(getControllerXInput(selectedGameName, i) ? 0 : 1);
             int index = i;
             controllersMappingTypeSpinners.get(i).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -249,22 +251,24 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         for (int i = 0; i < controllersKeyboardPresetSpinners.size(); i++) {
-            controllersKeyboardPresetSpinners.get(i).setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, controllerProfilesNames));
-            controllersKeyboardPresetSpinners.get(i).setSelection(controllerProfilesNames.indexOf(getControllerPreset(selectedGameName, i)));
+            controllersKeyboardPresetSpinners.get(i).setAdapter(new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_dropdown_item, controllerProfilesNames));
+            controllersKeyboardPresetSpinners.get(i)
+                    .setSelection(controllerProfilesNames.indexOf(getControllerPreset(selectedGameName, i)));
             int index = i;
-            controllersKeyboardPresetSpinners.get(i).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i1, long l) {
-                    temporarySettings.controllerPreset[index] = adapterView.getSelectedItem().toString();
-                }
+            controllersKeyboardPresetSpinners.get(i)
+                    .setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> adapterView, View view, int i1, long l) {
+                            temporarySettings.controllerPreset[index] = adapterView.getSelectedItem().toString();
+                        }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-                }
-            });
+                        @Override
+                        public void onNothingSelected(AdapterView<?> adapterView) {
+                        }
+                    });
         }
     }
-
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @NonNull
@@ -285,6 +289,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
         selectedDXVKSpinner = view.findViewById(R.id.selectedDXVK);
         selectedWineD3DSpinner = view.findViewById(R.id.selectedWineD3D);
         selectedVKD3DSpinner = view.findViewById(R.id.selectedVKD3D);
+        selectedVramLimitSpinner = view.findViewById(R.id.selectedVramLimit);
         wineESyncSwitch = view.findViewById(R.id.wineESync);
         wineServicesSwitch = view.findViewById(R.id.wineServices);
         enableWineVirtualDesktopSwitch = view.findViewById(R.id.enableWineVirtualDesktop);
@@ -296,54 +301,49 @@ public class EditGamePreferencesFragment extends DialogFragment {
                 view.findViewById(R.id.controller0MappingTypeText),
                 view.findViewById(R.id.controller1MappingTypeText),
                 view.findViewById(R.id.controller2MappingTypeText),
-                view.findViewById(R.id.controller3MappingTypeText)
-        );
+                view.findViewById(R.id.controller3MappingTypeText));
         controllersMappingTypeSpinners = List.of(
                 view.findViewById(R.id.controller0MappingTypeSpinner),
                 view.findViewById(R.id.controller1MappingTypeSpinner),
                 view.findViewById(R.id.controller2MappingTypeSpinner),
-                view.findViewById(R.id.controller3MappingTypeSpinner)
-        );
+                view.findViewById(R.id.controller3MappingTypeSpinner));
         controllersSwapAnalogsTexts = List.of(
                 view.findViewById(R.id.controller0SwapAnalogsText),
                 view.findViewById(R.id.controller1SwapAnalogsText),
                 view.findViewById(R.id.controller2SwapAnalogsText),
-                view.findViewById(R.id.controller3SwapAnalogsText)
-        );
+                view.findViewById(R.id.controller3SwapAnalogsText));
         controllersSwapAnalogsSwitches = List.of(
                 view.findViewById(R.id.controller0SwapAnalogsSwitch),
                 view.findViewById(R.id.controller1SwapAnalogsSwitch),
                 view.findViewById(R.id.controller2SwapAnalogsSwitch),
-                view.findViewById(R.id.controller3SwapAnalogsSwitch)
-        );
+                view.findViewById(R.id.controller3SwapAnalogsSwitch));
         controllersKeyboardPresetSpinners = List.of(
                 view.findViewById(R.id.controller0KeyboardPresetSpinner),
                 view.findViewById(R.id.controller1KeyboardPresetSpinner),
                 view.findViewById(R.id.controller2KeyboardPresetSpinner),
-                view.findViewById(R.id.controller3KeyboardPresetSpinner)
-        );
+                view.findViewById(R.id.controller3KeyboardPresetSpinner));
         controllersKeyboardPresetTexts = List.of(
                 view.findViewById(R.id.controller0KeyboardPresetText),
                 view.findViewById(R.id.controller1KeyboardPresetText),
                 view.findViewById(R.id.controller2KeyboardPresetText),
-                view.findViewById(R.id.controller3KeyboardPresetText)
-        );
+                view.findViewById(R.id.controller3KeyboardPresetText));
         controllersNamesTexts = List.of(
                 view.findViewById(R.id.controller0Name),
                 view.findViewById(R.id.controller1Name),
                 view.findViewById(R.id.controller2Name),
-                view.findViewById(R.id.controller3Name)
-        );
+                view.findViewById(R.id.controller3Name));
 
         updateControllersStatus();
 
         addEnvVarButton = view.findViewById(R.id.addEnvVarButton);
         addEnvVarButton.setOnClickListener((v) -> {
-            new EditEnvVarFragment(EditEnvVarFragment.OPERATION_ADD_ENV_VAR, EditEnvVarFragment.MODE_EDIT_GAME).show(requireActivity().getSupportFragmentManager(), "");
+            new EditEnvVarFragment(EditEnvVarFragment.OPERATION_ADD_ENV_VAR, EditEnvVarFragment.MODE_EDIT_GAME)
+                    .show(requireActivity().getSupportFragmentManager(), "");
         });
 
         recyclerViewEnvVars = view.findViewById(R.id.recyclerViewEnvVars);
-        recyclerViewEnvVars.setAdapter(new AdapterEnvVar(envVars, requireActivity().getSupportFragmentManager(), EditEnvVarFragment.MODE_EDIT_GAME));
+        recyclerViewEnvVars.setAdapter(new AdapterEnvVar(envVars, requireActivity().getSupportFragmentManager(),
+                EditEnvVarFragment.MODE_EDIT_GAME));
 
         envVars.clear();
         envVars.addAll(getEnvVars(selectedGameName));
@@ -353,7 +353,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
         onScreenControllerKeyboardPresetText = view.findViewById(R.id.onScreenControllerKeyboardPresetText);
         onScreenControllerKeyboardPresetSpinner = view.findViewById(R.id.onScreenControllerKeyboardPresetSpinner);
 
-        onScreenControllerMappingTypeSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, mappingTypes));
+        onScreenControllerMappingTypeSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, mappingTypes));
         onScreenControllerMappingTypeSpinner.setSelection(getVirtualControllerXInput(selectedGameName) ? 0 : 1);
         onScreenControllerMappingTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -370,8 +371,10 @@ public class EditGamePreferencesFragment extends DialogFragment {
             }
         });
 
-        onScreenControllerKeyboardPresetSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, virtualControllerProfilesNames));
-        onScreenControllerKeyboardPresetSpinner.setSelection(virtualControllerProfilesNames.indexOf(getSelectedVirtualControllerPreset(selectedGameName)));
+        onScreenControllerKeyboardPresetSpinner.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, virtualControllerProfilesNames));
+        onScreenControllerKeyboardPresetSpinner.setSelection(
+                virtualControllerProfilesNames.indexOf(getSelectedVirtualControllerPreset(selectedGameName)));
         onScreenControllerKeyboardPresetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -396,7 +399,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
                 String exePath = getExePath(selectedGameName);
                 String prefix = wineDisksFolder + "/";
                 exePath = exePath.startsWith(prefix) ? exePath.substring(prefix.length()) : exePath;
-                exePath = !exePath.isEmpty() ? Character.toUpperCase(exePath.charAt(0)) + exePath.substring(1) : exePath;
+                exePath = !exePath.isEmpty() ? Character.toUpperCase(exePath.charAt(0)) + exePath.substring(1)
+                        : exePath;
 
                 exePathText.setText(exePath);
                 exePathText.setSelected(true);
@@ -408,8 +412,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
                     enableWineVirtualDesktopSwitch.setChecked(true);
 
                     imageView.setImageBitmap(resizeBitmap(
-                            BitmapFactory.decodeResource(requireActivity().getResources(), R.drawable.default_icon), imageView.getLayoutParams().width, imageView.getLayoutParams().height
-                    ));
+                            BitmapFactory.decodeResource(requireActivity().getResources(), R.drawable.default_icon),
+                            imageView.getLayoutParams().width, imageView.getLayoutParams().height));
                 } else {
                     Bitmap gameIcon = getGameIcon(selectedGameName);
 
@@ -417,12 +421,12 @@ public class EditGamePreferencesFragment extends DialogFragment {
                         imageView.setImageResource(R.drawable.unknown_exe);
                     } else {
                         imageView.setImageBitmap(resizeBitmap(
-                                gameIcon, imageView.getLayoutParams().width, imageView.getLayoutParams().height
-                        ));
+                                gameIcon, imageView.getLayoutParams().width, imageView.getLayoutParams().height));
                     }
 
                     imageView.setOnClickListener((v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_ICON)));
-                    selectExePath.setOnClickListener((v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_EXE_PATH)));
+                    selectExePath.setOnClickListener(
+                            (v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_EXE_PATH)));
                 }
             }
             case FILE_MANAGER_START_PREFERENCES -> {
@@ -458,7 +462,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
 
         System.out.println(displaySettings.get(0));
 
-        selectedDisplayModeSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, aspectRatios));
+        selectedDisplayModeSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, aspectRatios));
         selectedDisplayModeSpinner.setSelection(aspectRatios.indexOf(displaySettings.get(0)));
         selectedDisplayModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -474,7 +479,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
                     default -> resolutions = List.of();
                 }
 
-                selectedDisplayResolutionSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, resolutions));
+                selectedDisplayResolutionSpinner.setAdapter(new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item, resolutions));
                 selectedDisplayResolutionSpinner.setSelection(resolutions.indexOf(displaySettings.get(1)));
 
                 temporarySettings.displayMode = selectedItem;
@@ -510,9 +516,11 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         int vkIndex = vulkanDriversId.indexOf(getVulkanDriver(selectedGameName));
-        if (vkIndex < 0) vkIndex = 0;
+        if (vkIndex < 0)
+            vkIndex = 0;
 
-        selectedDriverSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vulkanDrivers));
+        selectedDriverSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vulkanDrivers));
         selectedDriverSpinner.setSelection(vkIndex);
         selectedDriverSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -525,7 +533,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
             }
         });
 
-        selectedD3DXRendererSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, d3dxRenderers));
+        selectedD3DXRendererSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, d3dxRenderers));
         selectedD3DXRendererSpinner.setSelection(d3dxRenderers.indexOf(getD3DXRenderer(selectedGameName)));
         selectedD3DXRendererSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -561,9 +570,11 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         int dxvkIndex = dxvkVersionsId.indexOf(getDXVKVersion(selectedGameName));
-        if (dxvkIndex < 0) dxvkIndex = 0;
+        if (dxvkIndex < 0)
+            dxvkIndex = 0;
 
-        selectedDXVKSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, dxvkVersions));
+        selectedDXVKSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, dxvkVersions));
         selectedDXVKSpinner.setSelection(dxvkIndex);
         selectedDXVKSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -586,9 +597,11 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         int wined3dIndex = wined3dVersionsId.indexOf(getWineD3DVersion(selectedGameName));
-        if (wined3dIndex < 0) wined3dIndex = 0;
+        if (wined3dIndex < 0)
+            wined3dIndex = 0;
 
-        selectedWineD3DSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, wined3dVersions));
+        selectedWineD3DSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, wined3dVersions));
         selectedWineD3DSpinner.setSelection(wined3dIndex);
         selectedWineD3DSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -611,14 +624,36 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         int vkd3dIndex = vkd3dVersionsId.indexOf(getVKD3DVersion(selectedGameName));
-        if (vkd3dIndex < 0) vkd3dIndex = 0;
+        if (vkd3dIndex < 0)
+            vkd3dIndex = 0;
 
-        selectedVKD3DSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vkd3dVersions));
+        selectedVKD3DSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vkd3dVersions));
         selectedVKD3DSpinner.setSelection(vkd3dIndex);
         selectedVKD3DSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 temporarySettings.vkd3d = vkd3dVersionsId.get(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        List<String> vramLimitOptions = Arrays.asList("Auto", "128 MB", "256 MB", "512 MB", "1024 MB", "2048 MB",
+                "4096 MB");
+        int vramLimitIndex = vramLimitOptions.indexOf(temporarySettings.vramLimit);
+        if (vramLimitIndex < 0)
+            vramLimitIndex = 0;
+
+        selectedVramLimitSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, vramLimitOptions));
+        selectedVramLimitSpinner.setSelection(vramLimitIndex);
+        selectedVramLimitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                temporarySettings.vramLimit = vramLimitOptions.get(i);
             }
 
             @Override
@@ -653,7 +688,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
             temporarySettings.enableDInput = enableDInputSwitch.isChecked();
         });
 
-        cpuAffinitySpinner.setAdapter(new CPUAffinityAdapter(requireActivity(), availableCPUs, cpuAffinitySpinner, type));
+        cpuAffinitySpinner
+                .setAdapter(new CPUAffinityAdapter(requireActivity(), availableCPUs, cpuAffinitySpinner, type));
 
         List<RatPackageManager.RatPackage> box64Packages = listRatPackages("Box64");
         ArrayList<String> box64Versions = new ArrayList<>(box64Packages.size() + 1);
@@ -668,9 +704,11 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         int box64Index = box64VersionsId.indexOf(getBox64Version(selectedGameName));
-        if (box64Index < 0) box64Index = 0;
+        if (box64Index < 0)
+            box64Index = 0;
 
-        selectedBox64Spinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, box64Versions));
+        selectedBox64Spinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, box64Versions));
         selectedBox64Spinner.setSelection(box64Index);
         selectedBox64Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -691,9 +729,11 @@ public class EditGamePreferencesFragment extends DialogFragment {
         }
 
         int box64PresetIndex = box64PresetsName.indexOf(getBox64Preset(selectedGameName));
-        if (box64PresetIndex < 0) box64PresetIndex = 0;
+        if (box64PresetIndex < 0)
+            box64PresetIndex = 0;
 
-        selectedBox64ProfileSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, box64PresetsName));
+        selectedBox64ProfileSpinner.setAdapter(
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, box64PresetsName));
         selectedBox64ProfileSpinner.setSelection(box64PresetIndex);
         selectedBox64ProfileSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -717,7 +757,8 @@ public class EditGamePreferencesFragment extends DialogFragment {
                         return;
                     }
 
-                    putDisplaySettings(selectedGameName, temporarySettings.displayMode, temporarySettings.displayResolution);
+                    putDisplaySettings(selectedGameName, temporarySettings.displayMode,
+                            temporarySettings.displayResolution);
                     putVulkanDriver(selectedGameName, temporarySettings.vulkanDriver);
                     putD3DXRenderer(selectedGameName, temporarySettings.d3dxRenderer);
                     putDXVKVersion(selectedGameName, temporarySettings.dxvk);
@@ -726,6 +767,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
                     putWineESync(selectedGameName, temporarySettings.wineESync);
                     putWineServices(selectedGameName, temporarySettings.wineServices);
                     putWineVirtualDesktop(selectedGameName, temporarySettings.wineVirtualDesktop);
+                    putVramLimit(selectedGameName, temporarySettings.vramLimit);
                     putCpuAffinity(selectedGameName, temporarySettings.cpuAffinity);
                     putSelectedVirtualControllerPreset(selectedGameName, temporarySettings.virtualControllerPreset);
                     putVirtualControllerXInput(selectedGameName, temporarySettings.virtualXInputController);
@@ -791,18 +833,19 @@ public class EditGamePreferencesFragment extends DialogFragment {
                 String exePath = getExePath(selectedGameName);
                 String prefix = wineDisksFolder + "/";
                 exePath = exePath.startsWith(prefix) ? exePath.substring(prefix.length()) : exePath;
-                exePath = !exePath.isEmpty() ? Character.toUpperCase(exePath.charAt(0)) + exePath.substring(1) : exePath;
+                exePath = !exePath.isEmpty() ? Character.toUpperCase(exePath.charAt(0)) + exePath.substring(1)
+                        : exePath;
 
                 exePathText.setText(exePath);
             });
             imageView.post(() -> {
                 Bitmap gameIcon = getGameIcon(selectedGameName);
 
-                if (gameIcon == null) return;
+                if (gameIcon == null)
+                    return;
 
                 imageView.setImageBitmap(resizeBitmap(
-                        gameIcon, imageView.getLayoutParams().width, imageView.getLayoutParams().height
-                ));
+                        gameIcon, imageView.getLayoutParams().width, imageView.getLayoutParams().height));
             });
         });
 
@@ -862,6 +905,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
         String box64Preset = getBox64Preset(selectedGameName);
         boolean enableXInput = getEnableXInput(selectedGameName);
         boolean enableDInput = getEnableDInput(selectedGameName);
+        String vramLimit = getVramLimit(selectedGameName);
     }
 
     public static class CPUAffinityAdapter implements SpinnerAdapter {
