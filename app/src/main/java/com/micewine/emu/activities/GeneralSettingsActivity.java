@@ -311,4 +311,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static boolean WINE_DPI_APPLIED_DEFAULT_VALUE = false;
     public final static String DISPLAY_STRETCH = "displayStretch";
     public final static boolean DISPLAY_STRETCH_DEFAULT_VALUE = true;
+
+    public final static String ENABLE_AFME = "enableAFME";
+    public final static boolean ENABLE_AFME_DEFAULT_VALUE = false;
 }

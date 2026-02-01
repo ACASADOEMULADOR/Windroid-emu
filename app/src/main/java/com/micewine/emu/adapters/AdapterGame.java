@@ -13,6 +13,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getCpuAffinity;
 import static com.micewine.emu.fragments.ShortcutsFragment.getD3DXRenderer;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDXVKVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDisplaySettings;
+import static com.micewine.emu.fragments.ShortcutsFragment.getEnableAFME;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableDInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getSelectedVirtualControllerPreset;
@@ -196,6 +197,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             runWineIntent.putExtra("enableDInput", getEnableDInput(selectedGameName));
             runWineIntent.putExtra("cpuAffinity", getCpuAffinity(selectedGameName));
             runWineIntent.putExtra("vramLimit", getVramLimit(selectedGameName));
+            runWineIntent.putExtra("enableAFME", getEnableAFME(selectedGameName));
 
             activity.sendBroadcast(runWineIntent);
             activity.startActivity(runActivityIntent);
@@ -237,6 +239,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
         public boolean enableXInput;
         public boolean enableDInput;
         public String vramLimit;
+        public boolean enableAFME;
         public ArrayList<AdapterEnvVar.EnvVar> envVars;
 
         public GameItem(String name, String exePath, String exeArguments, String iconPath) {
@@ -266,6 +269,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             this.enableXInput = true;
             this.enableDInput = true;
             this.vramLimit = "Auto";
+            this.enableAFME = false;
             this.envVars = new ArrayList<>();
         }
     }

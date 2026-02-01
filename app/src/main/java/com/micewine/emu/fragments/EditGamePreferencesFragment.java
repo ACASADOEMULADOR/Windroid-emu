@@ -31,6 +31,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getCpuAffinity;
 import static com.micewine.emu.fragments.ShortcutsFragment.getD3DXRenderer;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDXVKVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDisplaySettings;
+import static com.micewine.emu.fragments.ShortcutsFragment.getEnableAFME;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableDInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnvVars;
@@ -56,6 +57,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.putCpuAffinity;
 import static com.micewine.emu.fragments.ShortcutsFragment.putD3DXRenderer;
 import static com.micewine.emu.fragments.ShortcutsFragment.putDXVKVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.putDisplaySettings;
+import static com.micewine.emu.fragments.ShortcutsFragment.putEnableAFME;
 import static com.micewine.emu.fragments.ShortcutsFragment.putEnableDInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.putEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.putExeArguments;
@@ -148,6 +150,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
     private Spinner selectedWineD3DSpinner;
     private Spinner selectedVKD3DSpinner;
     private Spinner selectedVramLimitSpinner;
+    private MaterialSwitch enableAFMESwitch;
     private MaterialSwitch wineESyncSwitch;
     private MaterialSwitch wineServicesSwitch;
     private MaterialSwitch enableWineVirtualDesktopSwitch;
@@ -290,6 +293,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
         selectedWineD3DSpinner = view.findViewById(R.id.selectedWineD3D);
         selectedVKD3DSpinner = view.findViewById(R.id.selectedVKD3D);
         selectedVramLimitSpinner = view.findViewById(R.id.selectedVramLimit);
+        enableAFMESwitch = view.findViewById(R.id.enableAFME);
         wineESyncSwitch = view.findViewById(R.id.wineESync);
         wineServicesSwitch = view.findViewById(R.id.wineServices);
         enableWineVirtualDesktopSwitch = view.findViewById(R.id.enableWineVirtualDesktop);
@@ -661,6 +665,11 @@ public class EditGamePreferencesFragment extends DialogFragment {
             }
         });
 
+        enableAFMESwitch.setChecked(getEnableAFME(selectedGameName));
+        enableAFMESwitch.setOnClickListener((v) -> {
+            temporarySettings.enableAFME = enableAFMESwitch.isChecked();
+        });
+
         wineESyncSwitch.setChecked(getWineESync(selectedGameName));
         wineESyncSwitch.setOnClickListener((v) -> {
             temporarySettings.wineESync = wineESyncSwitch.isChecked();
@@ -771,6 +780,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
                     putCpuAffinity(selectedGameName, temporarySettings.cpuAffinity);
                     putSelectedVirtualControllerPreset(selectedGameName, temporarySettings.virtualControllerPreset);
                     putVirtualControllerXInput(selectedGameName, temporarySettings.virtualXInputController);
+                    putEnableAFME(selectedGameName, temporarySettings.enableAFME);
 
                     putControllerXInput(selectedGameName, temporarySettings.controllerXInput[0], 0);
                     putControllerXInput(selectedGameName, temporarySettings.controllerXInput[1], 1);
@@ -815,6 +825,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
                     runWineIntent.putExtra("enableXInput", temporarySettings.enableXInput);
                     runWineIntent.putExtra("enableDInput", temporarySettings.enableDInput);
                     runWineIntent.putExtra("cpuAffinity", temporarySettings.cpuAffinity);
+                    runWineIntent.putExtra("enableAFME", temporarySettings.enableAFME);
 
                     requireContext().sendBroadcast(runWineIntent);
                     startActivity(runActivityIntent);
@@ -906,6 +917,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
         boolean enableXInput = getEnableXInput(selectedGameName);
         boolean enableDInput = getEnableDInput(selectedGameName);
         String vramLimit = getVramLimit(selectedGameName);
+        boolean enableAFME = getEnableAFME(selectedGameName);
     }
 
     public static class CPUAffinityAdapter implements SpinnerAdapter {

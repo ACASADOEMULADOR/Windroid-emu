@@ -12,6 +12,8 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.BOX64_SHOWSEGV
 import static com.micewine.emu.activities.GeneralSettingsActivity.BOX64_SHOWSEGV_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_DRI3;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_DRI3_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_AFME;
+import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_AFME_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_MANGOHUD;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_MANGOHUD_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
@@ -99,6 +101,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getCpuAffinity;
 import static com.micewine.emu.fragments.ShortcutsFragment.getD3DXRenderer;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDXVKVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDisplaySettings;
+import static com.micewine.emu.fragments.ShortcutsFragment.getEnableAFME;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableDInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getExeArguments;
@@ -208,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean enableDInput = intent.getBooleanExtra("enableDInput", true);
                     String cpuAffinity = intent.getStringExtra("cpuAffinity");
                     String vramLimit = intent.getStringExtra("vramLimit");
+                    boolean enableAFME = intent.getBooleanExtra("enableAFME", false);
 
                     if (exeArguments == null)
                         exeArguments = "";
@@ -278,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
                             enableDInput,
                             cpuAffinity,
                             vramLimit,
+                            enableAFME,
                             adrenoToolsDriverPath);
 
                     runXServer();
@@ -990,6 +995,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_SELECT_EXE_PATH = "com.micewine.emu.ACTION_SELECT_EXE_PATH";
     public static final String ACTION_CREATE_WINE_PREFIX = "com.micewine.emu.ACTION_CREATE_WINE_PREFIX";
 
+    public static boolean enableAFME;
     public static final String RAM_COUNTER = "ramCounter";
     public static final boolean RAM_COUNTER_DEFAULT_VALUE = true;
 
@@ -1007,11 +1013,13 @@ public class MainActivity extends AppCompatActivity {
 
     public static void setSharedVars(Activity activity, String adrenoToolsDriverPath) {
         setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null,
                 adrenoToolsDriverPath);
     }
 
     public static void setSharedVars(Activity activity) {
         setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null,
                 null);
     }
 
@@ -1031,6 +1039,7 @@ public class MainActivity extends AppCompatActivity {
             Boolean enableDInputController,
             String cpuAffinity,
             String vramLimit,
+            Boolean afme,
             String adrenoToolsDriverPath) {
         useAdrenoTools = (adrenoToolsDriverPath != null);
         adrenoToolsDriverFile = (adrenoToolsDriverPath != null ? new File(adrenoToolsDriverPath) : null);
@@ -1068,6 +1077,11 @@ public class MainActivity extends AppCompatActivity {
         enableXInput = (enableXInputController != null ? enableXInputController : getEnableXInput(selectedGameName));
         enableDInput = (enableDInputController != null ? enableDInputController : getEnableDInput(selectedGameName));
         selectedCpuAffinity = (cpuAffinity != null ? cpuAffinity : getCpuAffinity(selectedGameName));
+
+        enableAFME = (afme != null ? afme : getEnableAFME(selectedGameName));
+        if (selectedGameName.equals("")) {
+            enableAFME = preferences.getBoolean(ENABLE_AFME, ENABLE_AFME_DEFAULT_VALUE);
+        }
 
         selectedGLProfile = preferences.getString(SELECTED_GL_PROFILE, SELECTED_GL_PROFILE_DEFAULT_VALUE);
         selectedDXVKHud = preferences.getString(SELECTED_DXVK_HUD_PRESET, SELECTED_DXVK_HUD_PRESET_DEFAULT_VALUE);

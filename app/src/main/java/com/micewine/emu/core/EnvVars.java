@@ -28,6 +28,7 @@ import static com.micewine.emu.activities.MainActivity.box64ShowBt;
 import static com.micewine.emu.activities.MainActivity.box64ShowSegv;
 import static com.micewine.emu.activities.MainActivity.box64Sse42;
 import static com.micewine.emu.activities.MainActivity.deviceArch;
+import static com.micewine.emu.activities.MainActivity.enableAFME;
 import static com.micewine.emu.activities.MainActivity.enableDRI3;
 import static com.micewine.emu.activities.MainActivity.homeDir;
 import static com.micewine.emu.activities.MainActivity.preferences;
@@ -172,6 +173,10 @@ public class EnvVars {
             vars.add("ADRENOTOOLS_CUSTOM_DRIVER_NAME=" + adrenoToolsDriverFile.getName());
             // Fix Segfault (at least on my device)
             vars.add("LD_PRELOAD=/system/lib64/libEGL.so");
+        }
+
+        if (enableAFME) {
+            vars.add("ADRENO_AFME_ENABLE=1");
         }
 
         // Force SDL Games to use DInput/XInput (RawInput and WGI don't works)

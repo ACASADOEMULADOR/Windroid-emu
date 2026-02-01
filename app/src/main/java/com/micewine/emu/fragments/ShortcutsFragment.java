@@ -768,6 +768,26 @@ public class ShortcutsFragment extends Fragment {
         saveShortcuts();
     }
 
+    public static void putEnableAFME(String name, boolean enabled) {
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
+
+        gameList.get(index).enableAFME = enabled;
+
+        saveShortcuts();
+    }
+
+    public static boolean getEnableAFME(String name) {
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return false;
+
+        return gameList.get(index).enableAFME;
+    }
+
     public static void editEnvVar(String name, String varName, String newKey, String newValue) {
         int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
                 .orElse(-1);

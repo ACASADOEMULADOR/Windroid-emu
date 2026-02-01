@@ -1,6 +1,8 @@
 package com.micewine.emu.fragments;
 
 import static com.micewine.emu.activities.GeneralSettingsActivity.CHECKBOX;
+import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_AFME;
+import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_AFME_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_DRI3;
 import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_DRI3_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_DXVK_HUD_PRESET;
@@ -87,6 +89,9 @@ public class DriversSettingsFragment extends Fragment {
                 addToAdapter(R.string.vram_limit_title, R.string.vram_limit_desc,
                                 new String[] { "Auto", "128 MB", "256 MB", "512 MB", "1024 MB", "2048 MB", "4096 MB" },
                                 SPINNER, SELECTED_VRAM_LIMIT_DEFAULT_VALUE, SELECTED_VRAM_LIMIT);
+                addToAdapter(R.string.enable_afme_title, R.string.enable_afme_description, null, SWITCH,
+                                String.valueOf(ENABLE_AFME_DEFAULT_VALUE),
+                                ENABLE_AFME);
         }
 
         private void addToAdapter(int titleId, int descriptionId, String[] values, int type, String defaultValue,
