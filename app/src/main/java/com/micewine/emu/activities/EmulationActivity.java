@@ -27,6 +27,8 @@ import static com.micewine.emu.core.ShellLoader.cleanup;
 import static com.micewine.emu.core.ShellLoader.runCommand;
 import static com.micewine.emu.fragments.CreatePresetFragment.CONTROLLER_PRESET;
 import static com.micewine.emu.fragments.CreatePresetFragment.VIRTUAL_CONTROLLER_PRESET;
+import static com.micewine.emu.fragments.ShortcutsFragment.getEnableDInput;
+import static com.micewine.emu.fragments.ShortcutsFragment.getEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getSelectedVirtualControllerPreset;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVirtualControllerXInput;
 import static com.micewine.emu.views.VirtualControllerInputView.virtualXInputControllerId;
@@ -147,6 +149,9 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         }
 
         ControllerUtils.startInputServer();
+
+        ControllerUtils.setEnableXInputNative(getEnableXInput(selectedGameName));
+        ControllerUtils.setEnableDInputNative(getEnableDInput(selectedGameName));
 
         prepareControllersMappings();
 

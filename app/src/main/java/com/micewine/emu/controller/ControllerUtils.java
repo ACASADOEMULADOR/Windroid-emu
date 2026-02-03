@@ -642,4 +642,10 @@ public class ControllerUtils {
 
     @FastNative
     public static native void stopInputServer();
+
+    @FastNative
+    public static native void setEnableXInputNative(boolean enabled);
+
+    @FastNative
+    public static native void setEnableDInputNative(boolean enabled);
 }
