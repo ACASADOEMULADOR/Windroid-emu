@@ -554,6 +554,17 @@ public class TouchInputHandler {
                     boolean axis_relative_x = e.getDevice().getMotionRange(MotionEvent.AXIS_RELATIVE_X) != null;
                     boolean mouse_relative = (e.getSource() & InputDevice.SOURCE_MOUSE_RELATIVE) == InputDevice.SOURCE_MOUSE_RELATIVE;
                     if (axis_relative_x || mouse_relative) {
+                        int historySize = e.getHistorySize();
+                        for (int i = 0; i < historySize; i++) {
+                            float x = axis_relative_x ? e.getHistoricalAxisValue(MotionEvent.AXIS_RELATIVE_X, i) : e.getHistoricalX(i);
+                            float y = axis_relative_x ? e.getHistoricalAxisValue(MotionEvent.AXIS_RELATIVE_Y, i) : e.getHistoricalY(i);
+
+                            x *= mDensity;
+                            y *= mDensity;
+
+                            mInjector.sendCursorMove(x, y, true);
+                        }
+
                         float x = axis_relative_x ? e.getAxisValue(MotionEvent.AXIS_RELATIVE_X) : e.getX();
                         float y = axis_relative_x ? e.getAxisValue(MotionEvent.AXIS_RELATIVE_Y) : e.getY();
 

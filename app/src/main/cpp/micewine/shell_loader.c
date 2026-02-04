@@ -1,4 +1,7 @@
+#define _GNU_SOURCE
 #include <android/log.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +11,89 @@
 
 #define log(prio, ...)                                                         \
   __android_log_print(ANDROID_LOG_##prio, "ShellLoaderNative", __VA_ARGS__)
+
+#ifndef TEMP_FAILURE_RETRY
+#define TEMP_FAILURE_RETRY(exp)                                                \
+  ({                                                                           \
+    __typeof__(exp) _rc;                                                       \
+    do {                                                                       \
+      _rc = (exp);                                                             \
+    } while (_rc == -1 && errno == EINTR);                                     \
+    _rc;                                                                       \
+  })
+#endif
+
+typedef struct {
+  char *data;
+  size_t size;
+  size_t capacity;
+} ShellBuffer;
+
+static void bufferInit(ShellBuffer *buf) {
+  buf->capacity = 4096;
+  buf->data = malloc(buf->capacity);
+  buf->size = 0;
+  if (buf->data)
+    buf->data[0] = '\0';
+}
+
+static void bufferAppend(ShellBuffer *buf, const char *text, size_t len) {
+  if (!buf->data)
+    return;
+  if (buf->size + len + 1 > buf->capacity) {
+    size_t new_cap = buf->capacity * 2;
+    while (buf->size + len + 1 > new_cap)
+      new_cap *= 2;
+    char *new_data = realloc(buf->data, new_cap);
+    if (new_data) {
+      buf->data = new_data;
+      buf->capacity = new_cap;
+    } else {
+      return;
+    }
+  }
+  memcpy(buf->data + buf->size, text, len);
+  buf->size += len;
+  buf->data[buf->size] = '\0';
+}
+
+static void bufferFree(ShellBuffer *buf) { free(buf->data); }
+
+static void sanitizeUTF8(char *s) {
+  if (!s)
+    return;
+  unsigned char *p = (unsigned char *)s;
+  while (*p) {
+    if ((*p & 0x80) == 0x00) {
+      p++;
+    } else if ((*p & 0xe0) == 0xc0) {
+      if (p[1] && (p[1] & 0xc0) == 0x80)
+        p += 2;
+      else {
+        *p = '?';
+        p++;
+      }
+    } else if ((*p & 0xf0) == 0xe0) {
+      if (p[1] && (p[1] & 0xc0) == 0x80 && p[2] && (p[2] & 0xc0) == 0x80)
+        p += 3;
+      else {
+        *p = '?';
+        p++;
+      }
+    } else if ((*p & 0xf8) == 0xf0) {
+      if (p[1] && (p[1] & 0xc0) == 0x80 && p[2] && (p[2] & 0xc0) == 0x80 &&
+          p[3] && (p[3] & 0xc0) == 0x80)
+        p += 4;
+      else {
+        *p = '?';
+        p++;
+      }
+    } else {
+      *p = '?';
+      p++;
+    }
+  }
+}
 
 static jobject callbackInstance = NULL;
 static jmethodID appendLogsMethodID = NULL;
@@ -57,8 +143,8 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
     log(DEBUG, "Trying to exec '%s'", parsedCommand);
   }
 
-  if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
-    perror("pipe");
+  if (pipe2(pipe_in, O_CLOEXEC) == -1 || pipe2(pipe_out, O_CLOEXEC) == -1) {
+    perror("pipe2");
     (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
     return;
   }
@@ -67,6 +153,10 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
   if (pid == -1) {
     perror("fork");
     (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
+    close(pipe_in[0]);
+    close(pipe_in[1]);
+    close(pipe_out[0]);
+    close(pipe_out[1]);
     return;
   }
 
@@ -94,25 +184,29 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
     size_t term_len = strlen(terminator);
     size_t size = cmd_len + term_len;
 
-    char fullCmd[size + 1];
+    char *fullCmd = malloc(size + 1);
+    if (fullCmd) {
+      snprintf(fullCmd, size + 1, "%s%s", parsedCommand, terminator);
+      TEMP_FAILURE_RETRY(write(pipe_in[1], fullCmd, size));
+      free(fullCmd);
+    }
+    close(pipe_in[1]);
 
-    snprintf(fullCmd, size + 1, "%s%s", parsedCommand, terminator);
-    write(pipe_in[1], fullCmd, size);
+    char buffer[4096];
+    ssize_t n;
 
-    if (log == JNI_TRUE) {
-      char buffer[1024];
-      ssize_t n;
-
-      while ((n = read(pipe_out[0], buffer, sizeof(buffer) - 1)) > 0) {
+    while ((n = TEMP_FAILURE_RETRY(
+                read(pipe_out[0], buffer, sizeof(buffer) - 1))) > 0) {
+      if (log == JNI_TRUE) {
         buffer[n] = '\0';
+        sanitizeUTF8(buffer);
         log(DEBUG, "%s", buffer);
         appendLog(env, buffer);
       }
     }
 
     close(pipe_out[0]);
-
-    waitpid(pid, NULL, 0);
+    TEMP_FAILURE_RETRY(waitpid(pid, NULL, 0));
   }
 
   (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
@@ -128,8 +222,8 @@ Java_com_micewine_emu_core_ShellLoader_runCommandWithOutput(
 
   parsedCommand = (*env)->GetStringUTFChars(env, command, NULL);
 
-  if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
-    perror("pipe");
+  if (pipe2(pipe_in, O_CLOEXEC) == -1 || pipe2(pipe_out, O_CLOEXEC) == -1) {
+    perror("pipe2");
     (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
     return (*env)->NewStringUTF(env, "");
   }
@@ -138,6 +232,10 @@ Java_com_micewine_emu_core_ShellLoader_runCommandWithOutput(
   if (pid == -1) {
     perror("fork");
     (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
+    close(pipe_in[0]);
+    close(pipe_in[1]);
+    close(pipe_out[0]);
+    close(pipe_out[1]);
     return (*env)->NewStringUTF(env, "");
   }
 
@@ -169,26 +267,32 @@ Java_com_micewine_emu_core_ShellLoader_runCommandWithOutput(
     size_t term_len = strlen(terminator);
     size_t size = cmd_len + term_len;
 
-    char fullCmd[size + 1];
+    char *fullCmd = malloc(size + 1);
+    if (fullCmd) {
+      snprintf(fullCmd, size + 1, "%s%s", parsedCommand, terminator);
+      TEMP_FAILURE_RETRY(write(pipe_in[1], fullCmd, size));
+      free(fullCmd);
+    }
+    close(pipe_in[1]);
 
-    snprintf(fullCmd, size + 1, "%s%s", parsedCommand, terminator);
-    write(pipe_in[1], fullCmd, size);
-
-    char r_buffer[10240] = {0};
-    char buffer[1024];
+    ShellBuffer outBuf;
+    bufferInit(&outBuf);
+    char buffer[4096];
     ssize_t n;
 
-    while ((n = read(pipe_out[0], buffer, sizeof(buffer) - 1)) > 0) {
-      buffer[n] = '\0';
-      if (strlen(r_buffer) + n < sizeof(r_buffer)) {
-        strcat(r_buffer, buffer);
-      }
+    while ((n = TEMP_FAILURE_RETRY(
+                read(pipe_out[0], buffer, sizeof(buffer) - 1))) > 0) {
+      bufferAppend(&outBuf, buffer, n);
     }
 
     close(pipe_out[0]);
-    waitpid(pid, NULL, 0);
+    TEMP_FAILURE_RETRY(waitpid(pid, NULL, 0));
     (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
 
-    return (*env)->NewStringUTF(env, r_buffer);
+    sanitizeUTF8(outBuf.data);
+    jstring result = (*env)->NewStringUTF(env, outBuf.data ? outBuf.data : "");
+    bufferFree(&outBuf);
+
+    return result;
   }
 }
