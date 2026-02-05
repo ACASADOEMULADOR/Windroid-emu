@@ -24,7 +24,8 @@
         android:roundIcon="@drawable/default_icon"
         android:isGame="true"
         android:appCategory="game"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:allowAudioPlaybackCapture="true">
         <activity
             android:name=".activities.WelcomeActivity"
             android:theme="@style/Theme.MiceWine"

@@ -100,7 +100,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         });
     }
 
-    private static final long MIN_GAME_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final long MIN_GAME_SIZE = 1024 * 1024; // 1MB
 
     private static final String[] BLACKLISTED_FOLDERS = {
             "__Installer", "CommonRedist", "Redist", "DirectX", "Support", "Prerequisites", "installers",
@@ -108,10 +108,14 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     };
 
     private static final String[] BLACKLISTED_EXECUTABLES = {
-            "unins", "setup", "config", "dxwebsetup", "vcredist", "crash", "redist", "unitycrashhandler",
-            "cleanup", "touchup", "activation", "regist", "eapatch", "easyanticheat", "testeapp",
+            "unins", "dxwebsetup", "vcredist", "crash", "redist", "unitycrashhandler",
+            "cleanup", "touchup", "activation", "regist", "eapatch", "easyanticheat",
             "gmlive-server", "pbsvc", "eaproxyinstaller", "eacoreserver", "patchprogress", "pnkbstra",
-            "createdump", "testapp",
+            "createdump"
+    };
+
+    private static final String[] EXACT_BLACKLISTED_EXECUTABLES = {
+            "setup", "config", "testapp", "testeapp", "settings"
     };
 
     private static void scanGamesRecursive(File folder) {
@@ -123,6 +127,9 @@ public class GeneralSettingsActivity extends AppCompatActivity {
             String name = file.getName();
 
             if (file.isDirectory()) {
+                if (name.startsWith(".")) {
+                    continue;
+                }
                 boolean isBlacklistedFolder = false;
                 for (String badFolder : BLACKLISTED_FOLDERS) {
                     if (name.equalsIgnoreCase(badFolder)) {
@@ -134,12 +141,13 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                     scanGamesRecursive(file);
                 }
             } else if (name.toLowerCase().endsWith(".exe")) {
-                // Size Check: Ignore files smaller than 5MB
                 if (file.length() < MIN_GAME_SIZE) {
+                    android.util.Log.d("GameScanner", "Skipping " + name + " (too small: " + file.length() + " bytes)");
                     continue;
                 }
 
                 String lowerName = name.toLowerCase();
+                String nameWithoutExtension = name.substring(0, name.length() - 4).toLowerCase();
 
                 boolean isBlacklisted = false;
                 for (String badWord : BLACKLISTED_EXECUTABLES) {
@@ -149,24 +157,35 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                     }
                 }
 
-                if (isBlacklisted)
+                if (!isBlacklisted) {
+                    for (String badWord : EXACT_BLACKLISTED_EXECUTABLES) {
+                        if (nameWithoutExtension.equals(badWord)) {
+                            isBlacklisted = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isBlacklisted) {
+                    android.util.Log.d("GameScanner", "Skipping blacklisted executable: " + name);
                     continue;
+                }
 
-                name = name.substring(0, name.length() - 4);
-
+                String prettyName = name.substring(0, name.length() - 4);
                 String iconPath = "";
+
                 try {
                     File iconFile = new File(com.micewine.emu.activities.MainActivity.usrDir,
-                            "icons/" + name + "-thumbnail");
+                            "icons/" + prettyName + "-thumbnail");
                     com.micewine.emu.core.WineWrapper.extractIcon(file.getPath(), iconFile.getPath());
                     if (iconFile.exists() && iconFile.length() > 0) {
                         iconPath = iconFile.getPath();
                     }
                 } catch (Exception e) {
-                    // Ignore icon extraction errors
+                    android.util.Log.e("GameScanner", "Icon extraction failed for: " + name, e);
                 }
 
-                com.micewine.emu.fragments.ShortcutsFragment.addGameToList(file.getPath(), name, iconPath);
+                com.micewine.emu.fragments.ShortcutsFragment.addGameToList(file.getPath(), prettyName, iconPath);
             }
         }
     }
