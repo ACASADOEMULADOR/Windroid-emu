@@ -107,9 +107,9 @@ public class VirtualControllerOverlayMapper extends AppCompatActivity {
             return true;
         });
 
-        registerReceiver(receiver, new IntentFilter(ACTION_EDIT_VIRTUAL_BUTTON) {{
+        androidx.core.content.ContextCompat.registerReceiver(this, receiver, new IntentFilter(ACTION_EDIT_VIRTUAL_BUTTON) {{
             addAction(ACTION_INVALIDATE);
-        }}, SDK_INT >= Build.VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
+        }}, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override

@@ -175,7 +175,7 @@ public class EditVirtualButtonFragment extends DialogFragment {
                 dpadList.get(lastSelectedButton - 1).radius = (radiusSeekbar.getProgress());
             }
 
-            requireContext().sendBroadcast(new Intent(ACTION_INVALIDATE));
+            requireContext().sendBroadcast(new Intent(ACTION_INVALIDATE).setPackage("com.micewine.emu"));
             dismiss();
         });
 

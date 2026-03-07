@@ -196,7 +196,7 @@ public class ControllerSettingsFragment extends DialogFragment {
         buttonConfirm.setOnClickListener((v) -> dismiss());
         buttonCancel.setOnClickListener((v) -> dismiss());
 
-        requireActivity().registerReceiver(receiver, new IntentFilter(ACTION_UPDATE_CONTROLLERS_STATUS));
+        androidx.core.content.ContextCompat.registerReceiver(requireContext(), receiver, new IntentFilter(ACTION_UPDATE_CONTROLLERS_STATUS), androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         return new AlertDialog.Builder(requireActivity(), R.style.CustomAlertDialog).setView(view).create();
     }

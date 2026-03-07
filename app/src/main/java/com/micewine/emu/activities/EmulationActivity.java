@@ -482,8 +482,8 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             }
         });
 
-        registerReceiver(receiver, new IntentFilter(ACTION_START),
-                SDK_INT >= VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
+        androidx.core.content.ContextCompat.registerReceiver(this, receiver, new IntentFilter(ACTION_START),
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 

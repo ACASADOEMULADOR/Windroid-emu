@@ -151,7 +151,7 @@ public class FileManagerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        requireActivity().registerReceiver(receiver, new IntentFilter(ACTION_REFRESH_FILES), 0);
+        androidx.core.content.ContextCompat.registerReceiver(requireContext(), receiver, new IntentFilter(ACTION_REFRESH_FILES), androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         refreshFiles(requireContext());
     }
 
@@ -279,7 +279,7 @@ public class FileManagerFragment extends Fragment {
     public static ArrayList<AdapterFiles.FileList> fileList = new ArrayList<>();
 
     public static void refreshFiles(Context context) {
-        context.sendBroadcast(new Intent(ACTION_REFRESH_FILES));
+        context.sendBroadcast(new Intent(ACTION_REFRESH_FILES).setPackage("com.micewine.emu"));
     }
 
     public static void deleteFile(String filePath) {

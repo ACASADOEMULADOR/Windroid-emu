@@ -102,12 +102,12 @@ public class RootFSDownloaderFragment extends Fragment {
 
         setAdapter();
 
-        requireActivity().registerReceiver(broadcastReceiver, new IntentFilter() {{
+        androidx.core.content.ContextCompat.registerReceiver(requireContext(), broadcastReceiver, new IntentFilter() {{
             addAction(DOWNLOAD_START);
             addAction(UPDATE_PROGRESS_BAR);
             addAction(DOWNLOAD_FAILED);
             addAction(DOWNLOAD_DONE);
-        }});
+        }}, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         return rootView;
     }

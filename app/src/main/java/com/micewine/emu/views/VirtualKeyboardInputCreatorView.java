@@ -437,9 +437,7 @@ public class VirtualKeyboardInputCreatorView extends View {
                         selectedButtonRadius = (int) dpadList.get(lastSelectedButton - 1).radius;
                     }
 
-                    getContext().sendBroadcast(
-                            new Intent(ACTION_EDIT_VIRTUAL_BUTTON)
-                    );
+                    getContext().sendBroadcast(new Intent(ACTION_EDIT_VIRTUAL_BUTTON).setPackage("com.micewine.emu"));
                 }
                 if (detectClick(event, event.getActionIndex(), removeButton.x, removeButton.y, removeButton.radius, SHAPE_CIRCLE) && lastSelectedButton > 0) {
                     if (!buttonList.isEmpty() && lastSelectedType == BUTTON) {

@@ -101,13 +101,13 @@ public class WelcomeActivity extends AppCompatActivity {
             viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
         });
 
-        registerReceiver(broadcastReceiver, new IntentFilter() {
+        androidx.core.content.ContextCompat.registerReceiver(this, broadcastReceiver, new IntentFilter() {
             {
                 addAction(DOWNLOAD_DONE);
                 addAction(DOWNLOAD_START);
                 addAction(DOWNLOAD_FAILED);
             }
-        });
+        }, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override

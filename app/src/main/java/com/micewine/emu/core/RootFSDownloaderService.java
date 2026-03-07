@@ -113,7 +113,9 @@ public class RootFSDownloaderService extends Service {
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void downloadRootFS(String commit) {
-        sendBroadcast(new Intent(DOWNLOAD_START));
+        Intent startIntent = new Intent(DOWNLOAD_START);
+        startIntent.setPackage(getPackageName());
+        sendBroadcast(startIntent);
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .retryOnConnectionFailure(true)
@@ -149,6 +151,7 @@ public class RootFSDownloaderService extends Service {
 
                     updateProgressIntent.putExtra("progressText", progressBarText);
                     updateProgressIntent.putExtra("progress", progress);
+                    updateProgressIntent.setPackage(getPackageName());
 
                     sendBroadcast(updateProgressIntent);
                 }
@@ -166,11 +169,14 @@ public class RootFSDownloaderService extends Service {
                 }
             }
 
-            sendBroadcast(new Intent(DOWNLOAD_DONE));
+            Intent doneIntent = new Intent(DOWNLOAD_DONE);
+            doneIntent.setPackage(getPackageName());
+            sendBroadcast(doneIntent);
         } catch (IOException e) {
             Intent failedDownloadIntent = new Intent(DOWNLOAD_FAILED);
 
             failedDownloadIntent.putExtra("errorMessage", e.getMessage());
+            failedDownloadIntent.setPackage(getPackageName());
 
             sendBroadcast(failedDownloadIntent);
         }

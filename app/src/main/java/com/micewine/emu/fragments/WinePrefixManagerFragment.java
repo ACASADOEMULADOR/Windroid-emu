@@ -6,7 +6,7 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI_DEFAU
 import static com.micewine.emu.activities.MainActivity.appRootDir;
 import static com.micewine.emu.activities.MainActivity.preferences;
 import static com.micewine.emu.activities.MainActivity.selectedWine;
-import static com.micewine.emu.activities.MainActivity.unixUsername;
+import static com.micewine.emu.activities.MainActivity.getUnixUsername;
 import static com.micewine.emu.activities.MainActivity.winePrefix;
 import static com.micewine.emu.activities.MainActivity.winePrefixesDir;
 import static com.micewine.emu.adapters.AdapterPreset.selectedPresetId;
@@ -116,7 +116,7 @@ public class WinePrefixManagerFragment extends Fragment {
             if (isProton) {
                 wineUserDir = new File(driveC, "users/steamuser");
             } else {
-                wineUserDir = new File(driveC, "users/" + unixUsername);
+                wineUserDir = new File(driveC, "users/" + getUnixUsername());
             }
 
             File localAppData = new File(wineUserDir, "AppData");

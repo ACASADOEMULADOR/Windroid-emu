@@ -120,10 +120,10 @@ public class PresetManagerActivity extends AppCompatActivity {
             }
         }
 
-        registerReceiver(receiver, new IntentFilter() {{
+        androidx.core.content.ContextCompat.registerReceiver(this, receiver, new IntentFilter() {{
             addAction(ACTION_EDIT_CONTROLLER_MAPPING);
             addAction(ACTION_EDIT_BOX64_PRESET);
-        }}, SDK_INT >= Build.VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
+        }}, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override

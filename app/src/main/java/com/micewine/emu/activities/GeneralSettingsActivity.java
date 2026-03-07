@@ -205,8 +205,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener((v) -> onKeyDown(KeyEvent.KEYCODE_BACK, null));
 
-        registerReceiver(receiver, new IntentFilter(ACTION_PREFERENCE_SELECT),
-                SDK_INT >= Build.VERSION_CODES.TIRAMISU ? RECEIVER_EXPORTED : 0);
+        androidx.core.content.ContextCompat.registerReceiver(this, receiver, new IntentFilter(ACTION_PREFERENCE_SELECT),
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override

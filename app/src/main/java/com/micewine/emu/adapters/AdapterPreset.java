@@ -128,9 +128,9 @@ public class AdapterPreset extends RecyclerView.Adapter<AdapterPreset.ViewHolder
                     clickedPresetType = item.type;
 
                     switch (item.type) {
-                        case CONTROLLER_PRESET -> context.sendBroadcast(new Intent(ACTION_EDIT_CONTROLLER_MAPPING));
+                        case CONTROLLER_PRESET -> context.sendBroadcast(new Intent(ACTION_EDIT_CONTROLLER_MAPPING).setPackage("com.micewine.emu"));
                         case VIRTUAL_CONTROLLER_PRESET -> context.startActivity(new Intent(context, VirtualControllerOverlayMapper.class));
-                        case BOX64_PRESET -> context.sendBroadcast(new Intent(ACTION_EDIT_BOX64_PRESET));
+                        case BOX64_PRESET -> context.sendBroadcast(new Intent(ACTION_EDIT_BOX64_PRESET).setPackage("com.micewine.emu"));
                     }
                 } else if (menuItem.getItemId() == R.id.deletePreset) {
                     clickedPresetName = item.titleSettings;

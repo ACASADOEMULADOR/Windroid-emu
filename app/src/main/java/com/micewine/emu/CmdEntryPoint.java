@@ -80,6 +80,7 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
 
     static void sendBroadcast(Intent intent) {
         try {
+            intent.setPackage("com.micewine.emu");
             ctx.sendBroadcast(intent);
         } catch (Exception e) {
             if (e instanceof NullPointerException && ctx == null)

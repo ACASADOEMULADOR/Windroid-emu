@@ -102,6 +102,7 @@ public class AdapterSettings extends RecyclerView.Adapter<AdapterSettings.ViewHo
             } else {
                 Intent intent = new Intent(ACTION_PREFERENCE_SELECT);
                 intent.putExtra("preference", item.titleSettings);
+                intent.setPackage("com.micewine.emu");
                 context.sendBroadcast(intent);
             }
         }

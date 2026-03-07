@@ -199,6 +199,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             runWineIntent.putExtra("vramLimit", getVramLimit(selectedGameName));
             runWineIntent.putExtra("enableAFME", getEnableAFME(selectedGameName));
 
+            runWineIntent.setPackage("com.micewine.emu");
             activity.sendBroadcast(runWineIntent);
             activity.startActivity(runActivityIntent);
         }

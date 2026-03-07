@@ -487,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
                     connectedPhysicalControllers
                             .add(new ControllerUtils.PhysicalController(device.getName(), deviceId));
                     prepareControllersMappings();
-                    sendBroadcast(new Intent(ACTION_UPDATE_CONTROLLERS_STATUS));
+                    sendBroadcast(new Intent(ACTION_UPDATE_CONTROLLERS_STATUS).setPackage("com.micewine.emu"));
                 }
             }
         }
@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity {
 
             disconnectController(connectedPhysicalControllers.get(index).virtualControllerID);
             connectedPhysicalControllers.remove(index);
-            sendBroadcast(new Intent(ACTION_UPDATE_CONTROLLERS_STATUS));
+            sendBroadcast(new Intent(ACTION_UPDATE_CONTROLLERS_STATUS).setPackage("com.micewine.emu"));
         }
     };
 
@@ -567,7 +567,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigation.post(() -> bottomNavigation.setSelectedItemId(R.id.nav_shortcuts));
 
-        registerReceiver(receiver, new IntentFilter() {
+        androidx.core.content.ContextCompat.registerReceiver(this, receiver, new IntentFilter() {
             {
                 addAction(ACTION_RUN_WINE);
                 addAction(ACTION_SETUP);
@@ -578,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
                 addAction(ACTION_SELECT_EXE_PATH);
                 addAction(ACTION_CREATE_WINE_PREFIX);
             }
-        });
+        }, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (getWinePrefixFile(winePrefix).exists()) {
@@ -621,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (!setupDone && finishedWelcomeScreen) {
             if (rootFSIsDownloaded) {
-                sendBroadcast(new Intent(ACTION_SETUP));
+                sendBroadcast(new Intent(ACTION_SETUP).setPackage("com.micewine.emu"));
             } else {
                 new FloatingFileManagerFragment(OPERATION_SELECT_RAT, "/storage/emulated/0")
                         .show(getSupportFragmentManager(), "");
@@ -850,6 +850,7 @@ public class MainActivity extends AppCompatActivity {
         createWinePrefixIntent.putExtra("wine", wine);
         createWinePrefixIntent.putExtra("winePrefix", winePrefix);
 
+        createWinePrefixIntent.setPackage("com.micewine.emu");
         sendBroadcast(createWinePrefixIntent);
     }
 
@@ -887,6 +888,7 @@ public class MainActivity extends AppCompatActivity {
             runWineIntent.putExtra("enableDInput", getEnableDInput(selectedGameName));
             runWineIntent.putExtra("cpuAffinity", getCpuAffinity(selectedGameName));
 
+            runWineIntent.setPackage("com.micewine.emu");
             sendBroadcast(runWineIntent);
             startActivity(runActivityIntent);
 
@@ -909,7 +911,14 @@ public class MainActivity extends AppCompatActivity {
     public static final File appRootDir = new File("/data/data/com.micewine.emu/files");
     public static File ratPackagesDir = new File(appRootDir + "/packages");
     public static String deviceArch = Build.SUPPORTED_ABIS[0].replace("arm64-v8a", "aarch64");
-    public static final String unixUsername = runCommandWithOutput("whoami", false).replace("\n", "");
+    private static String unixUsername = null;
+
+    public static String getUnixUsername() {
+        if (unixUsername == null) {
+            unixUsername = runCommandWithOutput("whoami", false).replace("\n", "");
+        }
+        return unixUsername;
+    }
     public static String customRootFSPath = null;
     public static File usrDir = new File(appRootDir + "/usr");
     public static File tmpDir = new File(usrDir + "/tmp");

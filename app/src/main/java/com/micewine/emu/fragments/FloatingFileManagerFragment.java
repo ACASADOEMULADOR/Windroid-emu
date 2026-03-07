@@ -316,7 +316,7 @@ public class FloatingFileManagerFragment extends DialogFragment {
 
         if (!calledSetup && operationType == OPERATION_SELECT_RAT) {
             calledSetup = true;
-            requireContext().sendBroadcast(new Intent(ACTION_SETUP));
+            requireContext().sendBroadcast(new Intent(ACTION_SETUP).setPackage("com.micewine.emu"));
         }
     }
 

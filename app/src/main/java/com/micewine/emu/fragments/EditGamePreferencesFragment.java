@@ -428,9 +428,9 @@ public class EditGamePreferencesFragment extends DialogFragment {
                                 gameIcon, imageView.getLayoutParams().width, imageView.getLayoutParams().height));
                     }
 
-                    imageView.setOnClickListener((v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_ICON)));
+                    imageView.setOnClickListener((v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_ICON).setPackage("com.micewine.emu")));
                     selectExePath.setOnClickListener(
-                            (v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_EXE_PATH)));
+                            (v) -> requireContext().sendBroadcast(new Intent(ACTION_SELECT_EXE_PATH).setPackage("com.micewine.emu")));
                 }
             }
             case FILE_MANAGER_START_PREFERENCES -> {
@@ -827,6 +827,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
                     runWineIntent.putExtra("cpuAffinity", temporarySettings.cpuAffinity);
                     runWineIntent.putExtra("enableAFME", temporarySettings.enableAFME);
 
+                    runWineIntent.setPackage("com.micewine.emu");
                     requireContext().sendBroadcast(runWineIntent);
                     startActivity(runActivityIntent);
                 }
@@ -837,7 +838,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
 
         buttonCancel.setOnClickListener((v) -> dismiss());
 
-        requireActivity().registerReceiver(receiver, new IntentFilter(ACTION_UPDATE_CONTROLLERS_STATUS), 0);
+        androidx.core.content.ContextCompat.registerReceiver(requireContext(), receiver, new IntentFilter(ACTION_UPDATE_CONTROLLERS_STATUS), androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         getParentFragmentManager().setFragmentResultListener("invalidate", this, (requestKey, result) -> {
             exePathText.post(() -> {

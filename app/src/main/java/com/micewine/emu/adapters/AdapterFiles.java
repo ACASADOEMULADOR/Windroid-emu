@@ -235,6 +235,7 @@ public class AdapterFiles extends RecyclerView.Adapter<AdapterFiles.ViewHolder> 
 
                 intent.putExtra("selectedFile", item.file.getPath());
 
+                intent.setPackage("com.micewine.emu");
                 context.sendBroadcast(intent);
             }
         }

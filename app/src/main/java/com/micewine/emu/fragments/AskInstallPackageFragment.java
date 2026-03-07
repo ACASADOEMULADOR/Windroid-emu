@@ -68,8 +68,8 @@ public class AskInstallPackageFragment extends DialogFragment {
 
         buttonContinue.setOnClickListener((v) -> {
             switch (packageType) {
-                case RAT_PACKAGE -> requireContext().sendBroadcast(new Intent(ACTION_INSTALL_RAT));
-                case ADTOOLS_DRIVER_PACKAGE -> requireContext().sendBroadcast(new Intent(ACTION_INSTALL_ADTOOLS_DRIVER));
+                case RAT_PACKAGE -> requireContext().sendBroadcast(new Intent(ACTION_INSTALL_RAT).setPackage("com.micewine.emu"));
+                case ADTOOLS_DRIVER_PACKAGE -> requireContext().sendBroadcast(new Intent(ACTION_INSTALL_ADTOOLS_DRIVER).setPackage("com.micewine.emu"));
                 case MWP_PRESET_PACKAGE -> {
                     switch (mwpPresetCandidate.type) {
                         case VIRTUAL_CONTROLLER_PRESET -> {
