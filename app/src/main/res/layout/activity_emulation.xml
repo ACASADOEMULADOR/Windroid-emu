@@ -45,6 +45,15 @@
             android:visibility="visible">
         </com.micewine.emu.views.VirtualControllerInputView>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save_layout"
+            android:layout_gravity="center|top"
+            android:layout_marginTop="20dp"
+            android:visibility="gone"/>
+
     </FrameLayout>
 
     <com.google.android.material.navigation.NavigationView

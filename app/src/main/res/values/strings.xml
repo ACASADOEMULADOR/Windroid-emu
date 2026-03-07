@@ -281,4 +281,7 @@
         <item quantity="one">%d year ago</item>
         <item quantity="other">%d years ago</item>
     </plurals>
+    <string name="virtual_controller_opacity_title">Virtual Control Opacity</string>
+    <string name="edit_virtual_controller_layout">Edit Layout</string>
+    <string name="save_layout">Save</string>
 </resources>

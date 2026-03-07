@@ -31,6 +31,9 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getEnableDInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getSelectedVirtualControllerPreset;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVirtualControllerXInput;
+import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTROL_OPACITY;
+import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTROL_OPACITY_DEFAULT_VALUE;
+import static com.micewine.emu.activities.MainActivity.virtualControlOpacity;
 import static com.micewine.emu.views.VirtualControllerInputView.virtualXInputControllerId;
 
 import android.Manifest;
@@ -318,6 +321,22 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         MaterialButton openTaskMgrButton = headerViewMain.findViewById(R.id.openTaskMgr);
         openTaskMgrButton.setOnClickListener((v) -> new TaskManagerFragment().show(getSupportFragmentManager(), ""));
 
+        MaterialButton saveLayout = findViewById(R.id.saveLayout);
+        saveLayout.setOnClickListener((v) -> {
+            virtualControllerInputView.saveLayout();
+            virtualControllerInputView.setEditing(false);
+            saveLayout.setVisibility(View.GONE);
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        });
+
+        MaterialButton editVirtualControllerLayout = headerViewMain.findViewById(R.id.editVirtualControllerLayout);
+        editVirtualControllerLayout.setOnClickListener((v) -> {
+            drawerLayout.closeDrawers();
+            virtualControllerInputView.setEditing(true);
+            saveLayout.setVisibility(View.VISIBLE);
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        });
+
         TextView fpsLimitText = headerViewMain.findViewById(R.id.fpsLimitText);
         SeekBar fpsLimitSeekbar = headerViewMain.findViewById(R.id.fpsLimitSeekbar);
 
@@ -357,6 +376,38 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             }
         });
 
+        TextView virtualControllerOpacityText = headerViewMain.findViewById(R.id.virtualControllerOpacityText);
+        SeekBar virtualControllerOpacitySeekbar = headerViewMain.findViewById(R.id.virtualControllerOpacitySeekbar);
+
+        virtualControllerOpacitySeekbar.setMin(0);
+        virtualControllerOpacitySeekbar.setMax(255);
+        virtualControllerOpacitySeekbar.setProgress(virtualControlOpacity);
+
+        virtualControllerOpacityText.setText(virtualControllerOpacitySeekbar.getProgress() + "");
+
+        virtualControllerOpacitySeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                virtualControllerOpacityText.setText(i + "");
+                virtualKeyboardInputView.setAlpha(i / 255f);
+                virtualControllerInputView.setAlpha(i / 255f);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                SharedPreferences.Editor editor = preferences.edit();
+
+                editor.putInt(VIRTUAL_CONTROL_OPACITY, seekBar.getProgress());
+                editor.apply();
+
+                setSharedVars(EmulationActivity.this);
+            }
+        });
+
         LorieView lorieView = findViewById(R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
 
@@ -391,6 +442,13 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
                         lorieView.releasePointerCapture();
                     }
                     if (e.getAction() == KeyEvent.ACTION_UP) {
+                        if (virtualControllerInputView.isEditing) {
+                            virtualControllerInputView.setEditing(false);
+                            findViewById(R.id.saveLayout).setVisibility(View.GONE);
+                            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+                            return true;
+                        }
+
                         if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
                             drawerLayout.openDrawer(GravityCompat.START);
                         } else {
@@ -632,6 +690,9 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         getLorieView().requestFocus();
 
         virtualKeyboardInputView.loadPreset(getSelectedVirtualControllerPreset(selectedGameName));
+
+        virtualKeyboardInputView.setAlpha(virtualControlOpacity / 255f);
+        virtualControllerInputView.setAlpha(virtualControlOpacity / 255f);
 
         prepareControllersMappings();
 

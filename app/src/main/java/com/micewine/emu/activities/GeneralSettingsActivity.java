@@ -321,7 +321,9 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
     public final static String DEAD_ZONE = "deadZone";
     public final static String MOUSE_SENSIBILITY = "mouseSensibility";
-    public final static String FPS_LIMIT = "fpsLimit";
+    public static final String FPS_LIMIT = "fpsLimit";
+    public static final String VIRTUAL_CONTROL_OPACITY = "virtualControlOpacity";
+    public static final int VIRTUAL_CONTROL_OPACITY_DEFAULT_VALUE = 255;
     public final static String PA_SINK = "pulseAudioSink";
     public final static String PA_SINK_DEFAULT_VALUE = "SLES";
     public final static String WINE_DPI = "wineDpi";

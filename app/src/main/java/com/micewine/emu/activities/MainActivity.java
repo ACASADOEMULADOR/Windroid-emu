@@ -106,6 +106,8 @@ import static com.micewine.emu.fragments.ShortcutsFragment.getEnableDInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnableXInput;
 import static com.micewine.emu.fragments.ShortcutsFragment.getExeArguments;
 import static com.micewine.emu.fragments.ShortcutsFragment.getExePath;
+import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTROL_OPACITY;
+import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTROL_OPACITY_DEFAULT_VALUE;
 import static com.micewine.emu.fragments.ShortcutsFragment.getSelectedVirtualControllerPreset;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVKD3DVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getVulkanDriver;
@@ -1005,6 +1007,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_CREATE_WINE_PREFIX = "com.micewine.emu.ACTION_CREATE_WINE_PREFIX";
 
     public static boolean enableAFME;
+    public static int virtualControlOpacity;
     public static final String RAM_COUNTER = "ramCounter";
     public static final boolean RAM_COUNTER_DEFAULT_VALUE = true;
 
@@ -1107,7 +1110,7 @@ public class MainActivity extends AppCompatActivity {
         screenFpsLimit = (int) ((WindowManager) activity.getSystemService(WINDOW_SERVICE)).getDefaultDisplay()
                 .getRefreshRate();
         fpsLimit = preferences.getInt(FPS_LIMIT, 0);
-
+        virtualControlOpacity = preferences.getInt(VIRTUAL_CONTROL_OPACITY, VIRTUAL_CONTROL_OPACITY_DEFAULT_VALUE);
         vulkanDriverDeviceName = getVulkanDriverInfo("deviceName", false) + (useAdrenoTools ? " (AdrenoTools)" : "");
         vulkanDriverDriverVersion = getVulkanDriverInfo("driverVersion", false).split(" ")[0];
 

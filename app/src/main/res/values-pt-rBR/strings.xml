@@ -77,7 +77,7 @@
     <string name="connected_controller">Controle Conectado: %1$s</string>
     <string name="mouse_sensibility_title">Sensibilidade do Mouse Virtual</string>
     <string name="dead_zone_title">Dead Zone</string>
-    <string name="open_close_virtual_controller">Abrir/Fechar Controle Virtual</string>
+    <string name="open_close_virtual_controller">Abrir Controle Virtual</string>
     <string name="welcome_text">Bem-vindo(a) ao Windroid!</string>
     <string name="continue_text">Continuar</string>
     <string name="confirm_text">Confirmar</string>

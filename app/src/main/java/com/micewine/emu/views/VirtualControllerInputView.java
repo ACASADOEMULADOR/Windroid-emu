@@ -37,7 +37,12 @@ import com.micewine.emu.LorieView;
 import com.micewine.emu.R;
 import com.micewine.emu.controller.ControllerUtils;
 
+import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTROL_OPACITY;
+import static com.micewine.emu.activities.MainActivity.preferences;
+
 import java.util.ArrayList;
+
+import android.content.SharedPreferences;
 
 public class VirtualControllerInputView extends View {
     public VirtualControllerInputView(Context context) {
@@ -73,6 +78,7 @@ public class VirtualControllerInputView extends View {
     private byte buttonsStateB = 0;
     private float lt = 0;
     private float rt = 0;
+    public boolean isEditing = false;
 
     private void init() {
         paint = new Paint();
@@ -101,7 +107,25 @@ public class VirtualControllerInputView extends View {
 
         leftAnalog = new VirtualXInputAnalog(LEFT_ANALOG, 280F, 840F, 275F);
         rightAnalog = new VirtualXInputAnalog(RIGHT_ANALOG, 1750F, 480F, 275F);
-        dpad = new VirtualXInputDPad(0, 640F, 480F, 250F);
+        dpad = new VirtualXInputDPad(0, 640F, 480F, 200F);
+
+        boolean isPreferencesLoaded = preferences != null;
+
+        if (isPreferencesLoaded) {
+            buttonList.forEach((i) -> {
+                i.x = preferences.getFloat("VC_BUTTON_" + i.id + "_X", i.x);
+                i.y = preferences.getFloat("VC_BUTTON_" + i.id + "_Y", i.y);
+            });
+
+            leftAnalog.x = preferences.getFloat("VC_BUTTON_" + LEFT_ANALOG + "_X", leftAnalog.x);
+            leftAnalog.y = preferences.getFloat("VC_BUTTON_" + LEFT_ANALOG + "_Y", leftAnalog.y);
+
+            rightAnalog.x = preferences.getFloat("VC_BUTTON_" + RIGHT_ANALOG + "_X", rightAnalog.x);
+            rightAnalog.y = preferences.getFloat("VC_BUTTON_" + RIGHT_ANALOG + "_Y", rightAnalog.y);
+
+            dpad.x = preferences.getFloat("VC_BUTTON_DPAD_X", dpad.x);
+            dpad.y = preferences.getFloat("VC_BUTTON_DPAD_Y", dpad.y);
+        }
 
         adjustButtons();
     }
@@ -124,19 +148,53 @@ public class VirtualControllerInputView extends View {
             float multiplierHeight = (nativeResolutionHeight / baseResolutionHeight) * 100F;
 
             buttonList.forEach((i) -> {
-                i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-                i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+                if (preferences == null || !preferences.contains("VC_BUTTON_" + i.id + "_X")) {
+                    i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                    i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+                }
             });
 
-            leftAnalog.x = Math.round(leftAnalog.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-            leftAnalog.y = Math.round(leftAnalog.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            if (preferences == null || !preferences.contains("VC_BUTTON_" + LEFT_ANALOG + "_X")) {
+                leftAnalog.x = Math.round(leftAnalog.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                leftAnalog.y = Math.round(leftAnalog.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            }
 
-            rightAnalog.x = Math.round(rightAnalog.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-            rightAnalog.y = Math.round(rightAnalog.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            if (preferences == null || !preferences.contains("VC_BUTTON_" + RIGHT_ANALOG + "_X")) {
+                rightAnalog.x = Math.round(rightAnalog.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                rightAnalog.y = Math.round(rightAnalog.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            }
 
-            dpad.x = Math.round(dpad.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-            dpad.y = Math.round(dpad.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            if (preferences == null || !preferences.contains("VC_BUTTON_DPAD_X")) {
+                dpad.x = Math.round(dpad.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                dpad.y = Math.round(dpad.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            }
         }
+    }
+
+    public void setEditing(boolean editing) {
+        isEditing = editing;
+        invalidate();
+    }
+
+    public void saveLayout() {
+        if (preferences == null) return;
+        SharedPreferences.Editor editor = preferences.edit();
+
+        buttonList.forEach((i) -> {
+            editor.putFloat("VC_BUTTON_" + i.id + "_X", i.x);
+            editor.putFloat("VC_BUTTON_" + i.id + "_Y", i.y);
+        });
+
+        editor.putFloat("VC_BUTTON_" + LEFT_ANALOG + "_X", leftAnalog.x);
+        editor.putFloat("VC_BUTTON_" + LEFT_ANALOG + "_Y", leftAnalog.y);
+
+        editor.putFloat("VC_BUTTON_" + RIGHT_ANALOG + "_X", rightAnalog.x);
+        editor.putFloat("VC_BUTTON_" + RIGHT_ANALOG + "_Y", rightAnalog.y);
+
+        editor.putFloat("VC_BUTTON_DPAD_X", dpad.x);
+        editor.putFloat("VC_BUTTON_DPAD_Y", dpad.y);
+
+        editor.apply();
     }
 
     private void addButton(int id, float x, float y, float radius, int shape) {
@@ -162,7 +220,7 @@ public class VirtualControllerInputView extends View {
 
     private void drawDPad(Path path, boolean isPressed, Canvas canvas) {
         paint.setStyle(isPressed ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE);
-        paint.setAlpha(200);
+        paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
 
         canvas.drawPath(path, paint);
     }
@@ -180,9 +238,9 @@ public class VirtualControllerInputView extends View {
                 textPaint.setColor(Color.WHITE);
             }
             paint.setColor(Color.WHITE);
-            paint.setAlpha(200);
+            paint.setAlpha(isEditing ? 255 : (int) (getAlpha() * 255));
             paint.setStrokeWidth(16F);
-            textPaint.setAlpha(200);
+            textPaint.setAlpha(isEditing ? 255 : (int) (getAlpha() * 255));
 
             paint.setTextSize(i.radius / 4F);
 
@@ -213,7 +271,7 @@ public class VirtualControllerInputView extends View {
                     startButton.close();
 
                     paint.setColor(i.isPressed ? Color.BLACK : Color.WHITE);
-                    paint.setAlpha(200);
+                    paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
 
                     canvas.drawPath(startButton, paint);
                 }
@@ -239,7 +297,7 @@ public class VirtualControllerInputView extends View {
                     selectButton.close();
 
                     paint.setColor(i.isPressed ? Color.BLACK : Color.WHITE);
-                    paint.setAlpha(200);
+                    paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
 
                     canvas.drawPath(selectButton, paint);
                 }
@@ -262,7 +320,7 @@ public class VirtualControllerInputView extends View {
         }
 
         paint.setColor(Color.WHITE);
-        paint.setAlpha(200);
+        paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawCircle(leftAnalog.x, leftAnalog.y, leftAnalog.radius / 2F, paint);
@@ -271,7 +329,7 @@ public class VirtualControllerInputView extends View {
         canvas.drawCircle(analogX, analogY, leftAnalog.radius / 4F, paint);
 
         paint.setColor(Color.WHITE);
-        paint.setAlpha(200);
+        paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
         paint.setStyle(Paint.Style.STROKE);
 
         canvas.drawCircle(leftAnalog.x, leftAnalog.y, leftAnalog.radius / 2F, paint);
@@ -296,7 +354,7 @@ public class VirtualControllerInputView extends View {
         }
 
         paint.setColor(Color.WHITE);
-        paint.setAlpha(200);
+        paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawCircle(rightAnalog.x, rightAnalog.y, rightAnalog.radius / 2F, paint);
@@ -305,7 +363,7 @@ public class VirtualControllerInputView extends View {
         canvas.drawCircle(rightAnalogX, rightAnalogY, rightAnalog.radius / 4F, paint);
 
         paint.setColor(Color.WHITE);
-        paint.setAlpha(200);
+        paint.setAlpha(isEditing ? 200 : (int) (getAlpha() * 200));
         paint.setStyle(Paint.Style.STROKE);
 
         canvas.drawCircle(rightAnalog.x, rightAnalog.y, rightAnalog.radius / 2F, paint);
@@ -374,6 +432,91 @@ public class VirtualControllerInputView extends View {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (isEditing) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_DOWN -> {
+                    for (VirtualControllerButton i : buttonList) {
+                        if (detectClick(event, event.getActionIndex(), i.x, i.y, i.radius, i.shape)) {
+                            i.fingerId = event.getPointerId(event.getActionIndex());
+                            i.isPressed = true;
+                            break;
+                        }
+                    }
+
+                    if (detectClick(event, event.getActionIndex(), leftAnalog.x, leftAnalog.y, leftAnalog.radius,
+                            SHAPE_CIRCLE)) {
+                        leftAnalog.fingerId = event.getPointerId(event.getActionIndex());
+                        leftAnalog.isPressed = true;
+                    }
+
+                    if (detectClick(event, event.getActionIndex(), rightAnalog.x, rightAnalog.y, rightAnalog.radius,
+                            SHAPE_CIRCLE)) {
+                        rightAnalog.fingerId = event.getPointerId(event.getActionIndex());
+                        rightAnalog.isPressed = true;
+                    }
+
+                    if (detectClick(event, event.getActionIndex(), dpad.x, dpad.y, dpad.radius, SHAPE_DPAD)) {
+                        dpad.fingerId = event.getPointerId(event.getActionIndex());
+                        dpad.isPressed = true;
+                    }
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    for (int i = 0; i < event.getPointerCount(); i++) {
+                        for (VirtualControllerButton v : buttonList) {
+                            if (v.fingerId == event.getPointerId(i) && v.isPressed) {
+                                v.x = Math.round(event.getX(i) / GRID_SIZE) * (float) GRID_SIZE;
+                                v.y = Math.round(event.getY(i) / GRID_SIZE) * (float) GRID_SIZE;
+                                break;
+                            }
+                        }
+
+                        if (leftAnalog.fingerId == event.getPointerId(i) && leftAnalog.isPressed) {
+                            leftAnalog.x = Math.round(event.getX(i) / GRID_SIZE) * (float) GRID_SIZE;
+                            leftAnalog.y = Math.round(event.getY(i) / GRID_SIZE) * (float) GRID_SIZE;
+                        }
+
+                        if (rightAnalog.fingerId == event.getPointerId(i) && rightAnalog.isPressed) {
+                            rightAnalog.x = Math.round(event.getX(i) / GRID_SIZE) * (float) GRID_SIZE;
+                            rightAnalog.y = Math.round(event.getY(i) / GRID_SIZE) * (float) GRID_SIZE;
+                        }
+
+                        if (dpad.fingerId == event.getPointerId(i) && dpad.isPressed) {
+                            dpad.x = Math.round(event.getX(i) / GRID_SIZE) * (float) GRID_SIZE;
+                            dpad.y = Math.round(event.getY(i) / GRID_SIZE) * (float) GRID_SIZE;
+                        }
+                    }
+                    invalidate();
+                }
+                case MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
+                    int actionIndex = event.getActionIndex();
+                    int pointerId = event.getPointerId(actionIndex);
+
+                    for (VirtualControllerButton i : buttonList) {
+                        if (i.fingerId == pointerId) {
+                            i.fingerId = -1;
+                            i.isPressed = false;
+                        }
+                    }
+
+                    if (leftAnalog.fingerId == pointerId) {
+                        leftAnalog.fingerId = -1;
+                        leftAnalog.isPressed = false;
+                    }
+
+                    if (rightAnalog.fingerId == pointerId) {
+                        rightAnalog.fingerId = -1;
+                        rightAnalog.isPressed = false;
+                    }
+
+                    if (dpad.fingerId == pointerId) {
+                        dpad.fingerId = -1;
+                        dpad.isPressed = false;
+                    }
+                }
+            }
+            return true;
+        }
+
         if (virtualXInputControllerId == -1)
             return true;
 
