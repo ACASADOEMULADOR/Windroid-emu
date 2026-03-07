@@ -76,25 +76,20 @@ public class OnScreenInfoView extends View {
         super.onDraw(canvas);
 
         float lineHeight = paint.getTextSize() + 10F;
-        float currentY = statsY + lineHeight;
-        float startY = currentY - lineHeight; // Top of the first line
-
-        maxWidth = 0F;
+        float currentY = lineHeight; // Start at the top
 
         if (enableRamCounter) {
             String text = "RAM: " + memoryStats;
-            drawText(text, statsX, currentY, canvas);
+            float x = (canvas.getWidth() - paint.measureText(text)) / 2;
+            drawText(text, x, currentY, canvas);
             currentY += lineHeight;
-            maxWidth = Math.max(maxWidth, paint.measureText(text));
         }
         if (enableCpuCounter) {
             String text = "CPU: " + totalCpuUsage;
-            drawText(text, statsX, currentY, canvas);
+            float x = (canvas.getWidth() - paint.measureText(text)) / 2;
+            drawText(text, x, currentY, canvas);
             currentY += lineHeight;
-            maxWidth = Math.max(maxWidth, paint.measureText(text));
         }
-
-        totalHeight = currentY - startY;
 
         if (enableDebugInfo) {
             onScreenInfo(canvas);
@@ -103,52 +98,10 @@ public class OnScreenInfoView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!enableRamCounter && !enableCpuCounter)
-            return false;
-
-        float x = event.getX();
-        float y = event.getY();
-        float lineHeight = paint.getTextSize() + 10F;
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                // Check if touch is within bounds of the stats block
-                // statsX, statsY is top-left approximately (offset by lineHeight logic)
-                // statsY points to the "base" Y before the first line is drawn?
-                // In onDraw: currentY starts at statsY + lineHeight.
-                // So the text draws from y = statsY + lineHeight (baseline).
-                // The top of the text is roughly statsY + lineHeight - textSize.
-                // Simplified text box hit detection:
-                // X range: statsX +/- padding to statsX + maxWidth + padding
-                // Y range: statsY to statsY + totalHeight
-
-                // Let's assume statsY is the top of the block.
-                if (x >= statsX && x <= statsX + maxWidth &&
-                        y >= statsY && y <= statsY + totalHeight) {
-
-                    dX = x - statsX;
-                    dY = y - statsY;
-                    isDragging = true;
-                    return true;
-                }
-                return false;
-
-            case MotionEvent.ACTION_MOVE:
-                if (isDragging) {
-                    statsX = x - dX;
-                    statsY = y - dY;
-                    invalidate();
-                    return true;
-                }
-                break;
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (isDragging) {
-                    isDragging = false;
-                    return true;
-                }
-                break;
+        if (enableDebugInfo) {
+            // Dragging logic was only for RAM/CPU, but since they are now centered,
+            // we could either remove it or repurpose it.
+            // For now, let's keep it disabled for RAM/CPU as requested.
         }
         return super.onTouchEvent(event);
     }

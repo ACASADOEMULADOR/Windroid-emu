@@ -124,7 +124,7 @@ public class RootFSDownloaderService extends Service {
                 .build();
 
         Request request = new Request.Builder()
-                .url("https://github.com/KreitinnSoftware/MiceWine-RootFS-Generator/releases/download/" + commit + "/MiceWine-RootFS-" + commit + "-" + deviceArch + ".rat")
+                .url("https://github.com/WINDROID-EMU/Windroid-RootFS-Generator/releases/download/" + commit + "/Windroid-RootFS-" + commit + "-" + deviceArch + ".rat")
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

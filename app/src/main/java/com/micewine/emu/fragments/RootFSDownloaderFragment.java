@@ -76,6 +76,7 @@ public class RootFSDownloaderFragment extends Fragment {
 
                 requireActivity().runOnUiThread(() -> {
                     progressBarProgress.setText("100%");
+                    progressBar.setProgress(100);
                     textView.setText(R.string.download_successful);
                 });
             } else if (DOWNLOAD_FAILED.equals(intent.getAction())) {
@@ -187,7 +188,7 @@ public class RootFSDownloaderFragment extends Fragment {
 
     private List<RootFSPackage> fetchRootFS() {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("https://api.github.com/repos/KreitinnSoftware/MiceWine-RootFS-Generator/releases").build();
+        Request request = new Request.Builder().url("https://api.github.com/repos/WINDROID-EMU/Windroid-RootFS-Generator/releases").build();
         Type type = new TypeToken<List<GHRelease>>() {}.getType();
 
         try (Response response = client.newCall(request).execute()) {
@@ -195,9 +196,8 @@ public class RootFSDownloaderFragment extends Fragment {
                 List<GHRelease> releases = gson.fromJson(response.body().string(), type);
                 ArrayList<RootFSPackage> rootFSPackages = new ArrayList<>(releases.size());
 
-                for (GHRelease r : releases) {
-                    if (r.tag_name.equals("b6a253b")) break;
-
+                if (!releases.isEmpty()) {
+                    GHRelease r = releases.get(0);
                     rootFSPackages.add(new RootFSPackage(r.name, r.tag_name, timeAgo(r.published_at), Boolean.parseBoolean(r.prerelease)));
                 }
 

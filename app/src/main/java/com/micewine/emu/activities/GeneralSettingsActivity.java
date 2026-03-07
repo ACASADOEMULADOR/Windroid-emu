@@ -104,18 +104,22 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
     private static final String[] BLACKLISTED_FOLDERS = {
             "__Installer", "CommonRedist", "Redist", "DirectX", "Support", "Prerequisites", "installers",
-            "redist", "directx", "support", "prerequisites"
+            "redist", "directx", "support", "prerequisites", "Engine", "MonoBleedingEdge", "_CommonRedist",
+            "DotNet", "Tools", "Steamworks", "Overlay", "Dependencies", "PhysX", "OpenAL", "PunkBuster"
     };
 
     private static final String[] BLACKLISTED_EXECUTABLES = {
             "unins", "dxwebsetup", "vcredist", "crash", "redist", "unitycrashhandler",
             "cleanup", "touchup", "activation", "regist", "eapatch", "easyanticheat",
             "gmlive-server", "pbsvc", "eaproxyinstaller", "eacoreserver", "patchprogress", "pnkbstra",
-            "createdump"
+            "createdump", "updater", "crashhandler", "socialclub", "webhelper", "diagnostics",
+            "benchmark", "overlay", "errorreporter", "feedback", "register", "repair", "install",
+            "vulkaninfo", "vulkandriverquery", "physxcudacheck", "vc_redist"
     };
 
     private static final String[] EXACT_BLACKLISTED_EXECUTABLES = {
-            "setup", "config", "testapp", "testeapp", "settings"
+            "setup", "config", "testapp", "testeapp", "settings", "launcher", "unins000", "unins001", "uninstall",
+            "dxsetup", "physx", "vcredist_x64", "vcredist_x86"
     };
 
     private static void scanGamesRecursive(File folder) {
@@ -185,7 +189,11 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                     android.util.Log.e("GameScanner", "Icon extraction failed for: " + name, e);
                 }
 
-                com.micewine.emu.fragments.ShortcutsFragment.addGameToList(file.getPath(), prettyName, iconPath);
+                if (!iconPath.isEmpty()) {
+                    com.micewine.emu.fragments.ShortcutsFragment.addGameToList(file.getPath(), prettyName, iconPath);
+                } else {
+                    android.util.Log.d("GameScanner", "Skipping " + name + " (no icon found)");
+                }
             }
         }
     }
