@@ -18,6 +18,7 @@ import static com.micewine.emu.fragments.CreatePresetFragment.WINE_PREFIX_PRESET
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,7 +110,8 @@ public class WinePrefixManagerFragment extends Fragment {
             File driveC = new File(winePrefix, "drive_c");
             File wineUtils = new File(appRootDir, "wine-utils");
             File startMenu = new File(driveC, "ProgramData/Microsoft/Windows/Start Menu");
-            File userSharedFolder = new File("/storage/emulated/0/Windroid");
+            File userRootFolder = Environment.getExternalStorageDirectory();
+            File userSharedFolder = new File(userRootFolder, "Windroid");
             boolean isProton = new File(driveC, "users/steamuser").exists();
 
             File wineUserDir;
@@ -119,11 +121,15 @@ public class WinePrefixManagerFragment extends Fragment {
                 wineUserDir = new File(driveC, "users/" + getUnixUsername());
             }
 
+            File localPublicDocuments = new File(driveC, "users/Public/Documents");
+            File sharedPublicDocuments = new File(userSharedFolder, "Public Documents");
             File localAppData = new File(wineUserDir, "AppData");
             File sharedAppData = new File(userSharedFolder, "AppData");
             File localSavedGames = new File(wineUserDir, "Saved Games");
             File localDocuments = new File(wineUserDir, "Documents");
             File sharedDocuments = new File(userSharedFolder, "Documents");
+            File localSteam = new File(driveC, "Program Files (x86)/Steam");
+            File sharedSteam = new File(userSharedFolder, "Steam");
             File system32 = new File(driveC, "windows/system32");
             File syswow64 = new File(driveC, "windows/syswow64");
             File winePrefixConfigFile = new File(winePrefix, "config");
@@ -144,14 +150,26 @@ public class WinePrefixManagerFragment extends Fragment {
             copyRecursively(coreFonts, wineFontsDir);
             copyRecursively(localAppData, sharedAppData);
             copyRecursively(localDocuments, sharedDocuments);
+            copyRecursively(localPublicDocuments, sharedPublicDocuments);
+            
+            if (localSteam.exists()) {
+                copyRecursively(localSteam, sharedSteam);
+            } else {
+                sharedSteam.mkdirs();
+                localSteam.getParentFile().mkdirs();
+            }
 
             deleteDirectoryRecursively(localAppData.toPath());
             deleteDirectoryRecursively(localSavedGames.toPath());
             deleteDirectoryRecursively(localDocuments.toPath());
+            deleteDirectoryRecursively(localPublicDocuments.toPath());
+            deleteDirectoryRecursively(localSteam.toPath());
 
             runCommand("ln -sf '" + userSharedFolder + "/AppData' '" + localAppData + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Saved Games' '" + localSavedGames + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Documents' '" + localDocuments + "'", false);
+            runCommand("ln -sf '" + userSharedFolder + "/Public Documents' '" + localPublicDocuments + "'", false);
+            runCommand("ln -sf '" + userSharedFolder + "/Steam' '" + localSteam + "'", false);
 
             deleteDirectoryRecursively(startMenu.toPath());
 
