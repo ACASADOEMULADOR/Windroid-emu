@@ -18,13 +18,16 @@ public class WinetricksWrapper {
         String wineWrapper = usrDir + "/bin/wine-wrapper";
         String wineserverWrapper = usrDir + "/bin/wineserver-wrapper";
 
-        String setupWrappers = "echo '#!/bin/sh\\nBOX64_LOG=0 BOX64_NOBANNER=1 " + IS_BOX64 + " wine \"$@\"' > " + wineWrapper + "; " +
-                "echo '#!/bin/sh\\nBOX64_LOG=0 BOX64_NOBANNER=1 " + IS_BOX64 + " wineserver \"$@\"' > " + wineserverWrapper + "; " +
+        String setupWrappers = "echo '#!/bin/sh' > " + wineWrapper + "; " +
+                "echo 'BOX64_LOG=0 BOX64_NOBANNER=1 " + IS_BOX64 + " wine \"$@\"' >> " + wineWrapper + "; " +
+                "echo '#!/bin/sh' > " + wineserverWrapper + "; " +
+                "echo 'BOX64_LOG=0 BOX64_NOBANNER=1 " + IS_BOX64 + " wineserver \"$@\"' >> " + wineserverWrapper + "; " +
                 "chmod +x " + wineWrapper + " " + wineserverWrapper + "; ";
 
-        String winetricksCmd = "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " +
-                "WINE='" + wineWrapper + "' " +
-                "WINESERVER='" + wineserverWrapper + "' " +
+        String winetricksCmd = "export WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "'; " +
+                "export WINE='" + wineWrapper + "'; " +
+                "export WINESERVER='" + wineserverWrapper + "'; " +
+                "export WINETRICKS_CHECK_FOR_UPDATES=0; " +
                 "winetricks " + args;
 
         String fullCmd = (cwd != null ? ("cd " + cwd + "; ") : "") + setupWrappers + winetricksCmd;
