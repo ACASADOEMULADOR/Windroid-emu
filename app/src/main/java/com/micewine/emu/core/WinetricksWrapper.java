@@ -30,7 +30,7 @@ public class WinetricksWrapper {
                 "export DISPLAY=:0; " +
                 "export PULSE_LATENCY_MSEC=60; " +
                 "export LD_LIBRARY_PATH=/system/lib64:" + usrDir + "/lib; " +
-                "export PATH=$PATH:" + usrDir + "/bin:" + wineBinDir + ":" + wineLibDir + ":" + box64BinDir + "; " +
+                "export PATH=" + usrDir + "/bin:" + wineBinDir + ":" + wineLibDir + ":" + box64BinDir + ":$PATH; " +
                 "export PREFIX=" + usrDir + "; " +
                 "export MESA_SHADER_CACHE_DIR=" + homeDir + "/.cache; " +
                 "export MESA_VK_WSI_PRESENT_MODE=mailbox; " +
@@ -42,29 +42,32 @@ public class WinetricksWrapper {
                 "export ZINK_DEBUG=compact; " +
                 "export ZINK_DESCRIPTORS=lazy; " +
                 "export BOX64_LOG=0; " +
-                "export BOX64_NOBANNER=1; " +
-                "export BOX64_NOLOG=1; ";
+                "export BOX64_NOBANNER=1; ";
     }
 
     public static void winetricks(String args, String cwd) {
-        String wineWrapper = usrDir + "/bin/wine-wrapper";
-        String wineserverWrapper = usrDir + "/bin/wineserver-wrapper";
+        String wineWrapper = usrDir + "/bin/wine";
+        String wine64Wrapper = usrDir + "/bin/wine64";
+        String wineserverWrapper = usrDir + "/bin/wineserver";
         String lscpuWrapper = usrDir + "/bin/lscpu";
 
         String setupWrappers = "echo '#!/bin/sh' > " + wineWrapper + "; " +
-                "echo 'exec " + IS_BOX64 + " wine \"$@\"' >> " + wineWrapper + "; " +
+                "echo 'WINEDEBUG=-all BOX64_LOG=0 BOX64_NOBANNER=1 exec " + IS_BOX64 + " wine \"$@\"' >> " + wineWrapper + "; " +
+                "cp " + wineWrapper + " " + wine64Wrapper + "; " +
                 "echo '#!/bin/sh' > " + wineserverWrapper + "; " +
-                "echo 'exec " + IS_BOX64 + " wineserver \"$@\"' >> " + wineserverWrapper + "; " +
-                "echo '#!/bin/sh' > " + lscpuWrapper + "; " +
-                "echo 'echo \"Architecture: aarch64\"' >> " + lscpuWrapper + "; " +
-                "chmod +x " + wineWrapper + " " + wineserverWrapper + " " + lscpuWrapper + " " + usrDir + "/bin/winetricks; ";
+                "echo 'BOX64_LOG=0 BOX64_NOBANNER=1 exec " + IS_BOX64 + " wineserver \"$@\"' >> " + wineserverWrapper + "; " +
+                "echo '#!/bin/sh\n[ \"$1\" = \"--all\" ] || [ \"$1\" = \"-a\" ] && echo \"Architecture: x86_64\nCPU op-mode(s): 32-bit, 64-bit\" || echo \"x86_64\"' > " + lscpuWrapper + "; " +
+                "chmod +x " + wineWrapper + " " + wine64Wrapper + " " + wineserverWrapper + " " + lscpuWrapper + " " + usrDir + "/bin/winetricks; ";
 
         String winetricksCmd = "export WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "'; " +
                 "export WINE='" + wineWrapper + "'; " +
                 "export WINESERVER='" + wineserverWrapper + "'; " +
                 "export WINETRICKS_CHECK_FOR_UPDATES=0; " +
                 "export WINETRICKS_LATEST_VERSION_CHECK=0; " +
+                "export WINETRICKS_VERSION=20240105; " +
                 "cd " + homeDir + "; " +
+                "wineboot -p; " +
+                "sleep 1; " +
                 "winetricks " + args;
 
         runCommand(getEnv() + setupWrappers + winetricksCmd, true);
