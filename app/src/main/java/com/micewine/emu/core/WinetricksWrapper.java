@@ -18,8 +18,8 @@ public class WinetricksWrapper {
         String wineWrapper = usrDir + "/bin/wine-wrapper";
         String wineserverWrapper = usrDir + "/bin/wineserver-wrapper";
 
-        String setupWrappers = "echo '#!/bin/sh\\n" + IS_BOX64 + " wine \"$@\"' > " + wineWrapper + "; " +
-                "echo '#!/bin/sh\\n" + IS_BOX64 + " wineserver \"$@\"' > " + wineserverWrapper + "; " +
+        String setupWrappers = "echo '#!/bin/sh\\nBOX64_LOG=0 BOX64_NOBANNER=1 " + IS_BOX64 + " wine \"$@\"' > " + wineWrapper + "; " +
+                "echo '#!/bin/sh\\nBOX64_LOG=0 BOX64_NOBANNER=1 " + IS_BOX64 + " wineserver \"$@\"' > " + wineserverWrapper + "; " +
                 "chmod +x " + wineWrapper + " " + wineserverWrapper + "; ";
 
         String winetricksCmd = "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " +
