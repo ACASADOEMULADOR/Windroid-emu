@@ -42,25 +42,31 @@ public class WinetricksWrapper {
                 "export ZINK_DEBUG=compact; " +
                 "export ZINK_DESCRIPTORS=lazy; " +
                 "export BOX64_LOG=0; " +
-                "export BOX64_NOBANNER=1; ";
+                "export BOX64_NOBANNER=1; " +
+                "export BOX64_NOLOG=1; ";
     }
 
     public static void winetricks(String args, String cwd) {
         String wineWrapper = usrDir + "/bin/wine-wrapper";
         String wineserverWrapper = usrDir + "/bin/wineserver-wrapper";
+        String lscpuWrapper = usrDir + "/bin/lscpu";
 
         String setupWrappers = "echo '#!/bin/sh' > " + wineWrapper + "; " +
                 "echo 'exec " + IS_BOX64 + " wine \"$@\"' >> " + wineWrapper + "; " +
                 "echo '#!/bin/sh' > " + wineserverWrapper + "; " +
                 "echo 'exec " + IS_BOX64 + " wineserver \"$@\"' >> " + wineserverWrapper + "; " +
-                "chmod +x " + wineWrapper + " " + wineserverWrapper + " " + usrDir + "/bin/winetricks; ";
+                "echo '#!/bin/sh' > " + lscpuWrapper + "; " +
+                "echo 'echo \"Architecture: aarch64\"' >> " + lscpuWrapper + "; " +
+                "chmod +x " + wineWrapper + " " + wineserverWrapper + " " + lscpuWrapper + " " + usrDir + "/bin/winetricks; ";
 
         String winetricksCmd = "export WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "'; " +
                 "export WINE='" + wineWrapper + "'; " +
                 "export WINESERVER='" + wineserverWrapper + "'; " +
                 "export WINETRICKS_CHECK_FOR_UPDATES=0; " +
+                "export WINETRICKS_LATEST_VERSION_CHECK=0; " +
+                "cd " + homeDir + "; " +
                 "winetricks " + args;
 
-        runCommand(getEnv() + (cwd != null ? ("cd " + cwd + "; ") : "") + setupWrappers + winetricksCmd, true);
+        runCommand(getEnv() + setupWrappers + winetricksCmd, true);
     }
 }
