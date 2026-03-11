@@ -22,11 +22,13 @@ public class WinetricksWrapper {
                 "echo '#!/bin/sh\\n" + IS_BOX64 + " wineserver \"$@\"' > " + wineserverWrapper + "; " +
                 "chmod +x " + wineWrapper + " " + wineserverWrapper + "; ";
 
-        runCommand(((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() +
-                setupWrappers +
-                "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " +
+        String winetricksCmd = "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " +
                 "WINE='" + wineWrapper + "' " +
                 "WINESERVER='" + wineserverWrapper + "' " +
-                "winetricks " + args, true);
+                "winetricks " + args;
+
+        String fullCmd = (cwd != null ? ("cd " + cwd + "; ") : "") + setupWrappers + winetricksCmd;
+
+        runCommand(getEnv() + "sh -c \"" + fullCmd.replace("\"", "\\\"") + "\"", true);
     }
 }
