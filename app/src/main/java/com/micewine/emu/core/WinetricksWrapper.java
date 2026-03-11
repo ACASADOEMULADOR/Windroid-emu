@@ -1,14 +1,14 @@
 package com.micewine.emu.core;
 
+import static com.micewine.emu.activities.MainActivity.appLang;
 import static com.micewine.emu.activities.MainActivity.deviceArch;
+import static com.micewine.emu.activities.MainActivity.homeDir;
+import static com.micewine.emu.activities.MainActivity.ratPackagesDir;
+import static com.micewine.emu.activities.MainActivity.selectedBox64;
+import static com.micewine.emu.activities.MainActivity.selectedWine;
 import static com.micewine.emu.activities.MainActivity.usrDir;
 import static com.micewine.emu.activities.MainActivity.winePrefix;
 import static com.micewine.emu.activities.MainActivity.winePrefixesDir;
-import static com.micewine.emu.core.EnvVars.getEnv;
-import static com.micewine.emu.activities.MainActivity.homeDir;
-import static com.micewine.emu.activities.MainActivity.wineBinDir;
-import static com.micewine.emu.activities.MainActivity.wineLibDir;
-import static com.micewine.emu.activities.MainActivity.box64BinDir;
 import static com.micewine.emu.core.ShellLoader.runCommand;
 
 public class WinetricksWrapper {
@@ -19,7 +19,11 @@ public class WinetricksWrapper {
     }
 
     private static String getEnv() {
-        return "export LANG=pt_BR.UTF-8; " +
+        String wineBinDir = ratPackagesDir + "/" + selectedWine + "/files/wine/bin";
+        String wineLibDir = ratPackagesDir + "/" + selectedWine + "/files/wine/lib/wine/x86_64-unix";
+        String box64BinDir = ratPackagesDir + "/" + selectedBox64 + "/files/usr/bin";
+
+        return "export LANG=" + appLang + ".UTF-8; " +
                 "export TMPDIR=" + usrDir + "/tmp; " +
                 "export HOME=" + homeDir + "; " +
                 "export XDG_CONFIG_HOME=" + homeDir + "/.config; " +
@@ -30,7 +34,6 @@ public class WinetricksWrapper {
                 "export PREFIX=" + usrDir + "; " +
                 "export MESA_SHADER_CACHE_DIR=" + homeDir + "/.cache; " +
                 "export MESA_VK_WSI_PRESENT_MODE=mailbox; " +
-                "export MESA_GL_VERSION_OVERRIDE=3.2; " +
                 "export MESA_GL_VERSION_OVERRIDE=3.2; " +
                 "export MESA_GLSL_VERSION_OVERRIDE=150; " +
                 "export VK_ICD_FILENAMES=" + usrDir + "/vulkan_icd.json; " +
