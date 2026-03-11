@@ -31,6 +31,7 @@ import com.micewine.emu.fragments.EnvVarsSettingsFragment;
 import com.micewine.emu.fragments.GeneralSettingsFragment;
 import com.micewine.emu.fragments.SoundSettingsFragment;
 import com.micewine.emu.fragments.WineSettingsFragment;
+import com.micewine.emu.fragments.WinetricksFragment;
 
 public class GeneralSettingsActivity extends AppCompatActivity {
     private Toolbar generalSettingsToolbar;
@@ -41,6 +42,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     private final EnvVarsSettingsFragment envVarsSettingsFragment = new EnvVarsSettingsFragment();
     private final SoundSettingsFragment soundSettingsFragment = new SoundSettingsFragment();
     private final WineSettingsFragment wineSettingsFragment = new WineSettingsFragment();
+    private final WinetricksFragment winetricksFragment = new WinetricksFragment();
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -65,6 +67,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                     fragmentLoader(soundSettingsFragment, false);
                 } else if (preference.equals(getString(R.string.wine_settings_title))) {
                     fragmentLoader(wineSettingsFragment, false);
+                } else if (preference.equals(getString(R.string.winetricks_title))) {
+                    fragmentLoader(winetricksFragment, false);
                 } else if (preference.equals(getString(R.string.scan_games_title))) {
                     String startPath = com.micewine.emu.activities.MainActivity.wineDisksFolder != null
                             ? com.micewine.emu.activities.MainActivity.wineDisksFolder.getPath()
