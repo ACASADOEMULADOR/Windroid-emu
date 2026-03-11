@@ -14,8 +14,13 @@ public class WinetricksWrapper {
     }
 
     public static void winetricks(String args, String cwd) {
-        runCommand(((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() + 
-                   "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + 
-                   IS_BOX64 + " winetricks " + args, true);
+        String wineCmd = IS_BOX64 + " wine";
+        String wineserverCmd = IS_BOX64 + " wineserver";
+
+        runCommand(((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() +
+                   "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " +
+                   "WINE='" + wineCmd + "' " +
+                   "WINESERVER='" + wineserverCmd + "' " +
+                   "winetricks " + args, true);
     }
 }
