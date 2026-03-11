@@ -39,6 +39,7 @@ public class WinetricksWrapper {
                 "export TU_DEBUG=noconform,sysmem; " +
                 "export ZINK_DEBUG=compact; " +
                 "export ZINK_DESCRIPTORS=lazy; " +
+                "export WINEDEBUG=-all; " +
                 "export BOX64_LOG=0; " +
                 "export BOX64_NOBANNER=1; ";
     }
@@ -59,13 +60,14 @@ public class WinetricksWrapper {
         String prefix = IS_BOX64.isEmpty() ? "" : IS_BOX64 + " ";
 
         String setupWrappers = "echo '#!/bin/sh' > " + wineWrapper + "; " +
-                "echo 'WINEDEBUG=-all BOX64_LOG=0 BOX64_NOBANNER=1 exec " + prefix + realWine + " \"$@\"' >> " + wineWrapper + "; " +
+                "echo 'exec " + prefix + realWine + " \"$@\"' >> " + wineWrapper + "; " +
                 "cp " + wineWrapper + " " + wine64Wrapper + "; " +
                 "echo '#!/bin/sh' > " + wineserverWrapper + "; " +
-                "echo 'BOX64_LOG=0 BOX64_NOBANNER=1 exec " + prefix + realWineserver + " \"$@\"' >> " + wineserverWrapper + "; " +
+                "echo 'exec " + prefix + realWineserver + " \"$@\"' >> " + wineserverWrapper + "; " +
                 "echo '#!/bin/sh' > " + winebootWrapper + "; " +
-                "echo 'BOX64_LOG=0 BOX64_NOBANNER=1 exec " + prefix + realWineboot + " \"$@\"' >> " + winebootWrapper + "; " +
+                "echo 'exec " + prefix + realWineboot + " \"$@\"' >> " + winebootWrapper + "; " +
                 "echo '#!/bin/sh\n[ \"$1\" = \"--all\" ] || [ \"$1\" = \"-a\" ] && echo \"Architecture: x86_64\nCPU op-mode(s): 32-bit, 64-bit\" || echo \"x86_64\"' > " + lscpuWrapper + "; " +
+                "echo 'check_certificate = off' > " + homeDir + "/.wgetrc; " +
                 "chmod +x " + wineWrapper + " " + wine64Wrapper + " " + wineserverWrapper + " " + winebootWrapper + " " + lscpuWrapper + " " + usrDir + "/bin/winetricks; ";
 
         String winetricksCmd = "export WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "'; " +
