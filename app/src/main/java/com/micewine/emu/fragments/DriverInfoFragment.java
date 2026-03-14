@@ -1,13 +1,13 @@
 package com.micewine.emu.fragments;
 
-import static com.micewine.emu.activities.MainActivity.appRootDir;
-import static com.micewine.emu.activities.MainActivity.ratPackagesDir;
 import static com.micewine.emu.activities.MainActivity.setSharedVars;
+import static com.micewine.emu.activities.MainActivity.usrDir;
 import static com.micewine.emu.activities.RatManagerActivity.generateICDFile;
 import static com.micewine.emu.core.EnvVars.getEnv;
 import static com.micewine.emu.core.RatPackageManager.getPackageById;
 import static com.micewine.emu.core.RatPackageManager.listRatPackages;
 import static com.micewine.emu.core.RatPackageManager.listRatPackagesId;
+import static com.micewine.emu.core.ShellLoader.runCommand;
 import static com.micewine.emu.core.ShellLoader.runCommandWithOutput;
 
 import android.os.Bundle;
@@ -29,7 +29,6 @@ import androidx.fragment.app.Fragment;
 import com.micewine.emu.R;
 import com.micewine.emu.core.RatPackageManager.RatPackage;
 
-import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,7 +78,9 @@ public class DriverInfoFragment extends Fragment {
                 generateICDFile(driverPath);
 
                 new Thread(() -> {
-                    String driverInfo = runCommandWithOutput(getEnv() + "vulkaninfo", true);
+                    String vulkanInfoBin = usrDir + "/bin/vulkaninfo";
+                    runCommand("chmod +x " + vulkanInfoBin, false);
+                    String driverInfo = runCommandWithOutput(getEnv() + vulkanInfoBin, true);
 
                     driverInfoText.post(() -> {
                         ViewPropertyAnimator animator = driverInfoText.animate();

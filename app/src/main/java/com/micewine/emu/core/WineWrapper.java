@@ -5,6 +5,8 @@ import static com.micewine.emu.activities.MainActivity.usrDir;
 import static com.micewine.emu.activities.MainActivity.wineDisksFolder;
 import static com.micewine.emu.activities.MainActivity.winePrefix;
 import static com.micewine.emu.activities.MainActivity.winePrefixesDir;
+import static com.micewine.emu.activities.MainActivity.ratPackagesDir;
+import static com.micewine.emu.activities.MainActivity.selectedWine;
 import static com.micewine.emu.core.EnvVars.getEnv;
 import static com.micewine.emu.core.ShellLoader.runCommand;
 import static com.micewine.emu.core.ShellLoader.runCommandWithOutput;
@@ -96,14 +98,18 @@ public class WineWrapper {
     }
 
     public static void wine(String args, String cwd) {
+        String wineBin = ratPackagesDir + "/" + selectedWine + "/files/wine/bin/wine";
+
         runCommand(
                 ((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() + "WINEPREFIX='" + winePrefixesDir + "/"
-                        + winePrefix + "' " + IS_BOX64 + " wine " + args,
+                        + winePrefix + "' " + IS_BOX64 + " " + wineBin + " " + args,
                 true);
     }
 
     public static void killAll() {
-        runCommand(getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " wineserver -k",
+        String wineserverBin = ratPackagesDir + "/" + selectedWine + "/files/wine/bin/wineserver";
+
+        runCommand(getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " " + wineserverBin + " -k",
                 false);
         runCommand("pkill -SIGINT -f .exe", false);
         runCommand("pkill -SIGINT -f wineserver", false);

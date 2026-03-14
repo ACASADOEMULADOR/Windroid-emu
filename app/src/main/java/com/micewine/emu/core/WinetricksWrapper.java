@@ -14,8 +14,8 @@ import static com.micewine.emu.core.ShellLoader.runCommand;
 public class WinetricksWrapper {
     private static final String IS_BOX64 = deviceArch.equals("x86_64") ? "" : "box64";
 
-    public static void winetricks(String args) {
-        winetricks(args, null);
+    public static int winetricks(String args) {
+        return winetricks(args, null);
     }
 
     private static String getEnv() {
@@ -44,7 +44,7 @@ public class WinetricksWrapper {
                 "export BOX64_NOBANNER=1; ";
     }
 
-    public static void winetricks(String args, String cwd) {
+    public static int winetricks(String args, String cwd) {
         String wineBinDir = ratPackagesDir + "/" + selectedWine + "/files/wine/bin";
 
         String wineWrapper = usrDir + "/bin/wine";
@@ -79,8 +79,8 @@ public class WinetricksWrapper {
                 "cd " + homeDir + "; " +
                 "wineboot -p; " +
                 "sleep 1; " +
-                "winetricks " + args;
+                "winetricks --unattended " + args;
 
-        runCommand(getEnv() + setupWrappers + winetricksCmd, true);
+        return runCommand(getEnv() + setupWrappers + winetricksCmd, true);
     }
 }

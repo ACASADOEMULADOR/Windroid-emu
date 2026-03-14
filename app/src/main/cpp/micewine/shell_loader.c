@@ -98,13 +98,22 @@ static void sanitizeUTF8(char *s) {
 static jobject callbackInstance = NULL;
 static jmethodID appendLogsMethodID = NULL;
 
-void appendLog(JNIEnv *env, const char *text) {
-  if (callbackInstance == NULL || appendLogsMethodID == NULL)
-    return;
+static jmethodID addToSessionLogsMethodID = NULL;
 
-  jstring jText = (*env)->NewStringUTF(env, text);
-  (*env)->CallVoidMethod(env, callbackInstance, appendLogsMethodID, jText);
-  (*env)->DeleteLocalRef(env, jText);
+void appendLog(JNIEnv *env, const char *text) {
+  if (callbackInstance != NULL && appendLogsMethodID != NULL) {
+    jstring jText = (*env)->NewStringUTF(env, text);
+    (*env)->CallVoidMethod(env, callbackInstance, appendLogsMethodID, jText);
+    (*env)->DeleteLocalRef(env, jText);
+  }
+
+  if (addToSessionLogsMethodID != NULL) {
+    jclass cls = (*env)->FindClass(env, "com/micewine/emu/core/ShellLoader");
+    jstring jText = (*env)->NewStringUTF(env, text);
+    (*env)->CallStaticVoidMethod(env, cls, addToSessionLogsMethodID, jText);
+    (*env)->DeleteLocalRef(env, jText);
+    (*env)->DeleteLocalRef(env, cls);
+  }
 }
 
 JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_connectOutput(
@@ -117,6 +126,11 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_connectOutput(
   jclass class = (*env)->GetObjectClass(env, callbackInstance);
   appendLogsMethodID =
       (*env)->GetMethodID(env, class, "appendLogs", "(Ljava/lang/String;)V");
+
+  jclass shellLoaderCls = (*env)->FindClass(env, "com/micewine/emu/core/ShellLoader");
+  addToSessionLogsMethodID = (*env)->GetStaticMethodID(env, shellLoaderCls, "addToSessionLogs", "(Ljava/lang/String;)V");
+
+  (*env)->DeleteLocalRef(env, shellLoaderCls);
   (*env)->DeleteLocalRef(env, cls);
 }
 
@@ -130,7 +144,7 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_cleanup(
   appendLogsMethodID = NULL;
 }
 
-JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
+JNIEXPORT jint JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
     JNIEnv *env, __unused jobject cls, jstring command, jboolean log) {
   const char *parsedCommand;
   int pipe_in[2];
@@ -146,7 +160,7 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
   if (pipe2(pipe_in, O_CLOEXEC) == -1 || pipe2(pipe_out, O_CLOEXEC) == -1) {
     perror("pipe2");
     (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
-    return;
+    return -1;
   }
 
   pid = fork();
@@ -157,7 +171,7 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
     close(pipe_in[1]);
     close(pipe_out[0]);
     close(pipe_out[1]);
-    return;
+    return -1;
   }
 
   if (pid == 0) {
@@ -205,11 +219,17 @@ JNIEXPORT void JNICALL Java_com_micewine_emu_core_ShellLoader_runCommand(
       }
     }
 
+    int status;
     close(pipe_out[0]);
-    TEMP_FAILURE_RETRY(waitpid(pid, NULL, 0));
-  }
+    TEMP_FAILURE_RETRY(waitpid(pid, &status, 0));
 
-  (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
+    (*env)->ReleaseStringUTFChars(env, command, parsedCommand);
+
+    if (WIFEXITED(status)) {
+        return WEXITSTATUS(status);
+    }
+    return -1;
+  }
 }
 
 JNIEXPORT jstring JNICALL

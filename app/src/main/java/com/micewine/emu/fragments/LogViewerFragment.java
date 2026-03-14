@@ -38,6 +38,10 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
         scrollView = rootView.findViewById(R.id.scrollView);
         MaterialButton exportLogButton = rootView.findViewById(R.id.exportLogButton);
 
+        // Pre-fill with session logs
+        logs.append(ShellLoader.getSessionLogs());
+        logTextView.setText(getLastLines(logs));
+
         ShellLoader.connectOutput(this);
 
         exportLogButton.setOnClickListener((v) -> {
@@ -57,10 +61,16 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
                     "Log Exported to " + logPath.substring(logPath.lastIndexOf("/") + 1), Toast.LENGTH_SHORT).show());
         });
 
+        populate();
+
         return rootView;
     }
 
     private String getLastLines(StringBuilder sb) {
+        if (sb.length() == 0) {
+            return "";
+        }
+
         int count = 0;
         int i = sb.length() - 1;
 
@@ -71,7 +81,11 @@ public class LogViewerFragment extends Fragment implements ShellLoader.LogCallba
             i--;
         }
 
-        int start = Math.max(0, i + 2);
+        int start = Math.max(0, i + 1);
+
+        if (start > sb.length()) {
+            start = sb.length();
+        }
 
         return sb.substring(start);
     }

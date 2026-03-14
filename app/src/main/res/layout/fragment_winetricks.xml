@@ -6,45 +6,67 @@
     android:padding="16dp">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/winetricks_title"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/winetricks_desc"
-        android:layout_marginBottom="16dp" />
-
-    <EditText
-        android:id="@+id/winetricksCommandInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="e.g. corefonts dxvk vcrun2015"
-        android:inputType="text" />
+        android:paddingBottom="8dp"
+        android:text="@string/winetricks_title"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/winetricksSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search packages..."
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="12dp"
+        android:background="@drawable/bg_search_edittext" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/winetricksRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/winetricksStatusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="Select items to install"
+        android:textColor="?attr/colorPrimary"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/winetricksProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="16dp"
-        android:gravity="end">
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btnRunWinetricks"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Run Selected" />
 
         <Button
             android:id="@+id/btnOpenLogViewer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/open_log_viewer"
-            android:layout_marginEnd="8dp"/>
-
-        <Button
-            android:id="@+id/btnRunWinetricks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/execute_exe" />
+            android:layout_marginStart="8dp"
+            android:text="Logs" />
     </LinearLayout>
-
 </LinearLayout>
