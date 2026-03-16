@@ -130,6 +130,7 @@ public class WinePrefixManagerFragment extends Fragment {
             File sharedDocuments = new File(userSharedFolder, "Documents");
             File localSteam = new File(driveC, "Program Files (x86)/Steam");
             File sharedSteam = new File(userSharedFolder, "Steam");
+            File localProgramData = new File(driveC, "ProgramData");
             File system32 = new File(driveC, "windows/system32");
             File syswow64 = new File(driveC, "windows/syswow64");
             File winePrefixConfigFile = new File(winePrefix, "config");
@@ -159,17 +160,25 @@ public class WinePrefixManagerFragment extends Fragment {
                 localSteam.getParentFile().mkdirs();
             }
 
+            if (localProgramData.exists()) {
+                copyRecursively(localProgramData, userSharedFolder);
+            } else {
+                localProgramData.getParentFile().mkdirs();
+            }
+
             deleteDirectoryRecursively(localAppData.toPath());
             deleteDirectoryRecursively(localSavedGames.toPath());
             deleteDirectoryRecursively(localDocuments.toPath());
             deleteDirectoryRecursively(localPublicDocuments.toPath());
             deleteDirectoryRecursively(localSteam.toPath());
+            deleteDirectoryRecursively(localProgramData.toPath());
 
             runCommand("ln -sf '" + userSharedFolder + "/AppData' '" + localAppData + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Saved Games' '" + localSavedGames + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Documents' '" + localDocuments + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Public Documents' '" + localPublicDocuments + "'", false);
             runCommand("ln -sf '" + userSharedFolder + "/Steam' '" + localSteam + "'", false);
+            runCommand("ln -sf '" + userSharedFolder + "' '" + localProgramData + "'", false);
 
             deleteDirectoryRecursively(startMenu.toPath());
 
