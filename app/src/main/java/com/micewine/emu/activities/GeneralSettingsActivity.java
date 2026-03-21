@@ -347,4 +347,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
     public final static String ENABLE_AFME = "enableAFME";
     public final static boolean ENABLE_AFME_DEFAULT_VALUE = false;
+
+    public final static String PERF_MODE_ROOT = "perfModeRoot";
+    public final static boolean PERF_MODE_ROOT_DEFAULT_VALUE = false;
 }

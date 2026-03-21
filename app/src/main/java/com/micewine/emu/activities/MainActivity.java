@@ -19,6 +19,7 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.ENABLE_MANGOHU
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.PA_SINK;
 import static com.micewine.emu.activities.GeneralSettingsActivity.PA_SINK_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.PERF_MODE_ROOT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_BOX64;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_DXVK_HUD_PRESET;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_DXVK_HUD_PRESET_DEFAULT_VALUE;
@@ -149,6 +150,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.WindowManager;
 import android.os.Handler;
+import android.media.MediaPlayer;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -175,6 +177,7 @@ import com.micewine.emu.fragments.SetupFragment;
 import com.micewine.emu.fragments.ShortcutsFragment;
 import com.micewine.emu.fragments.VirtualControllerPresetManagerFragment;
 import com.micewine.emu.utils.FilePathResolver;
+import com.micewine.emu.utils.RootUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -468,6 +471,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private MediaPlayer bgMusic;
     private InputManager inputManager;
     private final InputManager.InputDeviceListener inputDeviceListener = new InputManager.InputDeviceListener() {
         @Override
@@ -530,6 +535,13 @@ public class MainActivity extends AppCompatActivity {
 
         inputManager = (InputManager) getSystemService(INPUT_SERVICE);
         inputManager.registerInputDeviceListener(inputDeviceListener, null);
+
+        bgMusic = MediaPlayer.create(this, R.raw.background);
+
+        if (bgMusic != null) {
+            bgMusic.setLooping(true);
+            bgMusic.setVolume(0.05f, 0.05f);
+        }
 
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -621,6 +633,11 @@ public class MainActivity extends AppCompatActivity {
 
         updateShortcuts();
 
+        if (bgMusic != null && !bgMusic.isPlaying()) {
+            bgMusic.setVolume(0.05f, 0.05f);
+            bgMusic.start();
+        }
+
         if (!setupDone && finishedWelcomeScreen) {
             if (rootFSIsDownloaded) {
                 sendBroadcast(new Intent(ACTION_SETUP).setPackage("com.micewine.emu"));
@@ -632,10 +649,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (bgMusic != null && bgMusic.isPlaying()) {
+            bgMusic.pause();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(receiver);
         inputManager.unregisterInputDeviceListener(inputDeviceListener);
+
+        if (bgMusic != null) {
+            bgMusic.stop();
+            bgMusic.release();
+            bgMusic = null;
+        }
     }
 
     @Override
@@ -709,6 +741,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runWine(String exePath, String exeArguments) {
+        if (preferences.getBoolean(PERF_MODE_ROOT, false)) {
+            RootUtils.applyPerformanceMode();
+        }
+
         installDXWrapper(winePrefix);
 
         boolean changedDpi = !(preferences.getBoolean(WINE_DPI_APPLIED, WINE_DPI_APPLIED_DEFAULT_VALUE));
@@ -756,6 +792,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         WineWrapper.killAll();
+
+        if (preferences.getBoolean(PERF_MODE_ROOT, false)) {
+            RootUtils.restoreDefaultMode();
+        }
 
         runOnUiThread(() -> Toast.makeText(this, getString(R.string.wine_is_closed), Toast.LENGTH_SHORT).show());
     }

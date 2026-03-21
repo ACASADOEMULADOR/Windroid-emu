@@ -10,6 +10,9 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.BOX64_SHOWBT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.BOX64_SHOWBT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.BOX64_SHOWSEGV;
 import static com.micewine.emu.activities.GeneralSettingsActivity.BOX64_SHOWSEGV_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.PA_SINK_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.PERF_MODE_ROOT;
+import static com.micewine.emu.activities.GeneralSettingsActivity.PERF_MODE_ROOT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SWITCH;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_LOG_LEVEL;
@@ -95,6 +98,9 @@ public class DebugSettingsFragment extends Fragment {
         );
         addToAdapter(R.string.enable_debug_info, R.string.enable_debug_info_desc, null,
                 SWITCH, ENABLE_DEBUG_INFO_DEFAULT_VALUE, ENABLE_DEBUG_INFO
+        );
+        addToAdapter(R.string.perf_mode_root_title, R.string.perf_mode_root_desc, null,
+                SWITCH, PERF_MODE_ROOT_DEFAULT_VALUE, PERF_MODE_ROOT
         );
     }
 

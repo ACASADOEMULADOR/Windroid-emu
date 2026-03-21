@@ -1,0 +1,98 @@
+package com.micewine.emu.utils;
+
+import android.util.Log;
+
+import static com.micewine.emu.core.ShellLoader.runCommand;
+import static com.micewine.emu.core.ShellLoader.runCommandWithOutput;
+
+public class RootUtils {
+    private static final String TAG = "RootUtils";
+    private static String[] originalCpuGovernors;
+    private static String originalGpuGovernor;
+
+    /**
+     * Checks if root access is available.
+     * @return true if root is available.
+     */
+    public static boolean isRootAvailable() {
+        String testRoot = runCommandWithOutput("su -c 'echo test' 2>/dev/null", false);
+        return testRoot != null && testRoot.contains("test");
+    }
+
+    /**
+     * Applies performance mode by setting CPU and GPU governors to 'performance'.
+     */
+    public static void applyPerformanceMode() {
+        if (!isRootAvailable()) {
+            Log.w(TAG, "Root not available, cannot apply performance mode");
+            return;
+        }
+
+        Log.i(TAG, "Applying performance mode...");
+
+        // CPU
+        int cpuCount = Runtime.getRuntime().availableProcessors();
+        originalCpuGovernors = new String[cpuCount];
+
+        for (int i = 0; i < cpuCount; i++) {
+            String path = "/sys/devices/system/cpu/cpu" + i + "/cpufreq/scaling_governor";
+            originalCpuGovernors[i] = runCommandWithOutput("su -c 'cat " + path + "'", false);
+            if (originalCpuGovernors[i] != null) {
+                originalCpuGovernors[i] = originalCpuGovernors[i].trim();
+                runCommand("su -c 'echo performance > " + path + "'", false);
+            }
+        }
+
+        // GPU (Adreno)
+        String adrenoPath = "/sys/class/kgsl/kgsl-3d0/devfreq/governor";
+        originalGpuGovernor = runCommandWithOutput("su -c 'cat " + adrenoPath + "'", false);
+        if (originalGpuGovernor != null) {
+            originalGpuGovernor = originalGpuGovernor.trim();
+            runCommand("su -c 'echo performance > " + adrenoPath + "'", false);
+        } else {
+            // Try another common path
+            adrenoPath = "/sys/class/kgsl/kgsl-3d0/governor";
+            originalGpuGovernor = runCommandWithOutput("su -c 'cat " + adrenoPath + "'", false);
+            if (originalGpuGovernor != null) {
+                originalGpuGovernor = originalGpuGovernor.trim();
+                runCommand("su -c 'echo performance > " + adrenoPath + "'", false);
+            }
+        }
+    }
+
+    /**
+     * Restores default governor settings.
+     */
+    public static void restoreDefaultMode() {
+        if (!isRootAvailable()) return;
+
+        Log.i(TAG, "Restoring default mode...");
+
+        // CPU
+        if (originalCpuGovernors != null) {
+            for (int i = 0; i < originalCpuGovernors.length; i++) {
+                if (originalCpuGovernors[i] != null) {
+                    runCommand("su -c 'echo " + originalCpuGovernors[i] + " > /sys/devices/system/cpu/cpu" + i + "/cpufreq/scaling_governor'", false);
+                }
+            }
+        } else {
+            // Fallback to schedutil or interactive
+            for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+                runCommand("su -c 'echo schedutil > /sys/devices/system/cpu/cpu" + i + "/cpufreq/scaling_governor' 2>/dev/null", false);
+                runCommand("su -c 'echo interactive > /sys/devices/system/cpu/cpu" + i + "/cpufreq/scaling_governor' 2>/dev/null", false);
+            }
+        }
+
+        // GPU
+        if (originalGpuGovernor != null) {
+            String adrenoPath = "/sys/class/kgsl/kgsl-3d0/devfreq/governor";
+            runCommand("su -c 'echo " + originalGpuGovernor + " > " + adrenoPath + "' 2>/dev/null", false);
+            adrenoPath = "/sys/class/kgsl/kgsl-3d0/governor";
+            runCommand("su -c 'echo " + originalGpuGovernor + " > " + adrenoPath + "' 2>/dev/null", false);
+        } else {
+            // Fallback
+            runCommand("su -c 'echo msm-adreno-tz > /sys/class/kgsl/kgsl-3d0/devfreq/governor' 2>/dev/null", false);
+            runCommand("su -c 'echo msm-adreno-tz > /sys/class/kgsl/kgsl-3d0/governor' 2>/dev/null", false);
+        }
+    }
+}

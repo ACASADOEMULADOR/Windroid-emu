@@ -259,6 +259,9 @@
     <string name="enable_afme_title">Enable Adreno Frame Motion Engine (AFME)</string>
     <string name="enable_afme_description">Enable frame interpolation for smoother performance (Adreno GPUs only)</string>
 
+    <string name="perf_mode_root_title">Performance Mode (Root)</string>
+    <string name="perf_mode_root_desc">Use root access to maximize CPU and GPU clocks for better performance</string>
+
     <plurals name="seconds_ago">
         <item quantity="one">%d second ago</item>
         <item quantity="other">%d seconds ago</item>
