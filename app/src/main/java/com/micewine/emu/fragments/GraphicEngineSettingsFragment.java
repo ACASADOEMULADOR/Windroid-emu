@@ -12,8 +12,6 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SWITCH;
-import static com.micewine.emu.activities.MainActivity.screenFpsLimit;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,7 +57,7 @@ public class GraphicEngineSettingsFragment extends Fragment {
 
         addToAdapter(R.string.render_mode_title, R.string.null_desc, new String[]{"0", "1", "2", "3"}, null, SPINNER, RENDER_MODE_DEFAULT_VALUE, RENDER_MODE);
         addToAdapter(R.string.fps_limit_enabled_title, R.string.fps_limit_enabled_desc, null, null, SWITCH, String.valueOf(FPS_LIMIT_ENABLED_DEFAULT_VALUE), FPS_LIMIT_ENABLED);
-        addToAdapter(R.string.fps_limit_title, R.string.null_desc, null, new int[]{0, screenFpsLimit}, SEEKBAR, "0", FPS_LIMIT);
+        addToAdapter(R.string.fps_limit_title, R.string.null_desc, null, new int[]{0, 120}, SEEKBAR, "0", FPS_LIMIT);
         addToAdapter(R.string.super_resolution_title, R.string.null_desc, null, null, SWITCH, String.valueOf(SUPER_RESOLUTION_DEFAULT_VALUE), SUPER_RESOLUTION);
         addToAdapter(R.string.color_profile_title, R.string.null_desc, new String[]{"Neutral", "Vivid", "Warm", "Cool"}, null, SPINNER, COLOR_PROFILE_DEFAULT_VALUE, COLOR_PROFILE);
     }
