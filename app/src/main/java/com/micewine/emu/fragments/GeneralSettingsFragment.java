@@ -43,6 +43,7 @@ public class GeneralSettingsFragment extends Fragment {
         addToAdapter(R.string.env_settings_title, R.string.env_settings_desc, R.drawable.ic_globe);
         addToAdapter(R.string.wine_settings_title, R.string.wine_settings_desc, R.drawable.ic_wine);
         addToAdapter(R.string.winetricks_title, R.string.winetricks_desc, R.drawable.ic_wine);
+        addToAdapter(R.string.graphic_engine_settings_title, R.string.graphic_engine_settings_desc, R.drawable.ic_settings_outline);
         addToAdapter(R.string.scan_games_title, R.string.scan_games_desc, R.drawable.ic_folder);
     }
 

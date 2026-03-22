@@ -30,6 +30,8 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_MESA_
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VULKAN_DRIVER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI;
@@ -145,6 +147,7 @@ import android.os.Bundle;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -743,6 +746,15 @@ public class MainActivity extends AppCompatActivity {
     private void runWine(String exePath, String exeArguments) {
         if (preferences.getBoolean(PERF_MODE_ROOT, false)) {
             RootUtils.applyPerformanceMode();
+        }
+
+        File qglConfig = new File("/storage/emulated/0/Winlator/qgl_config.txt");
+        try {
+            if (!qglConfig.getParentFile().exists()) qglConfig.getParentFile().mkdirs();
+            String renderMode = preferences.getString(RENDER_MODE, RENDER_MODE_DEFAULT_VALUE);
+            Files.write(qglConfig.toPath(), ("rendermode=" + renderMode).getBytes());
+        } catch (IOException e) {
+            Log.e("MainActivity", "Failed to write qgl_config.txt", e);
         }
 
         installDXWrapper(winePrefix);

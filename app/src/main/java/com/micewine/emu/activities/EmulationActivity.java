@@ -42,6 +42,8 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME_GENERATION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_SMOOTHING;
+import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -698,6 +700,13 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         int frameGenId = 0;
         if (frameGen.equals(FRAME_GENERATION_SMOOTHING)) frameGenId = 1;
         lorieView.setFrameGeneration(frameGenId);
+
+        String colorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
+        int colorProfileId = 0;
+        if (colorProfile.equals("Vivid")) colorProfileId = 1;
+        else if (colorProfile.equals("Warm")) colorProfileId = 2;
+        else if (colorProfile.equals("Cool")) colorProfileId = 3;
+        lorieView.setColorProfile(colorProfileId);
 
         lorieView.triggerCallback();
 

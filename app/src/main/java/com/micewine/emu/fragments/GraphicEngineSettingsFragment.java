@@ -1,0 +1,72 @@
+package com.micewine.emu.fragments;
+
+import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SEEKBAR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SWITCH;
+import static com.micewine.emu.activities.MainActivity.screenFpsLimit;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.micewine.emu.R;
+import com.micewine.emu.adapters.AdapterSettingsPreferences;
+import com.micewine.emu.adapters.AdapterSettingsPreferences.SettingsListSpinner;
+
+import java.util.ArrayList;
+
+public class GraphicEngineSettingsFragment extends Fragment {
+    private RecyclerView recyclerView;
+    private final ArrayList<SettingsListSpinner> settingsList = new ArrayList<>();
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_settings_model, container, false);
+
+        recyclerView = rootView.findViewById(R.id.recyclerViewSettingsModel);
+
+        GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            layoutManager.setSpanCount(1);
+        }
+
+        setAdapter();
+
+        return rootView;
+    }
+
+    private void setAdapter() {
+        recyclerView.setAdapter(new AdapterSettingsPreferences(settingsList, requireActivity()));
+
+        settingsList.clear();
+
+        addToAdapter(R.string.render_mode_title, R.string.null_desc, new String[]{"0", "1", "2", "3"}, null, SPINNER, RENDER_MODE_DEFAULT_VALUE, RENDER_MODE);
+        addToAdapter(R.string.fps_limit_enabled_title, R.string.fps_limit_enabled_desc, null, null, SWITCH, String.valueOf(FPS_LIMIT_ENABLED_DEFAULT_VALUE), FPS_LIMIT_ENABLED);
+        addToAdapter(R.string.fps_limit_title, R.string.null_desc, null, new int[]{0, screenFpsLimit}, SEEKBAR, "0", FPS_LIMIT);
+        addToAdapter(R.string.super_resolution_title, R.string.null_desc, null, null, SWITCH, String.valueOf(SUPER_RESOLUTION_DEFAULT_VALUE), SUPER_RESOLUTION);
+        addToAdapter(R.string.color_profile_title, R.string.null_desc, new String[]{"Neutral", "Vivid", "Warm", "Cool"}, null, SPINNER, COLOR_PROFILE_DEFAULT_VALUE, COLOR_PROFILE);
+    }
+
+    private void addToAdapter(int titleId, int descriptionId, String[] spinnerOptions, int[] seekBarValues, int type, String defaultValue, String keyId) {
+        settingsList.add(
+                new SettingsListSpinner(titleId, descriptionId, spinnerOptions, seekBarValues, type, defaultValue, keyId)
+        );
+    }
+}

@@ -28,7 +28,10 @@ import static com.micewine.emu.activities.MainActivity.box64ShowBt;
 import static com.micewine.emu.activities.MainActivity.box64ShowSegv;
 import static com.micewine.emu.activities.MainActivity.box64Sse42;
 import static com.micewine.emu.activities.MainActivity.deviceArch;
+import static com.micewine.emu.activities.MainActivity.fpsLimit;
 import static com.micewine.emu.activities.MainActivity.enableAFME;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.MainActivity.enableDRI3;
 import static com.micewine.emu.activities.MainActivity.homeDir;
 import static com.micewine.emu.activities.MainActivity.preferences;
@@ -126,6 +129,15 @@ public class EnvVars {
         vars.add("DXVK_ASYNC=1");
         vars.add("DXVK_STATE_CACHE_PATH=" + homeDir + "/.cache/dxvk-shader-cache");
         vars.add("DXVK_HUD=" + selectedDXVKHud);
+
+        if (preferences.getBoolean(FPS_LIMIT_ENABLED, false) && fpsLimit > 0) {
+            vars.add("DXVK_FRAME_RATE=" + fpsLimit);
+        }
+
+        if (preferences.getBoolean(SUPER_RESOLUTION, false)) {
+            vars.add("WINE_FULLSCREEN_FSR=1");
+        }
+
         vars.add("MANGOHUD=1");
         vars.add("MANGOHUD_CONFIGFILE=" + usrDir + "/etc/MangoHud.conf");
 

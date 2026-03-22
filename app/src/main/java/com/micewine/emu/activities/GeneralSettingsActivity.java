@@ -32,6 +32,7 @@ import com.micewine.emu.fragments.GeneralSettingsFragment;
 import com.micewine.emu.fragments.SoundSettingsFragment;
 import com.micewine.emu.fragments.WineSettingsFragment;
 import com.micewine.emu.fragments.WinetricksFragment;
+import com.micewine.emu.fragments.GraphicEngineSettingsFragment;
 
 public class GeneralSettingsActivity extends AppCompatActivity {
     private Toolbar generalSettingsToolbar;
@@ -43,6 +44,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     private final SoundSettingsFragment soundSettingsFragment = new SoundSettingsFragment();
     private final WineSettingsFragment wineSettingsFragment = new WineSettingsFragment();
     private final WinetricksFragment winetricksFragment = new WinetricksFragment();
+    private final GraphicEngineSettingsFragment graphicEngineSettingsFragment = new GraphicEngineSettingsFragment();
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -67,6 +69,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                     fragmentLoader(soundSettingsFragment, false);
                 } else if (preference.equals(getString(R.string.wine_settings_title))) {
                     fragmentLoader(wineSettingsFragment, false);
+                } else if (preference.equals(getString(R.string.graphic_engine_settings_title))) {
+                    fragmentLoader(graphicEngineSettingsFragment, false);
                 } else if (preference.equals(getString(R.string.winetricks_title))) {
                     fragmentLoader(winetricksFragment, false);
                 } else if (preference.equals(getString(R.string.scan_games_title))) {
@@ -359,4 +363,15 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String SELECTED_FRAME_GENERATION = "selectedFrameGeneration";
     public final static String FRAME_GENERATION_OFF = "Off";
     public final static String FRAME_GENERATION_SMOOTHING = "Smoothing (Interpolation)";
+    public final static String RENDER_MODE = "renderMode";
+    public final static String RENDER_MODE_DEFAULT_VALUE = "0";
+
+    public final static String SUPER_RESOLUTION = "superResolution";
+    public final static boolean SUPER_RESOLUTION_DEFAULT_VALUE = false;
+
+    public final static String COLOR_PROFILE = "colorProfile";
+    public final static String COLOR_PROFILE_DEFAULT_VALUE = "Neutral";
+
+    public final static String FPS_LIMIT_ENABLED = "fpsLimitEnabled";
+    public final static boolean FPS_LIMIT_ENABLED_DEFAULT_VALUE = false;
 }

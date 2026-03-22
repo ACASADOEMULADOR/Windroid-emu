@@ -109,69 +109,89 @@ static const char vertex_shader[] = "attribute vec4 position;\n"
                                     "   gl_Position = position;\n"
                                     "}\n";
 
-#define FRAGMENT_SHADER(texture)                                               \
+#define COLOR_PROFILE_FRAGMENT_LOGIC                                           \
+    "   if (colorProfile == 1) { // Vivid\n"                                     \
+    "       lowp vec3 grayscale = vec3(dot(color.rgb, vec3(0.299, 0.587, 0.114)));\n" \
+    "       color.rgb = mix(grayscale, color.rgb, 1.35);\n"                      \
+    "   } else if (colorProfile == 2) { // Warm\n"                                \
+    "       color.rgb *= vec3(1.15, 1.05, 0.85);\n"                              \
+    "   } else if (colorProfile == 3) { // Cool\n"                                \
+    "       color.rgb *= vec3(0.85, 1.05, 1.15);\n"                              \
+    "   }\n"
+
+#define FRAGMENT_SHADER(swizzle)                                               \
   "precision mediump float;\n"                                                 \
   "varying vec2 outTexCoords;\n"                                               \
   "uniform sampler2D texture;\n"                                               \
+  "uniform int colorProfile;\n"                                                \
   "void main(void) {\n"                                                        \
-  "   gl_FragColor = texture2D(texture, outTexCoords)" texture ";\n"           \
+  "   lowp vec4 color = texture2D(texture, outTexCoords)" swizzle ";\n"        \
+  COLOR_PROFILE_FRAGMENT_LOGIC                                                 \
+  "   gl_FragColor = color;\n"                                                 \
   "}\n"
 
 static const char fragment_shader[] = FRAGMENT_SHADER();
 static const char fragment_shader_bgra[] = FRAGMENT_SHADER(".bgra");
 
-static const char fsr_fragment_shader[] =
-    "precision mediump float;\n"
-    "varying vec2 outTexCoords;\n"
-    "uniform sampler2D texture;\n"
-    "uniform vec4 srcSize; // {1/w, 1/h, w, h}\n"
-    "void main() {\n"
-    "    vec2 pos = outTexCoords * srcSize.zw - 0.5;\n"
-    "    vec2 f = fract(pos);\n"
-    "    vec2 p = floor(pos);\n"
-    "    vec4 weight = vec4((1.0 - f.x) * (1.0 - f.y), f.x * (1.0 - f.y), (1.0 - f.x) * f.y, f.x * f.y);\n"
-    "    vec3 c00 = texture2D(texture, (p + vec2(0.5, 0.5)) * srcSize.xy).rgb;\n"
-    "    vec3 c10 = texture2D(texture, (p + vec2(1.5, 0.5)) * srcSize.xy).rgb;\n"
-    "    vec3 c01 = texture2D(texture, (p + vec2(0.5, 1.5)) * srcSize.xy).rgb;\n"
-    "    vec3 c11 = texture2D(texture, (p + vec2(1.5, 1.5)) * srcSize.xy).rgb;\n"
-    "    gl_FragColor = vec4(c00 * weight.x + c10 * weight.y + c01 * weight.z + c11 * weight.w, 1.0);\n"
-    "}\n";
+#define FSR_FRAGMENT_SHADER(swizzle)                                           \
+    "precision mediump float;\n"                                               \
+    "varying vec2 outTexCoords;\n"                                             \
+    "uniform sampler2D texture;\n"                                             \
+    "uniform vec4 srcSize; // {1/w, 1/h, w, h}\n"                              \
+    "uniform int colorProfile;\n"                                                \
+    "void main() {\n"                                                          \
+    "    lowp vec3 e = texture2D(texture, outTexCoords).rgb;\n"                \
+    "    lowp vec3 b = texture2D(texture, outTexCoords + vec2(0.0, -srcSize.y)).rgb;\n" \
+    "    lowp vec3 d = texture2D(texture, outTexCoords + vec2(-srcSize.x, 0.0)).rgb;\n" \
+    "    lowp vec3 f = texture2D(texture, outTexCoords + vec2(srcSize.x, 0.0)).rgb;\n" \
+    "    lowp vec3 h = texture2D(texture, outTexCoords + vec2(0.0, srcSize.y)).rgb;\n" \
+    "    lowp vec3 res = e + (e - (b + d + f + h) * 0.25) * 0.5;\n"             \
+    "    lowp vec4 color = vec4(clamp(res, 0.0, 1.0), 1.0)" swizzle ";\n"         \
+    COLOR_PROFILE_FRAGMENT_LOGIC                                                 \
+    "    gl_FragColor = color;\n"                                                 \
+    "}\n"
 
-static const char cas_fragment_shader[] =
-    "precision mediump float;\n"
-    "varying vec2 outTexCoords;\n"
-    "uniform sampler2D texture;\n"
-    "uniform vec4 srcSize; // {1/w, 1/h, w, h}\n"
-    "void main() {\n"
-    "    const float sharpness = 0.5;\n"
-    "    vec3 a = texture2D(texture, outTexCoords + vec2(-srcSize.x, -srcSize.y)).rgb;\n"
-    "    vec3 b = texture2D(texture, outTexCoords + vec2(0.0, -srcSize.y)).rgb;\n"
-    "    vec3 c = texture2D(texture, outTexCoords + vec2(srcSize.x, -srcSize.y)).rgb;\n"
-    "    vec3 d = texture2D(texture, outTexCoords + vec2(-srcSize.x, 0.0)).rgb;\n"
-    "    vec3 e = texture2D(texture, outTexCoords).rgb;\n"
-    "    vec3 f = texture2D(texture, outTexCoords + vec2(srcSize.x, 0.0)).rgb;\n"
-    "    vec3 g = texture2D(texture, outTexCoords + vec2(-srcSize.x, srcSize.y)).rgb;\n"
-    "    vec3 h = texture2D(texture, outTexCoords + vec2(0.0, srcSize.y)).rgb;\n"
-    "    vec3 i = texture2D(texture, outTexCoords + vec2(srcSize.x, srcSize.y)).rgb;\n"
-    "    vec3 min_c = min(min(min(d, e), min(f, b)), h);\n"
-    "    vec3 max_c = max(max(max(d, e), max(f, b)), h);\n"
-    "    vec3 weight = sqrt(min(min_c, 1.0 - max_c) / max_c);\n"
-    "    float w = -1.0 / mix(8.0, 5.0, sharpness);\n"
-    "    vec3 res = ((a + c + g + i) * (w * 0.5) + (b + d + f + h) * w + e) / (1.0 + 6.0 * w);\n"
-    "    gl_FragColor = vec4(res, 1.0);\n"
-    "}\n";
+static const char fsr_fragment_shader[] = FSR_FRAGMENT_SHADER("");
+static const char fsr_fragment_shader_bgra[] = FSR_FRAGMENT_SHADER(".bgra");
 
-static const char interpolation_fragment_shader[] =
-    "precision mediump float;\n"
-    "varying vec2 outTexCoords;\n"
-    "uniform sampler2D texture;     // Current frame\n"
-    "uniform sampler2D lastTexture; // Previous frame\n"
-    "uniform float alpha;\n"
-    "void main() {\n"
-    "    vec4 current = texture2D(texture, outTexCoords);\n"
-    "    vec4 last = texture2D(lastTexture, outTexCoords);\n"
-    "    gl_FragColor = mix(last, current, alpha);\n"
-    "}\n";
+#define CAS_FRAGMENT_SHADER(swizzle)                                           \
+    "precision mediump float;\n"                                               \
+    "varying vec2 outTexCoords;\n"                                             \
+    "uniform sampler2D texture;\n"                                             \
+    "uniform vec4 srcSize; // {1/w, 1/h, w, h}\n"                              \
+    "uniform int colorProfile;\n"                                                \
+    "void main() {\n"                                                          \
+    "    lowp vec3 e = texture2D(texture, outTexCoords).rgb;\n"                \
+    "    lowp vec3 b = texture2D(texture, outTexCoords + vec2(0.0, -srcSize.y)).rgb;\n" \
+    "    lowp vec3 d = texture2D(texture, outTexCoords + vec2(-srcSize.x, 0.0)).rgb;\n" \
+    "    lowp vec3 f = texture2D(texture, outTexCoords + vec2(srcSize.x, 0.0)).rgb;\n" \
+    "    lowp vec3 h = texture2D(texture, outTexCoords + vec2(0.0, srcSize.y)).rgb;\n" \
+    "    lowp vec3 res = e + (e - (b + d + f + h) * 0.25) * 0.25;\n"            \
+    "    lowp vec4 color = vec4(clamp(res, 0.0, 1.0), 1.0)" swizzle ";\n"         \
+    COLOR_PROFILE_FRAGMENT_LOGIC                                                 \
+    "    gl_FragColor = color;\n"                                                 \
+    "}\n"
+
+static const char cas_fragment_shader[] = CAS_FRAGMENT_SHADER("");
+static const char cas_fragment_shader_bgra[] = CAS_FRAGMENT_SHADER(".bgra");
+
+#define INTERPOLATION_FRAGMENT_SHADER(swizzle)                                 \
+    "precision mediump float;\n"                                               \
+    "varying vec2 outTexCoords;\n"                                             \
+    "uniform sampler2D texture;\n"                                             \
+    "uniform sampler2D lastTexture;\n"                                         \
+    "uniform float alpha;\n"                                                   \
+    "uniform int colorProfile;\n"                                                \
+    "void main() {\n"                                                          \
+    "    lowp vec4 current = texture2D(texture, outTexCoords);\n"              \
+    "    lowp vec4 last = texture2D(lastTexture, outTexCoords);\n"             \
+    "    lowp vec4 color = mix(last, current, alpha)" swizzle ";\n"             \
+    COLOR_PROFILE_FRAGMENT_LOGIC                                                 \
+    "    gl_FragColor = color;\n"                                                 \
+    "}\n"
+
+static const char interpolation_fragment_shader[] = INTERPOLATION_FRAGMENT_SHADER("");
+static const char interpolation_fragment_shader_bgra[] = INTERPOLATION_FRAGMENT_SHADER(".bgra");
 
 static EGLDisplay egl_display = EGL_NO_DISPLAY;
 static EGLContext ctx = EGL_NO_CONTEXT;
@@ -217,9 +237,20 @@ static GLuint pbo = 0;
 GLuint g_texture_program = 0, gv_pos = 0, gv_coords = 0;
 GLuint g_texture_program_bgra = 0, gv_pos_bgra = 0, gv_coords_bgra = 0;
 GLuint g_fsr_program = 0, gv_pos_fsr = 0, gv_coords_fsr = 0, gu_src_size_fsr = 0;
+GLuint g_fsr_program_bgra = 0, gv_pos_fsr_bgra = 0, gv_coords_fsr_bgra = 0, gu_src_size_fsr_bgra = 0;
 GLuint g_cas_program = 0, gv_pos_cas = 0, gv_coords_cas = 0, gu_src_size_cas = 0;
+GLuint g_cas_program_bgra = 0, gv_pos_cas_bgra = 0, gv_coords_cas_bgra = 0, gu_src_size_cas_bgra = 0;
 GLuint g_interpolation_program = 0, gv_pos_interp = 0, gv_coords_interp = 0,
        gu_alpha_interp = 0, gu_last_tex_interp = 0;
+GLuint g_interpolation_program_bgra = 0, gv_pos_interp_bgra = 0, gv_coords_interp_bgra = 0,
+       gu_alpha_interp_bgra = 0, gu_last_tex_interp_bgra = 0;
+
+GLuint gu_color_profile = 0, gu_color_profile_bgra = 0, gu_color_profile_fsr = 0,
+       gu_color_profile_fsr_bgra = 0, gu_color_profile_cas = 0, gu_color_profile_cas_bgra = 0,
+       gu_color_profile_interp = 0, gu_color_profile_interp_bgra = 0;
+
+static volatile int color_profile = 0;
+void renderer_set_color_profile(int profile) { color_profile = profile; }
 
 static volatile int scaling_filter = 0;
 void renderer_set_scaling_filter(int filter) { scaling_filter = filter; }
@@ -683,13 +714,25 @@ void renderer_refresh_context(JNIEnv *env) {
     gv_coords = (GLuint)glGetAttribLocation(g_texture_program, "texCoords");
 
     gv_pos_bgra = (GLuint)glGetAttribLocation(g_texture_program_bgra, "position");
-    gv_coords_bgra = (GLuint)glGetAttribLocation(gv_coords_bgra, "texCoords");
+    gv_coords_bgra = (GLuint)glGetAttribLocation(g_texture_program_bgra, "texCoords");
+
+    gu_color_profile = (GLuint)glGetUniformLocation(g_texture_program, "colorProfile");
+    gu_color_profile_bgra = (GLuint)glGetUniformLocation(g_texture_program_bgra, "colorProfile");
 
     g_fsr_program = create_program(vertex_shader, fsr_fragment_shader);
     if (g_fsr_program) {
       gv_pos_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "position");
       gv_coords_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "texCoords");
       gu_src_size_fsr = (GLuint)glGetUniformLocation(g_fsr_program, "srcSize");
+      gu_color_profile_fsr = (GLuint)glGetUniformLocation(g_fsr_program, "colorProfile");
+    }
+
+    g_fsr_program_bgra = create_program(vertex_shader, fsr_fragment_shader_bgra);
+    if (g_fsr_program_bgra) {
+      gv_pos_fsr_bgra = (GLuint)glGetAttribLocation(g_fsr_program_bgra, "position");
+      gv_coords_fsr_bgra = (GLuint)glGetAttribLocation(g_fsr_program_bgra, "texCoords");
+      gu_src_size_fsr_bgra = (GLuint)glGetUniformLocation(g_fsr_program_bgra, "srcSize");
+      gu_color_profile_fsr_bgra = (GLuint)glGetUniformLocation(g_fsr_program_bgra, "colorProfile");
     }
 
     g_cas_program = create_program(vertex_shader, cas_fragment_shader);
@@ -697,6 +740,15 @@ void renderer_refresh_context(JNIEnv *env) {
       gv_pos_cas = (GLuint)glGetAttribLocation(g_cas_program, "position");
       gv_coords_cas = (GLuint)glGetAttribLocation(g_cas_program, "texCoords");
       gu_src_size_cas = (GLuint)glGetUniformLocation(g_cas_program, "srcSize");
+      gu_color_profile_cas = (GLuint)glGetUniformLocation(g_cas_program, "colorProfile");
+    }
+
+    g_cas_program_bgra = create_program(vertex_shader, cas_fragment_shader_bgra);
+    if (g_cas_program_bgra) {
+      gv_pos_cas_bgra = (GLuint)glGetAttribLocation(g_cas_program_bgra, "position");
+      gv_coords_cas_bgra = (GLuint)glGetAttribLocation(g_cas_program_bgra, "texCoords");
+      gu_src_size_cas_bgra = (GLuint)glGetUniformLocation(g_cas_program_bgra, "srcSize");
+      gu_color_profile_cas_bgra = (GLuint)glGetUniformLocation(g_cas_program_bgra, "colorProfile");
     }
 
     g_interpolation_program = create_program(vertex_shader, interpolation_fragment_shader);
@@ -705,25 +757,16 @@ void renderer_refresh_context(JNIEnv *env) {
       gv_coords_interp = (GLuint)glGetAttribLocation(g_interpolation_program, "texCoords");
       gu_alpha_interp = (GLuint)glGetUniformLocation(g_interpolation_program, "alpha");
       gu_last_tex_interp = (GLuint)glGetUniformLocation(g_interpolation_program, "lastTexture");
+      gu_color_profile_interp = (GLuint)glGetUniformLocation(g_interpolation_program, "colorProfile");
     }
 
-    gv_pos_bgra =
-        (GLuint)glGetAttribLocation(g_texture_program_bgra, "position");
-    gv_coords_bgra =
-        (GLuint)glGetAttribLocation(g_texture_program_bgra, "texCoords");
-
-    g_fsr_program = create_program(vertex_shader, fsr_fragment_shader);
-    if (g_fsr_program) {
-      gv_pos_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "position");
-      gv_coords_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "texCoords");
-      gu_src_size_fsr = (GLuint)glGetUniformLocation(g_fsr_program, "srcSize");
-    }
-
-    g_cas_program = create_program(vertex_shader, cas_fragment_shader);
-    if (g_cas_program) {
-      gv_pos_cas = (GLuint)glGetAttribLocation(g_cas_program, "position");
-      gv_coords_cas = (GLuint)glGetAttribLocation(g_cas_program, "texCoords");
-      gu_src_size_cas = (GLuint)glGetUniformLocation(g_cas_program, "srcSize");
+    g_interpolation_program_bgra = create_program(vertex_shader, interpolation_fragment_shader_bgra);
+    if (g_interpolation_program_bgra) {
+      gv_pos_interp_bgra = (GLuint)glGetAttribLocation(g_interpolation_program_bgra, "position");
+      gv_coords_interp_bgra = (GLuint)glGetAttribLocation(g_interpolation_program_bgra, "texCoords");
+      gu_alpha_interp_bgra = (GLuint)glGetUniformLocation(g_interpolation_program_bgra, "alpha");
+      gu_last_tex_interp_bgra = (GLuint)glGetUniformLocation(g_interpolation_program_bgra, "lastTexture");
+      gu_color_profile_interp_bgra = (GLuint)glGetUniformLocation(g_interpolation_program_bgra, "colorProfile");
     }
 
     glActiveTexture(GL_TEXTURE0);
@@ -859,7 +902,10 @@ void renderer_redraw_locked(JNIEnv *env) {
   if (!unlocked_early)
     state->drawRequested = FALSE;
 
-  if (frame_generation == 1 && last_frame.id && last_frame.width == display.desc.width && last_frame.height == display.desc.height) {
+  int win_width = ANativeWindow_getWidth(win);
+  int win_height = ANativeWindow_getHeight(win);
+
+  if (frame_generation == 1 && last_frame.id && last_frame.width == win_width && last_frame.height == win_height) {
     // Draw interpolated frame (50% previous, 50% current)
     draw(display.id, -1.f, -1.f, 1.f, 1.f,
          display.desc.format != AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM, 0.5f);
@@ -875,7 +921,6 @@ void renderer_redraw_locked(JNIEnv *env) {
   glFlush();
 
   if (state->cursor.updated) {
-    log("Xlorie: updating cursor\n");
     lorie_mutex_lock(&state->cursor.lock, &state->cursor.lockingPid);
     state->cursor.updated = false;
     bindLinearTexture(cursor.id);
@@ -891,17 +936,17 @@ void renderer_redraw_locked(JNIEnv *env) {
 
   // Copy current frame to last_frame for next iteration
   if (frame_generation == 1) {
-    if (!last_frame.id || last_frame.width != display.desc.width || last_frame.height != display.desc.height) {
+    if (!last_frame.id || last_frame.width != win_width || last_frame.height != win_height) {
       if (last_frame.id) glDeleteTextures(1, &last_frame.id);
       glGenTextures(1, &last_frame.id);
       bindLinearTexture(last_frame.id);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, display.desc.width, display.desc.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-      last_frame.width = display.desc.width;
-      last_frame.height = display.desc.height;
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, win_width, win_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+      last_frame.width = win_width;
+      last_frame.height = win_height;
     }
     // We can use glCopyTexSubImage2D to copy from the current framebuffer (which has display.id drawn)
     bindLinearTexture(last_frame.id);
-    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, display.desc.width, display.desc.height);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, win_width, win_height);
   }
 
   // Wait until root window drawing is finished before giving control back to X
@@ -1068,14 +1113,26 @@ static void draw(GLuint id, float x0, float y0, float x1, float y1,
       prog = g_interpolation_program;
       p = gv_pos_interp;
       c = gv_coords_interp;
-    } else if (scaling_filter == 1 && g_fsr_program) {
-      prog = g_fsr_program;
-      p = gv_pos_fsr;
-      c = gv_coords_fsr;
-    } else if (scaling_filter == 2 && g_cas_program) {
-      prog = g_cas_program;
-      p = gv_pos_cas;
-      c = gv_coords_cas;
+    } else if (scaling_filter == 1) {
+      if (flip && g_fsr_program_bgra) {
+        prog = g_fsr_program_bgra;
+        p = gv_pos_fsr_bgra;
+        c = gv_coords_fsr_bgra;
+      } else if (g_fsr_program) {
+        prog = g_fsr_program;
+        p = gv_pos_fsr;
+        c = gv_coords_fsr;
+      }
+    } else if (scaling_filter == 2) {
+      if (flip && g_cas_program_bgra) {
+        prog = g_cas_program_bgra;
+        p = gv_pos_cas_bgra;
+        c = gv_coords_cas_bgra;
+      } else if (g_cas_program) {
+        prog = g_cas_program;
+        p = gv_pos_cas;
+        c = gv_coords_cas;
+      }
     }
   }
 
@@ -1083,21 +1140,54 @@ static void draw(GLuint id, float x0, float y0, float x1, float y1,
   glUseProgram(prog);
   glBindTexture(GL_TEXTURE_2D, id);
 
+  GLuint cp = prog == g_texture_program ? gu_color_profile :
+              prog == g_texture_program_bgra ? gu_color_profile_bgra :
+              prog == g_fsr_program ? gu_color_profile_fsr :
+              prog == g_fsr_program_bgra ? gu_color_profile_fsr_bgra :
+              prog == g_cas_program ? gu_color_profile_cas :
+              prog == g_cas_program_bgra ? gu_color_profile_cas_bgra :
+              prog == g_interpolation_program ? gu_color_profile_interp :
+              prog == g_interpolation_program_bgra ? gu_color_profile_interp_bgra : 0;
+
+  if (cp) {
+      glUniform1i(cp, color_profile);
+  }
+
   if (id == display.id) {
-    if (frame_generation == 1 && alpha > 0.0f && g_interpolation_program) {
-      glUniform1f(gu_alpha_interp, alpha);
-      glUniform1i(gu_last_tex_interp, 1);
-      glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, last_frame.id);
-      glActiveTexture(GL_TEXTURE0);
-    } else if (scaling_filter == 1 && g_fsr_program) {
-      glUniform4f(gu_src_size_fsr, 1.0f / (float)display.desc.width,
-                  1.0f / (float)display.desc.height, (float)display.desc.width,
-                  (float)display.desc.height);
-    } else if (scaling_filter == 2 && g_cas_program) {
-      glUniform4f(gu_src_size_cas, 1.0f / (float)display.desc.width,
-                  1.0f / (float)display.desc.height, (float)display.desc.width,
-                  (float)display.desc.height);
+    if (frame_generation == 1 && alpha < 1.0f) {
+      if (flip && g_interpolation_program_bgra) {
+        glUniform1f(gu_alpha_interp_bgra, alpha);
+        glUniform1i(gu_last_tex_interp_bgra, 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, last_frame.id);
+        glActiveTexture(GL_TEXTURE0);
+      } else if (g_interpolation_program) {
+        glUniform1f(gu_alpha_interp, alpha);
+        glUniform1i(gu_last_tex_interp, 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, last_frame.id);
+        glActiveTexture(GL_TEXTURE0);
+      }
+    } else if (scaling_filter == 1) {
+      if (flip && g_fsr_program_bgra) {
+        glUniform4f(gu_src_size_fsr_bgra, 1.0f / (float)display.desc.width,
+                    1.0f / (float)display.desc.height, (float)display.desc.width,
+                    (float)display.desc.height);
+      } else if (g_fsr_program) {
+        glUniform4f(gu_src_size_fsr, 1.0f / (float)display.desc.width,
+                    1.0f / (float)display.desc.height, (float)display.desc.width,
+                    (float)display.desc.height);
+      }
+    } else if (scaling_filter == 2) {
+      if (flip && g_cas_program_bgra) {
+        glUniform4f(gu_src_size_cas_bgra, 1.0f / (float)display.desc.width,
+                    1.0f / (float)display.desc.height, (float)display.desc.width,
+                    (float)display.desc.height);
+      } else if (g_cas_program) {
+        glUniform4f(gu_src_size_cas, 1.0f / (float)display.desc.width,
+                    1.0f / (float)display.desc.height, (float)display.desc.width,
+                    (float)display.desc.height);
+      }
     }
   }
 
@@ -1127,4 +1217,9 @@ __unused static void draw_cursor(void) {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   draw(cursor.id, x, y, x + w, y + h, false, 1.0f);
   glDisable(GL_BLEND);
+}
+
+JNIEXPORT void JNICALL
+Java_com_micewine_emu_LorieView_setColorProfile(JNIEnv *env, jobject thiz, jint profile) {
+  renderer_set_color_profile(profile);
 }
