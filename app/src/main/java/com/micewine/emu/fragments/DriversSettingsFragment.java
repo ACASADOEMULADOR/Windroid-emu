@@ -11,6 +11,13 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_GL_PR
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_GL_PROFILE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_MESA_VK_WSI_PRESENT_MODE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_MESA_VK_WSI_PRESENT_MODE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_SCALING_FILTER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_LINEAR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_FSR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_CAS;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME_GENERATION;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_SMOOTHING;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
@@ -92,6 +99,12 @@ public class DriversSettingsFragment extends Fragment {
                 addToAdapter(R.string.enable_afme_title, R.string.enable_afme_description, null, SWITCH,
                                 String.valueOf(ENABLE_AFME_DEFAULT_VALUE),
                                 ENABLE_AFME);
+                addToAdapter(R.string.scaling_filter_title, R.string.scaling_filter_desc,
+                                new String[] { SCALING_FILTER_LINEAR, SCALING_FILTER_FSR, SCALING_FILTER_CAS },
+                                SPINNER, SCALING_FILTER_LINEAR, SELECTED_SCALING_FILTER);
+                addToAdapter(R.string.frame_generation_title, R.string.frame_generation_desc,
+                                new String[] { FRAME_GENERATION_OFF, FRAME_GENERATION_SMOOTHING },
+                                SPINNER, FRAME_GENERATION_OFF, SELECTED_FRAME_GENERATION);
         }
 
         private void addToAdapter(int titleId, int descriptionId, String[] values, int type, String defaultValue,

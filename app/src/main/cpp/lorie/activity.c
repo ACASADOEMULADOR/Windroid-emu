@@ -459,6 +459,14 @@ static void surfaceChanged(JNIEnv *env, jobject thiz, jobject sfc) {
 #endif
 }
 
+static void setScalingFilter(__unused JNIEnv *env, __unused jobject thiz, jint filter) {
+  renderer_set_scaling_filter(filter);
+}
+
+static void setFrameGeneration(__unused JNIEnv *env, __unused jobject thiz, jint mode) {
+  renderer_set_frame_generation(mode);
+}
+
 JNIEXPORT jboolean JNICALL
 Java_com_micewine_emu_LorieView_renderingInActivity(JNIEnv *env, jobject thiz) {
   return RENDERER_IN_ACTIVITY;
@@ -484,6 +492,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
       {"sendKeyEvent", "(IIZ)Z", (void *)&sendKeyEvent},
       {"sendTextEvent", "([B)V", (void *)&sendTextEvent},
       {"requestConnection", "()V", (void *)&requestConnection},
+      {"setScalingFilter", "(I)V", (void *)&setScalingFilter},
+      {"setFrameGeneration", "(I)V", (void *)&setFrameGeneration},
   };
   (*vm)->AttachCurrentThread(vm, &env, NULL);
   jclass cls = (*env)->FindClass(env, "com/micewine/emu/LorieView");

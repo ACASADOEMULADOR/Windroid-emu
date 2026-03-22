@@ -229,6 +229,11 @@
     <string name="select_rootfs_file">Selecionar Arquivo RootFS</string>
     <string name="vram_limit_title">Limite de VRAM</string>
     <string name="vram_limit_desc">Definir limite máximo de memória de vídeo para drivers Mesa</string>
+    <string name="scaling_filter_title">Filtro de Escalonamento</string>
+    <string name="scaling_filter_desc">Selecione o filtro de upscaling ou nitidez</string>
+
+    <string name="frame_generation_title">Gerador de Quadros</string>
+    <string name="frame_generation_desc">Ative a interpolação de quadros para aumentar os FPS percebidos</string>
 
     <string name="perf_mode_root_title">Modo de Desempenho (Root)</string>
     <string name="perf_mode_root_desc">Use o acesso root para maximizar os clocks de CPU e GPU para melhor desempenho</string>

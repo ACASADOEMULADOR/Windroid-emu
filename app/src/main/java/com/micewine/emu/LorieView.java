@@ -198,12 +198,10 @@ public class LorieView extends SurfaceView implements InputStub {
             height = width * p.y / p.x;
         }
 
-        getHolder().setFixedSize(p.x, p.y);
+        if (getHolder().getSurfaceFrame().width() != p.x || getHolder().getSurfaceFrame().height() != p.y) {
+            getHolder().setFixedSize(p.x, p.y);
+        }
         setMeasuredDimension(width, height);
-
-        // In the case if old fixed surface size equals new fixed surface size windowChanged will not be called.
-        // We should force it.
-        regenerate();
     }
 
     @Override
@@ -272,8 +270,9 @@ public class LorieView extends SurfaceView implements InputStub {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (hasFocus)
-            regenerate();
+        if (hasFocus) {
+            triggerCallback();
+        }
 
         requestFocus();
 
@@ -366,6 +365,8 @@ public class LorieView extends SurfaceView implements InputStub {
     @FastNative public native boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown);
     @FastNative public native void sendTextEvent(byte[] text);
     @CriticalNative public static native void requestConnection();
+    @FastNative public native void setScalingFilter(int filter);
+    public native void setFrameGeneration(int mode);
 
     static {
         System.loadLibrary("Xlorie");

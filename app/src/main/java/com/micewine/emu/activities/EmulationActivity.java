@@ -35,6 +35,13 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTRO
 import static com.micewine.emu.activities.GeneralSettingsActivity.VIRTUAL_CONTROL_OPACITY_DEFAULT_VALUE;
 import static com.micewine.emu.activities.MainActivity.virtualControlOpacity;
 import static com.micewine.emu.views.VirtualControllerInputView.virtualXInputControllerId;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_SCALING_FILTER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_LINEAR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_FSR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_CAS;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME_GENERATION;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_SMOOTHING;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -680,6 +687,17 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
     public void onPreferencesChangedCallback() {
         onWindowFocusChanged(hasWindowFocus());
         LorieView lorieView = getLorieView();
+
+        String filter = preferences.getString(SELECTED_SCALING_FILTER, SCALING_FILTER_LINEAR);
+        int filterId = 0;
+        if (filter.equals(SCALING_FILTER_FSR)) filterId = 1;
+        else if (filter.equals(SCALING_FILTER_CAS)) filterId = 2;
+        lorieView.setScalingFilter(filterId);
+
+        String frameGen = preferences.getString(SELECTED_FRAME_GENERATION, FRAME_GENERATION_OFF);
+        int frameGenId = 0;
+        if (frameGen.equals(FRAME_GENERATION_SMOOTHING)) frameGenId = 1;
+        lorieView.setFrameGeneration(frameGenId);
 
         lorieView.triggerCallback();
 

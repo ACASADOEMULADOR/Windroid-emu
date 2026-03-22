@@ -120,6 +120,59 @@ static const char vertex_shader[] = "attribute vec4 position;\n"
 static const char fragment_shader[] = FRAGMENT_SHADER();
 static const char fragment_shader_bgra[] = FRAGMENT_SHADER(".bgra");
 
+static const char fsr_fragment_shader[] =
+    "precision mediump float;\n"
+    "varying vec2 outTexCoords;\n"
+    "uniform sampler2D texture;\n"
+    "uniform vec4 srcSize; // {1/w, 1/h, w, h}\n"
+    "void main() {\n"
+    "    vec2 pos = outTexCoords * srcSize.zw - 0.5;\n"
+    "    vec2 f = fract(pos);\n"
+    "    vec2 p = floor(pos);\n"
+    "    vec4 weight = vec4((1.0 - f.x) * (1.0 - f.y), f.x * (1.0 - f.y), (1.0 - f.x) * f.y, f.x * f.y);\n"
+    "    vec3 c00 = texture2D(texture, (p + vec2(0.5, 0.5)) * srcSize.xy).rgb;\n"
+    "    vec3 c10 = texture2D(texture, (p + vec2(1.5, 0.5)) * srcSize.xy).rgb;\n"
+    "    vec3 c01 = texture2D(texture, (p + vec2(0.5, 1.5)) * srcSize.xy).rgb;\n"
+    "    vec3 c11 = texture2D(texture, (p + vec2(1.5, 1.5)) * srcSize.xy).rgb;\n"
+    "    gl_FragColor = vec4(c00 * weight.x + c10 * weight.y + c01 * weight.z + c11 * weight.w, 1.0);\n"
+    "}\n";
+
+static const char cas_fragment_shader[] =
+    "precision mediump float;\n"
+    "varying vec2 outTexCoords;\n"
+    "uniform sampler2D texture;\n"
+    "uniform vec4 srcSize; // {1/w, 1/h, w, h}\n"
+    "void main() {\n"
+    "    const float sharpness = 0.5;\n"
+    "    vec3 a = texture2D(texture, outTexCoords + vec2(-srcSize.x, -srcSize.y)).rgb;\n"
+    "    vec3 b = texture2D(texture, outTexCoords + vec2(0.0, -srcSize.y)).rgb;\n"
+    "    vec3 c = texture2D(texture, outTexCoords + vec2(srcSize.x, -srcSize.y)).rgb;\n"
+    "    vec3 d = texture2D(texture, outTexCoords + vec2(-srcSize.x, 0.0)).rgb;\n"
+    "    vec3 e = texture2D(texture, outTexCoords).rgb;\n"
+    "    vec3 f = texture2D(texture, outTexCoords + vec2(srcSize.x, 0.0)).rgb;\n"
+    "    vec3 g = texture2D(texture, outTexCoords + vec2(-srcSize.x, srcSize.y)).rgb;\n"
+    "    vec3 h = texture2D(texture, outTexCoords + vec2(0.0, srcSize.y)).rgb;\n"
+    "    vec3 i = texture2D(texture, outTexCoords + vec2(srcSize.x, srcSize.y)).rgb;\n"
+    "    vec3 min_c = min(min(min(d, e), min(f, b)), h);\n"
+    "    vec3 max_c = max(max(max(d, e), max(f, b)), h);\n"
+    "    vec3 weight = sqrt(min(min_c, 1.0 - max_c) / max_c);\n"
+    "    float w = -1.0 / mix(8.0, 5.0, sharpness);\n"
+    "    vec3 res = ((a + c + g + i) * (w * 0.5) + (b + d + f + h) * w + e) / (1.0 + 6.0 * w);\n"
+    "    gl_FragColor = vec4(res, 1.0);\n"
+    "}\n";
+
+static const char interpolation_fragment_shader[] =
+    "precision mediump float;\n"
+    "varying vec2 outTexCoords;\n"
+    "uniform sampler2D texture;     // Current frame\n"
+    "uniform sampler2D lastTexture; // Previous frame\n"
+    "uniform float alpha;\n"
+    "void main() {\n"
+    "    vec4 current = texture2D(texture, outTexCoords);\n"
+    "    vec4 last = texture2D(lastTexture, outTexCoords);\n"
+    "    gl_FragColor = mix(last, current, alpha);\n"
+    "}\n";
+
 static EGLDisplay egl_display = EGL_NO_DISPLAY;
 static EGLContext ctx = EGL_NO_CONTEXT;
 static EGLSurface sfc = EGL_NO_SURFACE;
@@ -163,6 +216,24 @@ static GLuint pbo = 0;
 
 GLuint g_texture_program = 0, gv_pos = 0, gv_coords = 0;
 GLuint g_texture_program_bgra = 0, gv_pos_bgra = 0, gv_coords_bgra = 0;
+GLuint g_fsr_program = 0, gv_pos_fsr = 0, gv_coords_fsr = 0, gu_src_size_fsr = 0;
+GLuint g_cas_program = 0, gv_pos_cas = 0, gv_coords_cas = 0, gu_src_size_cas = 0;
+GLuint g_interpolation_program = 0, gv_pos_interp = 0, gv_coords_interp = 0,
+       gu_alpha_interp = 0, gu_last_tex_interp = 0;
+
+static volatile int scaling_filter = 0;
+void renderer_set_scaling_filter(int filter) { scaling_filter = filter; }
+
+static volatile int frame_generation = 0;
+void renderer_set_frame_generation(int mode) { 
+  log("renderer: frame_generation set to %d", mode);
+  frame_generation = mode; 
+}
+
+static struct {
+  GLuint id;
+  uint32_t width, height;
+} last_frame = {0, 0, 0};
 
 static void *renderer_thread(void *closure);
 
@@ -611,10 +682,49 @@ void renderer_refresh_context(JNIEnv *env) {
     gv_pos = (GLuint)glGetAttribLocation(g_texture_program, "position");
     gv_coords = (GLuint)glGetAttribLocation(g_texture_program, "texCoords");
 
+    gv_pos_bgra = (GLuint)glGetAttribLocation(g_texture_program_bgra, "position");
+    gv_coords_bgra = (GLuint)glGetAttribLocation(gv_coords_bgra, "texCoords");
+
+    g_fsr_program = create_program(vertex_shader, fsr_fragment_shader);
+    if (g_fsr_program) {
+      gv_pos_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "position");
+      gv_coords_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "texCoords");
+      gu_src_size_fsr = (GLuint)glGetUniformLocation(g_fsr_program, "srcSize");
+    }
+
+    g_cas_program = create_program(vertex_shader, cas_fragment_shader);
+    if (g_cas_program) {
+      gv_pos_cas = (GLuint)glGetAttribLocation(g_cas_program, "position");
+      gv_coords_cas = (GLuint)glGetAttribLocation(g_cas_program, "texCoords");
+      gu_src_size_cas = (GLuint)glGetUniformLocation(g_cas_program, "srcSize");
+    }
+
+    g_interpolation_program = create_program(vertex_shader, interpolation_fragment_shader);
+    if (g_interpolation_program) {
+      gv_pos_interp = (GLuint)glGetAttribLocation(g_interpolation_program, "position");
+      gv_coords_interp = (GLuint)glGetAttribLocation(g_interpolation_program, "texCoords");
+      gu_alpha_interp = (GLuint)glGetUniformLocation(g_interpolation_program, "alpha");
+      gu_last_tex_interp = (GLuint)glGetUniformLocation(g_interpolation_program, "lastTexture");
+    }
+
     gv_pos_bgra =
         (GLuint)glGetAttribLocation(g_texture_program_bgra, "position");
     gv_coords_bgra =
         (GLuint)glGetAttribLocation(g_texture_program_bgra, "texCoords");
+
+    g_fsr_program = create_program(vertex_shader, fsr_fragment_shader);
+    if (g_fsr_program) {
+      gv_pos_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "position");
+      gv_coords_fsr = (GLuint)glGetAttribLocation(g_fsr_program, "texCoords");
+      gu_src_size_fsr = (GLuint)glGetUniformLocation(g_fsr_program, "srcSize");
+    }
+
+    g_cas_program = create_program(vertex_shader, cas_fragment_shader);
+    if (g_cas_program) {
+      gv_pos_cas = (GLuint)glGetAttribLocation(g_cas_program, "position");
+      gv_coords_cas = (GLuint)glGetAttribLocation(g_cas_program, "texCoords");
+      gu_src_size_cas = (GLuint)glGetUniformLocation(g_cas_program, "srcSize");
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &display.id);
@@ -649,7 +759,7 @@ void renderer_refresh_context(JNIEnv *env) {
 }
 
 static void draw(GLuint id, float x0, float y0, float x1, float y1,
-                 uint8_t flip);
+                 uint8_t flip, float alpha);
 static void draw_cursor(void);
 
 static void renderer_renew_image(void) {
@@ -748,8 +858,19 @@ void renderer_redraw_locked(JNIEnv *env) {
   // legacy drawing.
   if (!unlocked_early)
     state->drawRequested = FALSE;
+
+  if (frame_generation == 1 && last_frame.id && last_frame.width == display.desc.width && last_frame.height == display.desc.height) {
+    // Draw interpolated frame (50% previous, 50% current)
+    draw(display.id, -1.f, -1.f, 1.f, 1.f,
+         display.desc.format != AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM, 0.5f);
+    eglSwapBuffers(egl_display, sfc);
+    state->renderedFrames++;
+  }
+
+  // Draw current frame
   draw(display.id, -1.f, -1.f, 1.f, 1.f,
-       display.desc.format != AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM);
+       display.desc.format != AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM, 1.0f);
+
   fence = eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
   glFlush();
 
@@ -767,6 +888,21 @@ void renderer_redraw_locked(JNIEnv *env) {
   state->cursor.moved = FALSE;
   draw_cursor();
   glFlush();
+
+  // Copy current frame to last_frame for next iteration
+  if (frame_generation == 1) {
+    if (!last_frame.id || last_frame.width != display.desc.width || last_frame.height != display.desc.height) {
+      if (last_frame.id) glDeleteTextures(1, &last_frame.id);
+      glGenTextures(1, &last_frame.id);
+      bindLinearTexture(last_frame.id);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, display.desc.width, display.desc.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+      last_frame.width = display.desc.width;
+      last_frame.height = display.desc.height;
+    }
+    // We can use glCopyTexSubImage2D to copy from the current framebuffer (which has display.id drawn)
+    bindLinearTexture(last_frame.id);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, display.desc.width, display.desc.height);
+  }
 
   // Wait until root window drawing is finished before giving control back to X
   // server
@@ -797,16 +933,6 @@ void renderer_redraw_locked(JNIEnv *env) {
         lorie_mutex_unlock(&state->lock, &state->lockingPid);
     }
   }
-
-  // Perform a little drawing operation to make sure the next buffer is ready on
-  // the next invocation of drawing
-  glViewport(0, 0, 1, 1);
-  glClearColor(0, 0, 0, 0);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glViewport(0, 0, ANativeWindow_getWidth(win), ANativeWindow_getHeight(win));
-  fence = eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
-  eglClientWaitSyncKHR(egl_display, fence, 0, EGL_FOREVER);
-  eglDestroySyncKHR(egl_display, fence);
 
   state->renderedFrames++;
 }
@@ -928,17 +1054,52 @@ static GLuint create_program(const char *p_vertex_source,
 }
 
 static void draw(GLuint id, float x0, float y0, float x1, float y1,
-                 uint8_t flip) {
+                 uint8_t flip, float alpha) {
   float coords[16] = {
       x0, -y0, 0.f, 0.f, x1, -y0, 1.f, 0.f,
       x0, -y1, 0.f, 1.f, x1, -y1, 1.f, 1.f,
   };
 
   GLuint p = flip ? gv_pos_bgra : gv_pos, c = flip ? gv_coords_bgra : gv_coords;
+  GLuint prog = flip ? g_texture_program_bgra : g_texture_program;
+
+  if (id == display.id) {
+    if (frame_generation == 1 && alpha > 0.0f && g_interpolation_program) {
+      prog = g_interpolation_program;
+      p = gv_pos_interp;
+      c = gv_coords_interp;
+    } else if (scaling_filter == 1 && g_fsr_program) {
+      prog = g_fsr_program;
+      p = gv_pos_fsr;
+      c = gv_coords_fsr;
+    } else if (scaling_filter == 2 && g_cas_program) {
+      prog = g_cas_program;
+      p = gv_pos_cas;
+      c = gv_coords_cas;
+    }
+  }
 
   glActiveTexture(GL_TEXTURE0);
-  glUseProgram(flip ? g_texture_program_bgra : g_texture_program);
+  glUseProgram(prog);
   glBindTexture(GL_TEXTURE_2D, id);
+
+  if (id == display.id) {
+    if (frame_generation == 1 && alpha > 0.0f && g_interpolation_program) {
+      glUniform1f(gu_alpha_interp, alpha);
+      glUniform1i(gu_last_tex_interp, 1);
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, last_frame.id);
+      glActiveTexture(GL_TEXTURE0);
+    } else if (scaling_filter == 1 && g_fsr_program) {
+      glUniform4f(gu_src_size_fsr, 1.0f / (float)display.desc.width,
+                  1.0f / (float)display.desc.height, (float)display.desc.width,
+                  (float)display.desc.height);
+    } else if (scaling_filter == 2 && g_cas_program) {
+      glUniform4f(gu_src_size_cas, 1.0f / (float)display.desc.width,
+                  1.0f / (float)display.desc.height, (float)display.desc.width,
+                  (float)display.desc.height);
+    }
+  }
 
   glVertexAttribPointer(p, 2, GL_FLOAT, GL_FALSE, 16, coords);
   glVertexAttribPointer(c, 2, GL_FLOAT, GL_FALSE, 16, &coords[2]);
@@ -964,6 +1125,6 @@ __unused static void draw_cursor(void) {
   h = 2.f * (float)state->cursor.height / (float)display.desc.height;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  draw(cursor.id, x, y, x + w, y + h, false);
+  draw(cursor.id, x, y, x + w, y + h, false, 1.0f);
   glDisable(GL_BLEND);
 }

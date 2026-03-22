@@ -80,7 +80,9 @@ public class WineWrapper {
                     // Fast check: just read cmdline, don't follow symlinks or read stats yet
                     File cmdlineFile = new File(process, "cmdline");
                     if (cmdlineFile.exists()) {
-                        String cmdline = Files.readAllLines(cmdlineFile.toPath()).toString();
+                        byte[] cmdlineBytes = Files.readAllBytes(cmdlineFile.toPath());
+                        String cmdline = new String(cmdlineBytes).replace('\0', ' ');
+
                         if (cmdline.toLowerCase().contains(name.toLowerCase())) {
                             return true;
                         }
@@ -253,16 +255,12 @@ public class WineWrapper {
                     File cmdlineFile = new File(process, "cmdline");
                     if (cmdlineFile.exists() && unixPid != null) {
                         try {
-                            String cmdline = Files.readAllLines(cmdlineFile.toPath()).toString().trim();
+                            byte[] cmdlineBytes = Files.readAllBytes(cmdlineFile.toPath());
+                            String cmdline = new String(cmdlineBytes).trim();
 
                             // Handle null chars if present
                             if (cmdline.contains("\u0000")) {
                                 cmdline = cmdline.split("\u0000")[0];
-                            }
-                            // Also handle [ ] array string representation if Files.readAllLines returns
-                            // that
-                            if (cmdline.startsWith("[") && cmdline.endsWith("]")) {
-                                cmdline = cmdline.substring(1, cmdline.length() - 1);
                             }
 
                             String processName = cmdline;

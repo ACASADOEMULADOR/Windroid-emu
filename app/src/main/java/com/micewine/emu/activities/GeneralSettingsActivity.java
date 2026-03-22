@@ -350,4 +350,13 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
     public final static String PERF_MODE_ROOT = "perfModeRoot";
     public final static boolean PERF_MODE_ROOT_DEFAULT_VALUE = false;
+
+    public final static String SELECTED_SCALING_FILTER = "selectedScalingFilter";
+    public final static String SCALING_FILTER_LINEAR = "Linear";
+    public final static String SCALING_FILTER_FSR = "FSR (AI Upscaling)";
+    public final static String SCALING_FILTER_CAS = "CAS (Sharpness)";
+
+    public final static String SELECTED_FRAME_GENERATION = "selectedFrameGeneration";
+    public final static String FRAME_GENERATION_OFF = "Off";
+    public final static String FRAME_GENERATION_SMOOTHING = "Smoothing (Interpolation)";
 }

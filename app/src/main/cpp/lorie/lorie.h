@@ -46,6 +46,8 @@ __unused void renderer_set_window(ANativeWindow* win);
 __unused void renderer_set_window(JNIEnv* env, jobject surface);
 #endif
 __unused void renderer_set_shared_state(struct lorie_shared_server_state* state);
+__unused void renderer_set_scaling_filter(int filter);
+__unused void renderer_set_frame_generation(int mode);
 
 static inline __always_inline void lorie_mutex_lock(pthread_mutex_t* mutex, pid_t* lockingPid) {
     // Unfortunately there is no robust mutexes in bionic.

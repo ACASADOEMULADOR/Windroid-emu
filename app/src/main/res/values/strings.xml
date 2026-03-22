@@ -258,6 +258,11 @@
     <string name="vram_limit_desc">Set maximum video memory limit for Mesa drivers</string>
     <string name="enable_afme_title">Enable Adreno Frame Motion Engine (AFME)</string>
     <string name="enable_afme_description">Enable frame interpolation for smoother performance (Adreno GPUs only)</string>
+    <string name="scaling_filter_title">Scaling Filter</string>
+    <string name="scaling_filter_desc">Select upscaling or sharpening filter</string>
+
+    <string name="frame_generation_title">Frame Generation</string>
+    <string name="frame_generation_desc">Enable frame interpolation to increase perceived FPS</string>
 
     <string name="perf_mode_root_title">Performance Mode (Root)</string>
     <string name="perf_mode_root_desc">Use root access to maximize CPU and GPU clocks for better performance</string>
