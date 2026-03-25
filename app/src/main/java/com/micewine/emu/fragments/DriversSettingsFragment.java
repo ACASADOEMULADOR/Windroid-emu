@@ -18,6 +18,13 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME_GENERATION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_SMOOTHING;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAMESKIP;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_0;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_1;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_2;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_3;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_4;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_5;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
@@ -105,6 +112,10 @@ public class DriversSettingsFragment extends Fragment {
                 addToAdapter(R.string.frame_generation_title, R.string.frame_generation_desc,
                                 new String[] { FRAME_GENERATION_OFF, FRAME_GENERATION_SMOOTHING },
                                 SPINNER, FRAME_GENERATION_OFF, SELECTED_FRAME_GENERATION);
+
+                addToAdapter(R.string.frameskip_title, R.string.frameskip_desc,
+                                new String[] { FRAMESKIP_0, FRAMESKIP_1, FRAMESKIP_2, FRAMESKIP_3, FRAMESKIP_4, FRAMESKIP_5 },
+                                SPINNER, FRAMESKIP_0, SELECTED_FRAMESKIP);
         }
 
         private void addToAdapter(int titleId, int descriptionId, String[] values, int type, String defaultValue,

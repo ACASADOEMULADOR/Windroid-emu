@@ -368,6 +368,8 @@ public class LorieView extends SurfaceView implements InputStub {
     @FastNative public native void setScalingFilter(int filter);
     public native void setFrameGeneration(int mode);
     public native void setColorProfile(int profile);
+    public native void setFrameSkip(int skip);
+    public native void setVsync(int vsync);
 
     static {
         System.loadLibrary("Xlorie");

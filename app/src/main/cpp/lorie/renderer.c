@@ -255,10 +255,23 @@ void renderer_set_color_profile(int profile) { color_profile = profile; }
 static volatile int scaling_filter = 0;
 void renderer_set_scaling_filter(int filter) { scaling_filter = filter; }
 
+static volatile int renderer_vsync = 1;
+void renderer_set_vsync(int vsync) { 
+  log("renderer: vsync set to %d", vsync);
+  renderer_vsync = vsync; 
+}
+
 static volatile int frame_generation = 0;
 void renderer_set_frame_generation(int mode) { 
   log("renderer: frame_generation set to %d", mode);
   frame_generation = mode; 
+}
+
+static volatile int renderer_frameskip = 0;
+static int renderer_frameskip_counter = 0;
+void renderer_set_frameskip(int skip) { 
+  log("renderer: frameskip set to %d", skip);
+  renderer_frameskip = skip; 
 }
 
 static struct {
@@ -689,7 +702,7 @@ void renderer_refresh_context(JNIEnv *env) {
     return vprintEglError("eglMakeCurrent failed", __LINE__);
   }
 
-  eglSwapInterval(egl_display, 1);
+  eglSwapInterval(egl_display, renderer_vsync);
 
   if (state)
     // We should redraw image at least once right after surface change
@@ -864,9 +877,27 @@ void renderer_redraw_locked(JNIEnv *env) {
   int err = EGL_SUCCESS;
   bool unlocked_early = false;
 
+  static int current_vsync = -1;
+  if (current_vsync != renderer_vsync) {
+    current_vsync = renderer_vsync;
+    eglSwapInterval(egl_display, current_vsync);
+  }
+
   // We should signal X server to not use root window while we actively copy use
   // it
   lorie_mutex_lock(&state->lock, &state->lockingPid);
+
+  if (renderer_frameskip > 0) {
+    if (renderer_frameskip_counter < renderer_frameskip) {
+      renderer_frameskip_counter++;
+      state->drawRequested = FALSE;
+      state->cursor.updated = false;
+      state->cursor.moved = FALSE;
+      lorie_mutex_unlock(&state->lock, &state->lockingPid);
+      return;
+    }
+    renderer_frameskip_counter = 0;
+  }
   // Non-null display.desc.data means we have root window created in legacy
   // drawing mode so we should update it on each frame.
   if (display.desc.data && state->drawRequested) {
@@ -1222,4 +1253,9 @@ __unused static void draw_cursor(void) {
 JNIEXPORT void JNICALL
 Java_com_micewine_emu_LorieView_setColorProfile(JNIEnv *env, jobject thiz, jint profile) {
   renderer_set_color_profile(profile);
+}
+
+JNIEXPORT void JNICALL
+Java_com_micewine_emu_LorieView_setFrameSkip(JNIEnv *env, jobject thiz, jint skip) {
+  renderer_set_frameskip(skip);
 }

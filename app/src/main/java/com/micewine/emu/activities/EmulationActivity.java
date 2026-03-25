@@ -42,6 +42,13 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME_GENERATION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_SMOOTHING;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAMESKIP;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_0;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_1;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_2;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_3;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_4;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_5;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
 
@@ -700,6 +707,18 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
         int frameGenId = 0;
         if (frameGen.equals(FRAME_GENERATION_SMOOTHING)) frameGenId = 1;
         lorieView.setFrameGeneration(frameGenId);
+
+        int fpsLimit = preferences.getInt(FPS_LIMIT, 0);
+        lorieView.setVsync(fpsLimit > 0 ? 1 : 0);
+
+        String frameSkipStr = preferences.getString(SELECTED_FRAMESKIP, FRAMESKIP_0);
+        int skip = 0;
+        if (frameSkipStr.equals(FRAMESKIP_1)) skip = 1;
+        else if (frameSkipStr.equals(FRAMESKIP_2)) skip = 2;
+        else if (frameSkipStr.equals(FRAMESKIP_3)) skip = 3;
+        else if (frameSkipStr.equals(FRAMESKIP_4)) skip = 4;
+        else if (frameSkipStr.equals(FRAMESKIP_5)) skip = 5;
+        lorieView.setFrameSkip(skip);
 
         String colorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
         int colorProfileId = 0;

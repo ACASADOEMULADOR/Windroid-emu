@@ -363,6 +363,14 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String SELECTED_FRAME_GENERATION = "selectedFrameGeneration";
     public final static String FRAME_GENERATION_OFF = "Off";
     public final static String FRAME_GENERATION_SMOOTHING = "Smoothing (Interpolation)";
+
+    public final static String SELECTED_FRAMESKIP = "selectedFrameSkip";
+    public final static String FRAMESKIP_0 = "0 (Off)";
+    public final static String FRAMESKIP_1 = "1";
+    public final static String FRAMESKIP_2 = "2";
+    public final static String FRAMESKIP_3 = "3";
+    public final static String FRAMESKIP_4 = "4";
+    public final static String FRAMESKIP_5 = "5";
     public final static String RENDER_MODE = "renderMode";
     public final static String RENDER_MODE_DEFAULT_VALUE = "0";
 

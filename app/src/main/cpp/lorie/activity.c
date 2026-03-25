@@ -467,6 +467,10 @@ static void setFrameGeneration(__unused JNIEnv *env, __unused jobject thiz, jint
   renderer_set_frame_generation(mode);
 }
 
+static void setVsync(__unused JNIEnv *env, __unused jobject thiz, jint vsync) {
+  renderer_set_vsync(vsync);
+}
+
 JNIEXPORT jboolean JNICALL
 Java_com_micewine_emu_LorieView_renderingInActivity(JNIEnv *env, jobject thiz) {
   return RENDERER_IN_ACTIVITY;
@@ -494,6 +498,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
       {"requestConnection", "()V", (void *)&requestConnection},
       {"setScalingFilter", "(I)V", (void *)&setScalingFilter},
       {"setFrameGeneration", "(I)V", (void *)&setFrameGeneration},
+      {"setVsync", "(I)V", (void *)&setVsync},
   };
   (*vm)->AttachCurrentThread(vm, &env, NULL);
   jclass cls = (*env)->FindClass(env, "com/micewine/emu/LorieView");

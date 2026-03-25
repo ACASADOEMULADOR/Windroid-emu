@@ -30,8 +30,20 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_MESA_
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VULKAN_DRIVER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_SCALING_FILTER;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME_GENERATION;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAMESKIP;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_LINEAR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_0;
 import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI;
@@ -268,6 +280,22 @@ public class MainActivity extends AppCompatActivity {
                         }
                     } else {
                         driverLibPath = "";
+                    }
+
+                    // Validate driver library path before generating ICD file
+                    if (driverLibPath == null || driverLibPath.isEmpty()) {
+                        Log.e("MainActivity", "Driver library path is null or empty for driver: " + driverName);
+                        final String errorDriverName = driverName;
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error: Driver library path not found for " + errorDriverName, Toast.LENGTH_LONG).show());
+                        return;
+                    }
+
+                    File driverFile = new File(driverLibPath);
+                    if (!driverFile.exists()) {
+                        Log.e("MainActivity", "Driver library file does not exist: " + driverLibPath);
+                        final String errorDriverPath = driverLibPath;
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error: Driver file not found at " + errorDriverPath, Toast.LENGTH_LONG).show());
+                        return;
                     }
 
                     generateICDFile(driverLibPath);
@@ -1019,6 +1047,13 @@ public class MainActivity extends AppCompatActivity {
     public static String selectedMesaVkWsiPresentMode = null;
     public static String selectedTuDebugPreset = null;
     public static String selectedVramLimit = null;
+    public static String selectedScalingFilter = null;
+    public static String selectedFrameGeneration = null;
+    public static String selectedFrameSkip = null;
+    public static String selectedRenderMode = null;
+    public static boolean selectedSuperResolution = false;
+    public static String selectedColorProfile = null;
+    public static boolean fpsLimitEnabled = false;
     public static int selectedFragmentId = 0;
     public static String memoryStats = "??/??";
     public static String totalCpuUsage = "???%";
@@ -1154,6 +1189,13 @@ public class MainActivity extends AppCompatActivity {
         selectedTuDebugPreset = preferences.getString(SELECTED_TU_DEBUG_PRESET, SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE);
         selectedVramLimit = (vramLimit != null ? vramLimit
                 : preferences.getString(SELECTED_VRAM_LIMIT, SELECTED_VRAM_LIMIT_DEFAULT_VALUE));
+        selectedScalingFilter = preferences.getString(SELECTED_SCALING_FILTER, SCALING_FILTER_LINEAR);
+        selectedFrameGeneration = preferences.getString(SELECTED_FRAME_GENERATION, FRAME_GENERATION_OFF);
+        selectedFrameSkip = preferences.getString(SELECTED_FRAMESKIP, FRAMESKIP_0);
+        selectedRenderMode = preferences.getString(RENDER_MODE, RENDER_MODE_DEFAULT_VALUE);
+        selectedSuperResolution = preferences.getBoolean(SUPER_RESOLUTION, SUPER_RESOLUTION_DEFAULT_VALUE);
+        selectedColorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
+        fpsLimitEnabled = preferences.getBoolean(FPS_LIMIT_ENABLED, FPS_LIMIT_ENABLED_DEFAULT_VALUE);
 
         enableRamCounter = preferences.getBoolean(RAM_COUNTER, RAM_COUNTER_DEFAULT_VALUE);
         enableCpuCounter = preferences.getBoolean(CPU_COUNTER, CPU_COUNTER_DEFAULT_VALUE);

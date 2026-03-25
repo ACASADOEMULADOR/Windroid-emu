@@ -235,6 +235,9 @@
     <string name="frame_generation_title">Gerador de Quadros</string>
     <string name="frame_generation_desc">Ative a interpolação de quadros para aumentar os FPS percebidos</string>
 
+    <string name="frameskip_title">Pulo de Quadros (Frameskip)</string>
+    <string name="frameskip_desc">Pula a renderização de quadros gráficos para aumentar o fps interno</string>
+
     <string name="perf_mode_root_title">Modo de Desempenho (Root)</string>
     <string name="perf_mode_root_desc">Use o acesso root para maximizar os clocks de CPU e GPU para melhor desempenho</string>
 

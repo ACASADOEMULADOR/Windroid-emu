@@ -22,12 +22,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.micewine.emu.R;
 import com.micewine.emu.core.RatPackageManager.RatPackage;
+
+import java.io.File;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,6 +78,20 @@ public class DriverInfoFragment extends Fragment {
                 }
 
                 setSharedVars(requireActivity(), adrenoToolsDriverPath);
+
+                // Validate driver library path before generating ICD file
+                if (driverPath == null || driverPath.isEmpty()) {
+                    Log.e("DriverInfoFragment", "Driver library path is null or empty for driver: " + driverId);
+                    Toast.makeText(requireContext(), "Error: Driver library path not found", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                File driverFile = new File(driverPath);
+                if (!driverFile.exists()) {
+                    Log.e("DriverInfoFragment", "Driver library file does not exist: " + driverPath);
+                    Toast.makeText(requireContext(), "Error: Driver file not found at " + driverPath, Toast.LENGTH_LONG).show();
+                    return;
+                }
 
                 generateICDFile(driverPath);
 
