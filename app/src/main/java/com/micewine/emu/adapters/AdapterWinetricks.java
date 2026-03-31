@@ -4,9 +4,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.micewine.emu.R;
@@ -36,14 +38,37 @@ public class AdapterWinetricks extends RecyclerView.Adapter<AdapterWinetricks.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         WinetricksItem item = filteredList.get(position);
-        holder.nameText.setText(item.getName());
-        holder.descriptionText.setText(item.getDescription());
-        holder.categoryText.setText(item.getCategory());
+        holder.iconView.setImageResource(item.getIconResId());
+        holder.nameText.setText(item.getSimpleName());
         holder.checkBox.setChecked(item.isSelected());
-
-        holder.itemView.setOnClickListener(v -> {
-            item.setSelected(!item.isSelected());
+        
+        // Configura o estado visual baseado em instalado ou não
+        if (item.isInstalled()) {
+            holder.itemView.setAlpha(0.6f);
+            holder.checkBox.setEnabled(false);
+            holder.checkBox.setChecked(true);
+        } else {
+            holder.itemView.setAlpha(1.0f);
+            holder.checkBox.setEnabled(true);
             holder.checkBox.setChecked(item.isSelected());
+        }
+        
+        // Click listener no itemView inteiro
+        holder.itemView.setOnClickListener(v -> {
+            if (item.isInstalled()) return;
+            boolean newState = !item.isSelected();
+            item.setSelected(newState);
+            holder.checkBox.setChecked(newState);
+        });
+        
+        // Também permite clicar diretamente no checkbox
+        holder.checkBox.setOnClickListener(v -> {
+            if (item.isInstalled()) {
+                holder.checkBox.setChecked(true);
+                return;
+            }
+            boolean newState = holder.checkBox.isChecked();
+            item.setSelected(newState);
         });
     }
 
@@ -59,6 +84,7 @@ public class AdapterWinetricks extends RecyclerView.Adapter<AdapterWinetricks.Vi
             String lowerQuery = query.toLowerCase();
             filteredList = fullList.stream()
                     .filter(item -> item.getName().toLowerCase().contains(lowerQuery) ||
+                            item.getSimpleName().toLowerCase().contains(lowerQuery) ||
                             item.getDescription().toLowerCase().contains(lowerQuery) ||
                             item.getCategory().toLowerCase().contains(lowerQuery))
                     .collect(Collectors.toList());
@@ -75,14 +101,14 @@ public class AdapterWinetricks extends RecyclerView.Adapter<AdapterWinetricks.Vi
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView nameText, descriptionText, categoryText;
+        ImageView iconView;
+        TextView nameText;
         CheckBox checkBox;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            iconView = itemView.findViewById(R.id.winetricksItemIcon);
             nameText = itemView.findViewById(R.id.winetricksItemName);
-            descriptionText = itemView.findViewById(R.id.winetricksItemDescription);
-            categoryText = itemView.findViewById(R.id.winetricksItemCategory);
             checkBox = itemView.findViewById(R.id.winetricksItemCheckBox);
         }
     }

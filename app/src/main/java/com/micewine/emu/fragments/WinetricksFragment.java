@@ -1,6 +1,7 @@
 package com.micewine.emu.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -24,8 +25,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.micewine.emu.R;
 import com.micewine.emu.adapters.AdapterWinetricks;
 import com.micewine.emu.core.ShellLoader;
+import com.micewine.emu.core.WinetricksCache;
 import com.micewine.emu.core.WinetricksItem;
 import com.micewine.emu.core.WinetricksWrapper;
+
+import static com.micewine.emu.activities.MainActivity.winePrefixesDir;
+import static com.micewine.emu.activities.MainActivity.winePrefix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +58,7 @@ public class WinetricksFragment extends Fragment implements ShellLoader.LogCallb
         RecyclerView winetricksRecyclerView = rootView.findViewById(R.id.winetricksRecyclerView);
         btnRunWinetricks = rootView.findViewById(R.id.btnRunWinetricks);
         Button btnOpenLogViewer = rootView.findViewById(R.id.btnOpenLogViewer);
+        Button btnRefreshList = rootView.findViewById(R.id.btnRefreshList);
         winetricksStatusText = rootView.findViewById(R.id.winetricksStatusText);
         winetricksProgressBar = rootView.findViewById(R.id.winetricksProgressBar);
 
@@ -91,6 +97,13 @@ public class WinetricksFragment extends Fragment implements ShellLoader.LogCallb
                 .addToBackStack(null)
                 .commit());
 
+        btnRefreshList.setOnClickListener(v -> {
+            WinetricksCache.clearCache(requireContext());
+            packageList.clear();
+            adapter.updateList();
+            fetchWinetricksList();
+        });
+
         fetchWinetricksList();
 
         return rootView;
@@ -100,7 +113,24 @@ public class WinetricksFragment extends Fragment implements ShellLoader.LogCallb
     private void fetchWinetricksList() {
         if (isFetchingList) return;
         isFetchingList = true;
-        
+
+        // Tenta carregar do cache primeiro
+        if (WinetricksCache.hasValidCache(requireContext())) {
+            List<WinetricksItem> cachedItems = WinetricksCache.loadFromCache(requireContext());
+            if (!cachedItems.isEmpty()) {
+                packageList.clear();
+                packageList.addAll(cachedItems);
+                adapter.updateList();
+                isFetchingList = false;
+                // Verifica instalados em background
+                new Thread(() -> {
+                    checkInstalledPackages();
+                    new Handler(Looper.getMainLooper()).post(() -> adapter.updateList());
+                }).start();
+                return;
+            }
+        }
+
         setRunningState(true);
         winetricksStatusText.setText("Fetching package list...");
         winetricksProgressBar.setIndeterminate(true);
@@ -116,12 +146,23 @@ public class WinetricksFragment extends Fragment implements ShellLoader.LogCallb
 
             parseListOutput(listOutput.toString());
 
+            // Salva no cache
+            if (!packageList.isEmpty()) {
+                WinetricksCache.saveToCache(requireContext(), packageList);
+            }
+
             new Handler(Looper.getMainLooper()).post(() -> {
                 setRunningState(false);
                 adapter.updateList();
                 isFetchingList = false;
                 if (packageList.isEmpty()) {
                     Toast.makeText(getContext(), "Failed to load Winetricks list", Toast.LENGTH_LONG).show();
+                } else {
+                    // Verifica instalados em background após carregar
+                    new Thread(() -> {
+                        checkInstalledPackages();
+                        new Handler(Looper.getMainLooper()).post(() -> adapter.updateList());
+                    }).start();
                 }
             });
         }).start();
@@ -131,6 +172,7 @@ public class WinetricksFragment extends Fragment implements ShellLoader.LogCallb
         packageList.clear();
         String[] lines = output.split("\n");
         String currentCategory = "General";
+        Context context = requireContext();
 
         for (String line : lines) {
             line = line.trim();
@@ -147,8 +189,27 @@ public class WinetricksFragment extends Fragment implements ShellLoader.LogCallb
 
             if (name.equals("---------------------------------------------------------")) continue;
 
-            packageList.add(new WinetricksItem(name, description, currentCategory));
+            String simpleName = WinetricksItem.getSimpleNameForPackage(name);
+            int iconResId = WinetricksItem.getIconForPackage(name, context);
+            
+            packageList.add(new WinetricksItem(name, description, currentCategory, simpleName, iconResId));
         }
+    }
+
+    private void checkInstalledPackages() {
+        // Verifica quais pacotes já estão instalados no prefixo atual
+        for (WinetricksItem item : packageList) {
+            boolean installed = isPackageInstalled(item.getName());
+            item.setInstalled(installed);
+        }
+    }
+
+    private boolean isPackageInstalled(String packageName) {
+        // Verifica se o pacote está instalado verificando o winetricks.log
+        String prefix = winePrefixesDir + "/" + winePrefix;
+        String command = "cat " + prefix + "/winetricks.log 2>/dev/null | grep '^" + packageName + "$'";
+        String output = ShellLoader.runCommandWithOutput(command, false);
+        return output != null && output.trim().equals(packageName);
     }
 
     @SuppressLint("SetTextI18n")
