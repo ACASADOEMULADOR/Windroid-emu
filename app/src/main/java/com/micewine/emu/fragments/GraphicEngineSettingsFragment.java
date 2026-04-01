@@ -3,8 +3,6 @@ package com.micewine.emu.fragments;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
-import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
-import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SEEKBAR;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
@@ -53,7 +51,6 @@ public class GraphicEngineSettingsFragment extends Fragment {
 
         settingsList.clear();
 
-        addToAdapter(R.string.fps_limit_enabled_title, R.string.fps_limit_enabled_desc, null, null, SWITCH, String.valueOf(FPS_LIMIT_ENABLED_DEFAULT_VALUE), FPS_LIMIT_ENABLED);
         addToAdapter(R.string.fps_limit_title, R.string.null_desc, null, new int[]{0, 120}, SEEKBAR, "0", FPS_LIMIT);
         addToAdapter(R.string.super_resolution_title, R.string.null_desc, null, null, SWITCH, String.valueOf(SUPER_RESOLUTION_DEFAULT_VALUE), SUPER_RESOLUTION);
         addToAdapter(R.string.color_profile_title, R.string.null_desc, new String[]{"Neutral", "Vivid", "Warm", "Cool"}, null, SPINNER, COLOR_PROFILE_DEFAULT_VALUE, COLOR_PROFILE);

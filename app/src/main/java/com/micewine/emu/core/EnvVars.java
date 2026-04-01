@@ -30,7 +30,6 @@ import static com.micewine.emu.activities.MainActivity.box64Sse42;
 import static com.micewine.emu.activities.MainActivity.deviceArch;
 import static com.micewine.emu.activities.MainActivity.fpsLimit;
 import static com.micewine.emu.activities.MainActivity.enableAFME;
-import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.MainActivity.enableDRI3;
 import static com.micewine.emu.activities.MainActivity.homeDir;
@@ -130,7 +129,7 @@ public class EnvVars {
         vars.add("DXVK_STATE_CACHE_PATH=" + homeDir + "/.cache/dxvk-shader-cache");
         vars.add("DXVK_HUD=" + selectedDXVKHud);
 
-        if (preferences.getBoolean(FPS_LIMIT_ENABLED, false) && fpsLimit > 0) {
+        if (fpsLimit > 0) {
             vars.add("DXVK_FRAME_RATE=" + fpsLimit);
         }
 

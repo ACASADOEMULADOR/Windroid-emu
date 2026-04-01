@@ -40,8 +40,6 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTI
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
-import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
-import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI;
@@ -1039,7 +1037,6 @@ public class MainActivity extends AppCompatActivity {
     public static String selectedFrameSkip = null;
     public static boolean selectedSuperResolution = false;
     public static String selectedColorProfile = null;
-    public static boolean fpsLimitEnabled = false;
     public static int selectedFragmentId = 0;
     public static String memoryStats = "??/??";
     public static String totalCpuUsage = "???%";
@@ -1180,7 +1177,6 @@ public class MainActivity extends AppCompatActivity {
         selectedFrameSkip = preferences.getString(SELECTED_FRAMESKIP, FRAMESKIP_0);
         selectedSuperResolution = preferences.getBoolean(SUPER_RESOLUTION, SUPER_RESOLUTION_DEFAULT_VALUE);
         selectedColorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
-        fpsLimitEnabled = preferences.getBoolean(FPS_LIMIT_ENABLED, FPS_LIMIT_ENABLED_DEFAULT_VALUE);
 
         enableRamCounter = preferences.getBoolean(RAM_COUNTER, RAM_COUNTER_DEFAULT_VALUE);
         enableCpuCounter = preferences.getBoolean(CPU_COUNTER, CPU_COUNTER_DEFAULT_VALUE);

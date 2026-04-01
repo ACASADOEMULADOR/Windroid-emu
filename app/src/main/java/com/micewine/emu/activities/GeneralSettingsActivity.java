@@ -377,7 +377,4 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
     public final static String COLOR_PROFILE = "colorProfile";
     public final static String COLOR_PROFILE_DEFAULT_VALUE = "Neutral";
-
-    public final static String FPS_LIMIT_ENABLED = "fpsLimitEnabled";
-    public final static boolean FPS_LIMIT_ENABLED_DEFAULT_VALUE = false;
 }
