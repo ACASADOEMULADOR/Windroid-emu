@@ -134,41 +134,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="@string/fps_limit_title"
-            android:textAlignment="textStart"
-            android:textColor="@color/textColor"
-            android:textSize="15sp"
-            app:icon="@drawable/ic_display"
-            app:iconGravity="start"
-            app:iconPadding="10dp"
-            app:iconTint="@color/textColor"></com.google.android.material.button.MaterialButton>
-
-        <TextView
-            android:id="@+id/fpsLimitText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:textAlignment="center"></TextView>
-
-        <SeekBar
-            android:id="@+id/fpsLimitSeekbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="10dp"></SeekBar>
-
-    </LinearLayout>
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/openLogViewer"
         android:text="@string/open_log_viewer"

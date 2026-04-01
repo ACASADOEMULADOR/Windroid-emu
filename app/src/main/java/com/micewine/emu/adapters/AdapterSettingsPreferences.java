@@ -1,6 +1,7 @@
 package com.micewine.emu.adapters;
 
 import static com.micewine.emu.activities.GeneralSettingsActivity.CHECKBOX;
+import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SEEKBAR;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SWITCH;
@@ -132,9 +133,15 @@ public class AdapterSettingsPreferences extends RecyclerView.Adapter<AdapterSett
                 holder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                        seekBar.setProgress(seekBar.getProgress() / 24 * 24);
+                        if (!item.key.equals(FPS_LIMIT)) {
+                            seekBar.setProgress(seekBar.getProgress() / 24 * 24);
+                        }
 
-                        holder.seekBarValue.setText(String.valueOf(seekBar.getProgress()));
+                        if (seekBar.getProgress() == 0) {
+                            holder.seekBarValue.setText(R.string.unlimited);
+                        } else {
+                            holder.seekBarValue.setText(String.valueOf(seekBar.getProgress()));
+                        }
                     }
 
                     @Override

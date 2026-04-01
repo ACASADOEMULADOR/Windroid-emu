@@ -13,7 +13,6 @@ import static com.micewine.emu.activities.MainActivity.enableCpuCounter;
 import static com.micewine.emu.activities.MainActivity.enableRamCounter;
 import static com.micewine.emu.activities.MainActivity.memoryStats;
 import static com.micewine.emu.activities.MainActivity.preferences;
-import static com.micewine.emu.activities.MainActivity.screenFpsLimit;
 import static com.micewine.emu.activities.MainActivity.setSharedVars;
 import static com.micewine.emu.activities.MainActivity.totalCpuUsage;
 import static com.micewine.emu.activities.RatManagerActivity.generateMangoHUDConfFile;
@@ -355,45 +354,6 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             virtualControllerInputView.setEditing(true);
             saveLayout.setVisibility(View.VISIBLE);
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-        });
-
-        TextView fpsLimitText = headerViewMain.findViewById(R.id.fpsLimitText);
-        SeekBar fpsLimitSeekbar = headerViewMain.findViewById(R.id.fpsLimitSeekbar);
-
-        fpsLimitSeekbar.setMin(0);
-        fpsLimitSeekbar.setMax(screenFpsLimit);
-        fpsLimitSeekbar.setProgress(preferences != null ? preferences.getInt(FPS_LIMIT, 0) : 0);
-
-        if (fpsLimitSeekbar.getProgress() == 0) {
-            fpsLimitText.setText(R.string.unlimited);
-        } else {
-            fpsLimitText.setText(fpsLimitSeekbar.getProgress() + " FPS");
-        }
-
-        fpsLimitSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if (fpsLimitSeekbar.getProgress() == 0) {
-                    fpsLimitText.setText(R.string.unlimited);
-                } else {
-                    fpsLimitText.setText(fpsLimitSeekbar.getProgress() + " FPS");
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                SharedPreferences.Editor editor = preferences.edit();
-
-                editor.putInt(FPS_LIMIT, seekBar.getProgress());
-                editor.apply();
-
-                setSharedVars(EmulationActivity.this);
-                generateMangoHUDConfFile();
-            }
         });
 
         TextView virtualControllerOpacityText = headerViewMain.findViewById(R.id.virtualControllerOpacityText);
