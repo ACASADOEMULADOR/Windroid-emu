@@ -34,8 +34,6 @@
     <string name="log_desc">Просмотреть лог Windroid</string>
     <string name="clear_log">Очистить</string>
     <string name="desktop_mode_init">Рабочий стол</string>
-    <string name="about_title">О программе</string>
-    <string name="about_desc">О Windroid</string>
     <string name="general_settings">Общие настройки</string>
     <string name="exit">Выход</string>
     <string name="open_keyboard">Открыть клавиатуру</string>

@@ -599,8 +599,6 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragmentId = 1;
             } else if (item.getItemId() == R.id.nav_file_manager) {
                 selectedFragmentId = 2;
-            } else if (item.getItemId() == R.id.nav_about) {
-                selectedFragmentId = 3;
             }
             viewPager.setCurrentItem(selectedFragmentId);
             return true;

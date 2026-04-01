@@ -35,9 +35,7 @@
     <string name="log_desc">Ver Logs do Windroid</string>
     <string name="clear_log">Limpar</string>
     <string name="desktop_mode_init">Área de Trabalho</string>
-    <string name="about_title">Sobre</string>
     <string name="home_title">Início</string>
-    <string name="about_desc">Sobre o Windroid</string>
     <string name="general_settings">Configurações Gerais</string>
     <string name="exit">Sair</string>
     <string name="open_keyboard">Abrir Teclado</string>
