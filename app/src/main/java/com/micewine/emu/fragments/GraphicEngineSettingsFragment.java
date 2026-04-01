@@ -5,8 +5,6 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FPS_LIMIT_ENABLED_DEFAULT_VALUE;
-import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE;
-import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SEEKBAR;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
@@ -55,7 +53,6 @@ public class GraphicEngineSettingsFragment extends Fragment {
 
         settingsList.clear();
 
-        addToAdapter(R.string.render_mode_title, R.string.null_desc, new String[]{"0", "1", "2", "3"}, null, SPINNER, RENDER_MODE_DEFAULT_VALUE, RENDER_MODE);
         addToAdapter(R.string.fps_limit_enabled_title, R.string.fps_limit_enabled_desc, null, null, SWITCH, String.valueOf(FPS_LIMIT_ENABLED_DEFAULT_VALUE), FPS_LIMIT_ENABLED);
         addToAdapter(R.string.fps_limit_title, R.string.null_desc, null, new int[]{0, 120}, SEEKBAR, "0", FPS_LIMIT);
         addToAdapter(R.string.super_resolution_title, R.string.null_desc, null, null, SWITCH, String.valueOf(SUPER_RESOLUTION_DEFAULT_VALUE), SUPER_RESOLUTION);

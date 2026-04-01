@@ -371,8 +371,6 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String FRAMESKIP_3 = "3";
     public final static String FRAMESKIP_4 = "4";
     public final static String FRAMESKIP_5 = "5";
-    public final static String RENDER_MODE = "renderMode";
-    public final static String RENDER_MODE_DEFAULT_VALUE = "0";
 
     public final static String SUPER_RESOLUTION = "superResolution";
     public final static boolean SUPER_RESOLUTION_DEFAULT_VALUE = false;

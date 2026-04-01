@@ -36,8 +36,6 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_FRAME
 import static com.micewine.emu.activities.GeneralSettingsActivity.SCALING_FILTER_LINEAR;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATION_OFF;
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_0;
-import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE;
-import static com.micewine.emu.activities.GeneralSettingsActivity.RENDER_MODE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
@@ -774,15 +772,6 @@ public class MainActivity extends AppCompatActivity {
             RootUtils.applyPerformanceMode();
         }
 
-        File qglConfig = new File("/storage/emulated/0/Winlator/qgl_config.txt");
-        try {
-            if (!qglConfig.getParentFile().exists()) qglConfig.getParentFile().mkdirs();
-            String renderMode = preferences.getString(RENDER_MODE, RENDER_MODE_DEFAULT_VALUE);
-            Files.write(qglConfig.toPath(), ("rendermode=" + renderMode).getBytes());
-        } catch (IOException e) {
-            Log.e("MainActivity", "Failed to write qgl_config.txt", e);
-        }
-
         installDXWrapper(winePrefix);
 
         boolean changedDpi = !(preferences.getBoolean(WINE_DPI_APPLIED, WINE_DPI_APPLIED_DEFAULT_VALUE));
@@ -1048,7 +1037,6 @@ public class MainActivity extends AppCompatActivity {
     public static String selectedScalingFilter = null;
     public static String selectedFrameGeneration = null;
     public static String selectedFrameSkip = null;
-    public static String selectedRenderMode = null;
     public static boolean selectedSuperResolution = false;
     public static String selectedColorProfile = null;
     public static boolean fpsLimitEnabled = false;
@@ -1190,7 +1178,6 @@ public class MainActivity extends AppCompatActivity {
         selectedScalingFilter = preferences.getString(SELECTED_SCALING_FILTER, SCALING_FILTER_LINEAR);
         selectedFrameGeneration = preferences.getString(SELECTED_FRAME_GENERATION, FRAME_GENERATION_OFF);
         selectedFrameSkip = preferences.getString(SELECTED_FRAMESKIP, FRAMESKIP_0);
-        selectedRenderMode = preferences.getString(RENDER_MODE, RENDER_MODE_DEFAULT_VALUE);
         selectedSuperResolution = preferences.getBoolean(SUPER_RESOLUTION, SUPER_RESOLUTION_DEFAULT_VALUE);
         selectedColorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
         fpsLimitEnabled = preferences.getBoolean(FPS_LIMIT_ENABLED, FPS_LIMIT_ENABLED_DEFAULT_VALUE);
