@@ -37,6 +37,7 @@ import java.util.stream.IntStream;
 
 public class VirtualControllerPresetManagerFragment extends Fragment {
     public static boolean editShortcut;
+    private static final String DEFAULT_VIRTUAL_CONTROLLER_PRESET_JSON = "{\"analogs\":[{\"deadZone\":0.75,\"downKeyCodes\":{\"keyCode\":47,\"name\":\"S\",\"scanCode\":31,\"type\":0},\"downKeyName\":\"S\",\"fingerId\":-1,\"fingerX\":0.0,\"fingerY\":0.0,\"id\":1,\"isPressed\":false,\"leftKeyCodes\":{\"keyCode\":29,\"name\":\"A\",\"scanCode\":30,\"type\":0},\"leftKeyName\":\"A\",\"radius\":275.0,\"rightKeyCodes\":{\"keyCode\":32,\"name\":\"D\",\"scanCode\":32,\"type\":0},\"rightKeyName\":\"D\",\"upKeyCodes\":{\"keyCode\":51,\"name\":\"W\",\"scanCode\":17,\"type\":0},\"upKeyName\":\"W\",\"x\":330.0,\"y\":810.0}],\"buttons\":[{\"buttonMapping\":{\"keyCode\":111,\"name\":\"ESC\",\"scanCode\":1,\"type\":0},\"fingerId\":-1,\"id\":1,\"isPressed\":false,\"keyName\":\"ESC\",\"radius\":130.0,\"shape\":2,\"x\":1380.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":66,\"name\":\"Enter\",\"scanCode\":28,\"type\":0},\"fingerId\":-1,\"id\":2,\"isPressed\":false,\"keyName\":\"Enter\",\"radius\":130.0,\"shape\":2,\"x\":1140.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":62,\"name\":\"Space\",\"scanCode\":57,\"type\":0},\"fingerId\":-1,\"id\":3,\"isPressed\":false,\"keyName\":\"Space\",\"radius\":180.0,\"shape\":0,\"x\":2220.0,\"y\":960.0},{\"buttonMapping\":{\"keyCode\":-1,\"name\":\"M_Left\",\"scanCode\":-1,\"type\":-1},\"fingerId\":-1,\"id\":4,\"isPressed\":false,\"keyName\":\"M_Left\",\"radius\":180.0,\"shape\":0,\"x\":2400.0,\"y\":780.0},{\"buttonMapping\":{\"keyCode\":-1,\"name\":\"M_Right\",\"scanCode\":-1,\"type\":-1},\"fingerId\":-1,\"id\":5,\"isPressed\":false,\"keyName\":\"M_Right\",\"radius\":180.0,\"shape\":0,\"x\":2040.0,\"y\":780.0},{\"buttonMapping\":{\"keyCode\":50,\"name\":\"V\",\"scanCode\":47,\"type\":0},\"fingerId\":-1,\"id\":6,\"isPressed\":false,\"keyName\":\"V\",\"radius\":180.0,\"shape\":0,\"x\":2220.0,\"y\":600.0},{\"buttonMapping\":{\"keyCode\":34,\"name\":\"F\",\"scanCode\":33,\"type\":0},\"fingerId\":-1,\"id\":7,\"isPressed\":false,\"keyName\":\"F\",\"radius\":140.0,\"shape\":0,\"x\":1740.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":59,\"name\":\"LShift\",\"scanCode\":42,\"type\":0},\"fingerId\":-1,\"id\":8,\"isPressed\":false,\"keyName\":\"LShift\",\"radius\":180.0,\"shape\":2,\"x\":2400.0,\"y\":90.0},{\"buttonMapping\":{\"keyCode\":46,\"name\":\"R\",\"scanCode\":19,\"type\":0},\"fingerId\":-1,\"id\":9,\"isPressed\":false,\"keyName\":\"R\",\"radius\":140.0,\"shape\":0,\"x\":810.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":9,\"name\":\"2\",\"scanCode\":3,\"type\":0},\"fingerId\":-1,\"id\":10,\"isPressed\":false,\"keyName\":\"2\",\"radius\":180.0,\"shape\":2,\"x\":120.0,\"y\":90.0},{\"buttonMapping\":{\"keyCode\":35,\"name\":\"G\",\"scanCode\":34,\"type\":0},\"fingerId\":-1,\"id\":11,\"isPressed\":false,\"keyName\":\"G\",\"radius\":180.0,\"shape\":2,\"x\":120.0,\"y\":240.0},{\"buttonMapping\":{\"keyCode\":31,\"name\":\"C\",\"scanCode\":46,\"type\":0},\"fingerId\":-1,\"id\":12,\"isPressed\":false,\"keyName\":\"C\",\"radius\":180.0,\"shape\":2,\"x\":2400.0,\"y\":240.0}],\"dpads\":[],\"name\":\"VIRTUAL PAD\",\"resolution\":\"2520x1080\"}";
 
     public VirtualControllerPresetManagerFragment(boolean editShortcut) {
         initialize(editShortcut);
@@ -273,7 +274,18 @@ public class VirtualControllerPresetManagerFragment extends Fragment {
         Type listType = new TypeToken<ArrayList<VirtualControllerPreset>>() {}.getType();
         ArrayList<VirtualControllerPreset> loadedList = gson.fromJson(json, listType);
 
-        return (loadedList != null ? loadedList : new ArrayList<>());
+        if (loadedList == null || loadedList.isEmpty()) {
+            loadedList = new ArrayList<>();
+            loadedList.add(gson.fromJson(DEFAULT_VIRTUAL_CONTROLLER_PRESET_JSON, VirtualControllerPreset.class));
+
+            preferences.edit().putString("virtualControllerPresetList", gson.toJson(loadedList)).apply();
+
+            if (preferences.getString(SELECTED_VIRTUAL_CONTROLLER_PRESET, "").isEmpty()) {
+                preferences.edit().putString(SELECTED_VIRTUAL_CONTROLLER_PRESET, "VIRTUAL PAD").apply();
+            }
+        }
+
+        return loadedList;
     }
 
     public static class VirtualControllerPreset {
