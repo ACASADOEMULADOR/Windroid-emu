@@ -174,9 +174,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
     private MaterialButton addEnvVarButton;
     public static final ArrayList<AdapterEnvVar.EnvVar> envVars = new ArrayList<>();
     private final List<String> mappingTypes = List.of("MiceWine Controller", "Keyboard/Mouse");
-    private final List<String> virtualControllerProfilesNames = getVirtualControllerPresets().stream()
-            .map(VirtualControllerPresetManagerFragment.VirtualControllerPreset::getName)
-            .collect(Collectors.toList());
+    private List<String> virtualControllerProfilesNames;
     private final List<String> controllerProfilesNames = getControllerPresets().stream()
             .map(ControllerPresetManagerFragment.ControllerPreset::getName)
             .collect(Collectors.toList());
@@ -277,6 +275,10 @@ public class EditGamePreferencesFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        virtualControllerProfilesNames = getVirtualControllerPresets(requireContext()).stream()
+                .map(VirtualControllerPresetManagerFragment.VirtualControllerPreset::getName)
+                .collect(Collectors.toList());
+
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.fragment_edit_game_preferences, null);
 

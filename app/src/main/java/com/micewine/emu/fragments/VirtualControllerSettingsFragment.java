@@ -32,13 +32,15 @@ import java.util.stream.Collectors;
 
 public class VirtualControllerSettingsFragment extends DialogFragment {
     private final List<String> mappingTypes = List.of("MiceWine Controller", "Keyboard/Mouse");
-    private final List<String> virtualControllerProfilesNames = getVirtualControllerPresets().stream()
-            .map(VirtualControllerPreset::getName)
-            .collect(Collectors.toList());
+    private List<String> virtualControllerProfilesNames;
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        virtualControllerProfilesNames = getVirtualControllerPresets(requireContext()).stream()
+                .map(VirtualControllerPreset::getName)
+                .collect(Collectors.toList());
+
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.fragment_virtual_controller_settings, null);
 
