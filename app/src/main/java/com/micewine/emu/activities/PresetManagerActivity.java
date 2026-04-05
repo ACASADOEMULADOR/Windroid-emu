@@ -89,7 +89,7 @@ public class PresetManagerActivity extends AppCompatActivity {
                 });
             }
             case VIRTUAL_CONTROLLER_PRESET -> {
-                fragmentLoader(new VirtualControllerPresetManagerFragment(editShortcut), true);
+                fragmentLoader(new VirtualControllerPresetManagerFragment(this, editShortcut), true);
 
                 controllerMapperToolbar.setTitle(R.string.virtual_controller_mapper_title);
 

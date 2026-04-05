@@ -555,7 +555,7 @@ public class MainActivity extends AppCompatActivity {
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         ControllerPresetManagerFragment.initialize(false);
-        VirtualControllerPresetManagerFragment.initialize(false);
+        VirtualControllerPresetManagerFragment.initialize(this, false);
         Box64PresetManagerFragment.initialize();
         ShortcutsFragment.initialize();
         ControllerUtils.initialize(this);

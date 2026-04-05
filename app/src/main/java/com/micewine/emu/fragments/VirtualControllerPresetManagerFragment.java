@@ -39,8 +39,8 @@ public class VirtualControllerPresetManagerFragment extends Fragment {
     public static boolean editShortcut;
     private static final String DEFAULT_VIRTUAL_CONTROLLER_PRESET_JSON = "{\"analogs\":[{\"deadZone\":0.75,\"downKeyCodes\":{\"keyCode\":47,\"name\":\"S\",\"scanCode\":31,\"type\":0},\"downKeyName\":\"S\",\"fingerId\":-1,\"fingerX\":0.0,\"fingerY\":0.0,\"id\":1,\"isPressed\":false,\"leftKeyCodes\":{\"keyCode\":29,\"name\":\"A\",\"scanCode\":30,\"type\":0},\"leftKeyName\":\"A\",\"radius\":275.0,\"rightKeyCodes\":{\"keyCode\":32,\"name\":\"D\",\"scanCode\":32,\"type\":0},\"rightKeyName\":\"D\",\"upKeyCodes\":{\"keyCode\":51,\"name\":\"W\",\"scanCode\":17,\"type\":0},\"upKeyName\":\"W\",\"x\":330.0,\"y\":810.0}],\"buttons\":[{\"buttonMapping\":{\"keyCode\":111,\"name\":\"ESC\",\"scanCode\":1,\"type\":0},\"fingerId\":-1,\"id\":1,\"isPressed\":false,\"keyName\":\"ESC\",\"radius\":130.0,\"shape\":2,\"x\":1380.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":66,\"name\":\"Enter\",\"scanCode\":28,\"type\":0},\"fingerId\":-1,\"id\":2,\"isPressed\":false,\"keyName\":\"Enter\",\"radius\":130.0,\"shape\":2,\"x\":1140.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":62,\"name\":\"Space\",\"scanCode\":57,\"type\":0},\"fingerId\":-1,\"id\":3,\"isPressed\":false,\"keyName\":\"Space\",\"radius\":180.0,\"shape\":0,\"x\":2220.0,\"y\":960.0},{\"buttonMapping\":{\"keyCode\":-1,\"name\":\"M_Left\",\"scanCode\":-1,\"type\":-1},\"fingerId\":-1,\"id\":4,\"isPressed\":false,\"keyName\":\"M_Left\",\"radius\":180.0,\"shape\":0,\"x\":2400.0,\"y\":780.0},{\"buttonMapping\":{\"keyCode\":-1,\"name\":\"M_Right\",\"scanCode\":-1,\"type\":-1},\"fingerId\":-1,\"id\":5,\"isPressed\":false,\"keyName\":\"M_Right\",\"radius\":180.0,\"shape\":0,\"x\":2040.0,\"y\":780.0},{\"buttonMapping\":{\"keyCode\":50,\"name\":\"V\",\"scanCode\":47,\"type\":0},\"fingerId\":-1,\"id\":6,\"isPressed\":false,\"keyName\":\"V\",\"radius\":180.0,\"shape\":0,\"x\":2220.0,\"y\":600.0},{\"buttonMapping\":{\"keyCode\":34,\"name\":\"F\",\"scanCode\":33,\"type\":0},\"fingerId\":-1,\"id\":7,\"isPressed\":false,\"keyName\":\"F\",\"radius\":140.0,\"shape\":0,\"x\":1740.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":59,\"name\":\"LShift\",\"scanCode\":42,\"type\":0},\"fingerId\":-1,\"id\":8,\"isPressed\":false,\"keyName\":\"LShift\",\"radius\":180.0,\"shape\":2,\"x\":2400.0,\"y\":90.0},{\"buttonMapping\":{\"keyCode\":46,\"name\":\"R\",\"scanCode\":19,\"type\":0},\"fingerId\":-1,\"id\":9,\"isPressed\":false,\"keyName\":\"R\",\"radius\":140.0,\"shape\":0,\"x\":810.0,\"y\":990.0},{\"buttonMapping\":{\"keyCode\":9,\"name\":\"2\",\"scanCode\":3,\"type\":0},\"fingerId\":-1,\"id\":10,\"isPressed\":false,\"keyName\":\"2\",\"radius\":180.0,\"shape\":2,\"x\":120.0,\"y\":90.0},{\"buttonMapping\":{\"keyCode\":35,\"name\":\"G\",\"scanCode\":34,\"type\":0},\"fingerId\":-1,\"id\":11,\"isPressed\":false,\"keyName\":\"G\",\"radius\":180.0,\"shape\":2,\"x\":120.0,\"y\":240.0},{\"buttonMapping\":{\"keyCode\":31,\"name\":\"C\",\"scanCode\":46,\"type\":0},\"fingerId\":-1,\"id\":12,\"isPressed\":false,\"keyName\":\"C\",\"radius\":180.0,\"shape\":2,\"x\":2400.0,\"y\":240.0}],\"dpads\":[],\"name\":\"VIRTUAL PAD\",\"resolution\":\"2520x1080\"}";
 
-    public VirtualControllerPresetManagerFragment(boolean editShortcut) {
-        initialize(editShortcut);
+    public VirtualControllerPresetManagerFragment(Context context, boolean editShortcut) {
+        initialize(context, editShortcut);
     }
 
     private static RecyclerView recyclerView;
@@ -74,8 +74,8 @@ public class VirtualControllerPresetManagerFragment extends Fragment {
     private static final ArrayList<AdapterPreset.Item> presetsAdapterList = new ArrayList<>();
     private final static Type listType = new TypeToken<VirtualControllerPreset>() {}.getType();
 
-    public static void initialize(boolean editable) {
-        presetsList = getVirtualControllerPresets();
+    public static void initialize(Context context, boolean editable) {
+        presetsList = getVirtualControllerPresets(context);
         editShortcut = editable;
     }
 
@@ -203,35 +203,8 @@ public class VirtualControllerPresetManagerFragment extends Fragment {
 
         preset.name = presetName;
 
-        if (autoAdjust && !preset.resolution.isEmpty()) {
-            String nativeResolution = getNativeResolution(context);
-
-            if (!nativeResolution.equals(preset.resolution)) {
-                String[] nativeResolutionSplit = nativeResolution.split("x");
-                String[] presetResolutionSplit = preset.resolution.split("x");
-
-                float nativeResolutionWidth = Float.parseFloat(nativeResolutionSplit[0]);
-                float nativeResolutionHeight = Float.parseFloat(nativeResolutionSplit[1]);
-
-                float presetResolutionWidth = Float.parseFloat(presetResolutionSplit[0]);
-                float presetResolutionHeight = Float.parseFloat(presetResolutionSplit[1]);
-
-                float multiplierWidth = (nativeResolutionWidth / presetResolutionWidth) * 100F;
-                float multiplierHeight = (nativeResolutionHeight / presetResolutionHeight) * 100F;
-
-                preset.buttons.forEach((i) -> {
-                    i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-                    i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
-                });
-                preset.analogs.forEach((i) -> {
-                    i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-                    i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
-                });
-                preset.dpads.forEach((i) -> {
-                    i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
-                    i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
-                });
-            }
+        if (autoAdjust) {
+            adjustPresetResolution(context, preset);
         }
 
         presetsList.add(preset);
@@ -269,14 +242,53 @@ public class VirtualControllerPresetManagerFragment extends Fragment {
         editor.apply();
     }
 
-    public static ArrayList<VirtualControllerPreset> getVirtualControllerPresets() {
+    private static void adjustPresetResolution(Context context, VirtualControllerPreset preset) {
+        if (preset.resolution == null || preset.resolution.isEmpty()) return;
+
+        String nativeResolution = getNativeResolution(context);
+
+        if (!nativeResolution.equals(preset.resolution)) {
+            String[] nativeResolutionSplit = nativeResolution.split("x");
+            String[] presetResolutionSplit = preset.resolution.split("x");
+
+            float nativeResolutionWidth = Float.parseFloat(nativeResolutionSplit[0]);
+            float nativeResolutionHeight = Float.parseFloat(nativeResolutionSplit[1]);
+
+            float presetResolutionWidth = Float.parseFloat(presetResolutionSplit[0]);
+            float presetResolutionHeight = Float.parseFloat(presetResolutionSplit[1]);
+
+            float multiplierWidth = (nativeResolutionWidth / presetResolutionWidth) * 100F;
+            float multiplierHeight = (nativeResolutionHeight / presetResolutionHeight) * 100F;
+
+            preset.buttons.forEach((i) -> {
+                i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            });
+            preset.analogs.forEach((i) -> {
+                i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            });
+            preset.dpads.forEach((i) -> {
+                i.x = Math.round(i.x / 100F * multiplierWidth / GRID_SIZE) * (float) GRID_SIZE;
+                i.y = Math.round(i.y / 100F * multiplierHeight / GRID_SIZE) * (float) GRID_SIZE;
+            });
+
+            preset.resolution = nativeResolution;
+        }
+    }
+
+    public static ArrayList<VirtualControllerPreset> getVirtualControllerPresets(Context context) {
         String json = preferences.getString("virtualControllerPresetList", "");
         Type listType = new TypeToken<ArrayList<VirtualControllerPreset>>() {}.getType();
         ArrayList<VirtualControllerPreset> loadedList = gson.fromJson(json, listType);
 
         if (loadedList == null || loadedList.isEmpty()) {
             loadedList = new ArrayList<>();
-            loadedList.add(gson.fromJson(DEFAULT_VIRTUAL_CONTROLLER_PRESET_JSON, VirtualControllerPreset.class));
+            VirtualControllerPreset defaultPreset = gson.fromJson(DEFAULT_VIRTUAL_CONTROLLER_PRESET_JSON, VirtualControllerPreset.class);
+
+            adjustPresetResolution(context, defaultPreset);
+
+            loadedList.add(defaultPreset);
 
             preferences.edit().putString("virtualControllerPresetList", gson.toJson(loadedList)).apply();
 
