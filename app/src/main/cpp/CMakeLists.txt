@@ -6,7 +6,7 @@ enable_language(ASM)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_BUILD_TYPE Release)
 
 include(TestBigEndian)
 include(CheckIncludeFile)
@@ -24,6 +24,7 @@ function(target_apply_patch patch_target d p)
 endfunction()
 
 set(test_compile_options
+        "-O3"
         "-Wall"
         "-Wpointer-arith"
         "-Wmissing-declarations"

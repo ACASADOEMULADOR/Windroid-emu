@@ -73,7 +73,7 @@ public class LorieView extends SurfaceView implements InputStub {
             width = getMeasuredWidth();
             height = getMeasuredHeight();
 
-            Log.d("SurfaceChangedListener", "Surface was changed: " + width + "x" + height);
+            // Log.d("SurfaceChangedListener", "Surface was changed: " + width + "x" + height);
             if (mCallback == null)
                 return;
 
@@ -246,7 +246,7 @@ public class LorieView extends SurfaceView implements InputStub {
         if (clip != null) {
             String text = String.valueOf(clipboard.getText());
             sendClipboardEvent(text.getBytes(StandardCharsets.UTF_8));
-            Log.d("CLIP", "sending clipboard contents: " + text);
+            // Log.d("CLIP", "sending clipboard contents: " + text);
         }
     }
 
@@ -263,7 +263,7 @@ public class LorieView extends SurfaceView implements InputStub {
                         desc.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML))) {
             lastClipboardTimestamp = desc.getTimestamp();
             sendClipboardAnnounce();
-            Log.d("CLIP", "sending clipboard announce");
+            // Log.d("CLIP", "sending clipboard announce");
         }
     }
 

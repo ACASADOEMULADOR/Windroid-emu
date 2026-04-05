@@ -177,6 +177,7 @@ public class EnvVars {
 
         vars.add("WINE_Z_DISK=" + appRootDir);
         vars.add("WINEESYNC=" + strBoolToNum(wineESync));
+        vars.add("WINE_NO_WINEMENUBUILDER=1");
 
         if (useAdrenoTools && adrenoToolsDriverFile != null) {
             vars.add("USE_ADRENOTOOLS=1");

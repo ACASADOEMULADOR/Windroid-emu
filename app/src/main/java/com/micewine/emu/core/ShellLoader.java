@@ -1,5 +1,8 @@
 package com.micewine.emu.core;
 
+import androidx.annotation.Keep;
+
+@Keep
 public class ShellLoader {
     private static final StringBuilder sessionLogs = new StringBuilder();
 

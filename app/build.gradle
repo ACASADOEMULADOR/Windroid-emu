@@ -30,14 +30,21 @@ android {
     compileOptions.targetCompatibility JavaVersion.VERSION_17
     packagingOptions.jniLibs.useLegacyPackaging true
 
-    buildTypes.debug {
-        signingConfig signingConfigs.debug
-        postprocessing {
-            removeUnusedCode true
-            removeUnusedResources false
-            obfuscate false
-            optimizeCode true
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+            postprocessing {
+                removeUnusedCode true
+                removeUnusedResources false
+                obfuscate false
+                optimizeCode true
+                minifyEnabled false
+            }
+        }
+        release {
             minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 

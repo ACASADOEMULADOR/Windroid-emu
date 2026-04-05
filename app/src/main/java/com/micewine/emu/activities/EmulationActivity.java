@@ -774,6 +774,9 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
     }
 
     private Handler statsHandler = new Handler();
+    private ActivityManager cachedActivityManager = null;
+    private final ActivityManager.MemoryInfo cachedMemoryInfo = new ActivityManager.MemoryInfo();
+
     private Runnable statsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -783,17 +786,18 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
             if (enableCpuCounter) {
                 updateCpuInfo();
             }
-            statsHandler.postDelayed(this, 1000);
+            statsHandler.postDelayed(this, 2500); // 2.5s for less GC and IPC overhead
         }
     };
 
     private void updateMemoryInfo() {
-        ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
-        activityManager.getMemoryInfo(memoryInfo);
+        if (cachedActivityManager == null) {
+            cachedActivityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        }
+        cachedActivityManager.getMemoryInfo(cachedMemoryInfo);
 
-        long totalMemory = memoryInfo.totalMem / (1024 * 1024);
-        long availableMemory = memoryInfo.availMem / (1024 * 1024);
+        long totalMemory = cachedMemoryInfo.totalMem / (1024 * 1024);
+        long availableMemory = cachedMemoryInfo.availMem / (1024 * 1024);
         long usedMemory = totalMemory - availableMemory;
 
         memoryStats = usedMemory + "/" + totalMemory;
