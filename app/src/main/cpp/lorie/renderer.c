@@ -938,8 +938,6 @@ void renderer_redraw_locked(JNIEnv *env) {
   int win_width = ANativeWindow_getWidth(win);
   int win_height = ANativeWindow_getHeight(win);
 
-  // Frame interpolation disabled for maximum performance
-  /*
   if (frame_generation == 1 && last_frame.id && last_frame.width == win_width && last_frame.height == win_height) {
     // Draw interpolated frame (50% previous, 50% current)
     draw(display.id, -1.f, -1.f, 1.f, 1.f,
@@ -947,8 +945,6 @@ void renderer_redraw_locked(JNIEnv *env) {
     eglSwapBuffers(egl_display, sfc);
     state->renderedFrames++;
   }
-  */
-
 
   // Draw current frame
   draw(display.id, -1.f, -1.f, 1.f, 1.f,
