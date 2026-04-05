@@ -494,7 +494,9 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
 
         lorieView.setCallback((sfc, surfaceWidth, surfaceHeight, screenWidth, screenHeight) -> {
             String name;
-            int frameRate = (int) ((lorieView.getDisplay() != null) ? lorieView.getDisplay().getRefreshRate() : 30);
+            int fpsLimit = (preferences != null) ? preferences.getInt(FPS_LIMIT, 0) : 0;
+
+            int frameRate = (fpsLimit > 0) ? fpsLimit : 200;
 
             mInputHandler.handleHostSizeChanged(surfaceWidth, surfaceHeight);
             mInputHandler.handleClientSizeChanged(screenWidth, screenHeight);
@@ -504,6 +506,7 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
                 name = "External Display";
             }
             LorieView.sendWindowChange(screenWidth, screenHeight, frameRate, name);
+
 
             if (service != null && !LorieView.renderingInActivity()) {
                 try {

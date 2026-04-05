@@ -258,8 +258,11 @@ void renderer_set_scaling_filter(int filter) { scaling_filter = filter; }
 static volatile int renderer_vsync = 1;
 void renderer_set_vsync(int vsync) { 
   log("renderer: vsync set to %d", vsync);
-  renderer_vsync = vsync; 
+  renderer_vsync = vsync;
+  if (state)
+    state->vsyncOff = (vsync == 0);
 }
+
 
 static volatile int frame_generation = 0;
 void renderer_set_frame_generation(int mode) { 
@@ -702,7 +705,8 @@ void renderer_refresh_context(JNIEnv *env) {
     return vprintEglError("eglMakeCurrent failed", __LINE__);
   }
 
-  eglSwapInterval(egl_display, renderer_vsync);
+  eglSwapInterval(egl_display, 0); // Force VSync OFF for maximum FPS
+
 
   if (state)
     // We should redraw image at least once right after surface change
@@ -878,10 +882,8 @@ void renderer_redraw_locked(JNIEnv *env) {
   bool unlocked_early = false;
 
   static int current_vsync = -1;
-  if (current_vsync != renderer_vsync) {
-    current_vsync = renderer_vsync;
-    eglSwapInterval(egl_display, current_vsync);
-  }
+  // VSync is forced to 0 in refresh_context for maximum FPS
+
 
   // We should signal X server to not use root window while we actively copy use
   // it
@@ -936,6 +938,8 @@ void renderer_redraw_locked(JNIEnv *env) {
   int win_width = ANativeWindow_getWidth(win);
   int win_height = ANativeWindow_getHeight(win);
 
+  // Frame interpolation disabled for maximum performance
+  /*
   if (frame_generation == 1 && last_frame.id && last_frame.width == win_width && last_frame.height == win_height) {
     // Draw interpolated frame (50% previous, 50% current)
     draw(display.id, -1.f, -1.f, 1.f, 1.f,
@@ -943,13 +947,16 @@ void renderer_redraw_locked(JNIEnv *env) {
     eglSwapBuffers(egl_display, sfc);
     state->renderedFrames++;
   }
+  */
+
 
   // Draw current frame
   draw(display.id, -1.f, -1.f, 1.f, 1.f,
        display.desc.format != AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM, 1.0f);
 
+  // Sync fence created, but we will not wait FOREVER to avoid blocking the CPU
   fence = eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
-  glFlush();
+
 
   if (state->cursor.updated) {
     lorie_mutex_lock(&state->cursor.lock, &state->cursor.lockingPid);
@@ -963,7 +970,7 @@ void renderer_redraw_locked(JNIEnv *env) {
 
   state->cursor.moved = FALSE;
   draw_cursor();
-  glFlush();
+
 
   // Copy current frame to last_frame for next iteration
   if (frame_generation == 1) {
@@ -982,10 +989,12 @@ void renderer_redraw_locked(JNIEnv *env) {
 
   // Wait until root window drawing is finished before giving control back to X
   // server
+  // Using a short timeout instead of EGL_FOREVER to prevent CPU stalls
   if (!unlocked_early) {
-    eglClientWaitSyncKHR(egl_display, fence, 0, EGL_FOREVER);
+    eglClientWaitSyncKHR(egl_display, fence, 0, 0); // Non-blocking wait
     lorie_mutex_unlock(&state->lock, &state->lockingPid);
   }
+
   eglDestroySyncKHR(egl_display, fence);
 
   if (eglSwapBuffers(egl_display, sfc) != EGL_TRUE) {
@@ -1068,8 +1077,9 @@ __noreturn static void *renderer_thread(void *closure) {
       renderer_renew_image();
     pthread_mutex_unlock(&stateLock);
 
-    if (state && state->surfaceAvailable && !state->waitForNextFrame &&
+    if (state && state->surfaceAvailable && (state->vsyncOff || !state->waitForNextFrame) &&
         (state->drawRequested || state->cursor.moved || state->cursor.updated))
+
       renderer_redraw_locked(env);
   }
 }

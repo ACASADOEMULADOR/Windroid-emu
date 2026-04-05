@@ -505,8 +505,14 @@ static Bool lorieRedraw(__unused ClientPtr pClient, __unused void *closure) {
     pthread_cond_signal(&pvfb->state->cond);
   }
 
+  if (pvfb->state->vsyncOff) {
+    QueueWorkProc(lorieRedraw, NULL, NULL);
+    lorieTriggerWorkingQueue();
+  }
+
   return TRUE;
 }
+
 
 static CARD32 lorieFramecounter(unused OsTimerPtr timer, unused CARD32 time,
                                 unused void *arg) {

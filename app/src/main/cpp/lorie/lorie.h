@@ -192,6 +192,8 @@ struct lorie_shared_server_state {
      * To handle this, we use a waitForNextFrame flag, which we set after a successful render and clear from the AChoreographer’s frame callback.
      */
     volatile uint8_t waitForNextFrame;
+    volatile uint8_t vsyncOff;
+
 
     /* Needed to show FPS counter in logcat */
     volatile int renderedFrames;
