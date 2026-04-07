@@ -303,4 +303,10 @@
     <string name="virtual_controller_opacity_title">Virtual Control Opacity</string>
     <string name="edit_virtual_controller_layout">Edit Layout</string>
     <string name="save_layout">Save</string>
+    <string name="wine_fsr_mode_title">FSR Quality Mode</string>
+    <string name="wine_fsr_sharpness_title">FSR Sharpness</string>
+    <string name="wine_fsr_ultra_quality">Ultra Quality</string>
+    <string name="wine_fsr_quality">Quality</string>
+    <string name="wine_fsr_balanced">Balanced</string>
+    <string name="wine_fsr_performance">Performance</string>
 </resources>

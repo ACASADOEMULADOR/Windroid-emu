@@ -8,6 +8,10 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SWITCH;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_MODE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_MODE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_SHARPNESS;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_SHARPNESS_DEFAULT_VALUE;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,6 +57,8 @@ public class GraphicEngineSettingsFragment extends Fragment {
 
         addToAdapter(R.string.fps_limit_title, R.string.null_desc, null, new int[]{0, 120}, SEEKBAR, "0", FPS_LIMIT);
         addToAdapter(R.string.super_resolution_title, R.string.null_desc, null, null, SWITCH, String.valueOf(SUPER_RESOLUTION_DEFAULT_VALUE), SUPER_RESOLUTION);
+        addToAdapter(R.string.wine_fsr_mode_title, R.string.null_desc, new String[]{"Ultra Quality", "Quality", "Balanced", "Performance"}, null, SPINNER, WINE_FSR_MODE_DEFAULT_VALUE, WINE_FSR_MODE);
+        addToAdapter(R.string.wine_fsr_sharpness_title, R.string.null_desc, null, new int[]{0, 10}, SEEKBAR, String.valueOf(WINE_FSR_SHARPNESS_DEFAULT_VALUE), WINE_FSR_SHARPNESS);
         addToAdapter(R.string.color_profile_title, R.string.null_desc, new String[]{"Neutral", "Vivid", "Warm", "Cool"}, null, SPINNER, COLOR_PROFILE_DEFAULT_VALUE, COLOR_PROFILE);
     }
 

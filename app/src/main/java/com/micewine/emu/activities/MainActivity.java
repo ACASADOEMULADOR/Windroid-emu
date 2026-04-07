@@ -38,6 +38,10 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.FRAME_GENERATI
 import static com.micewine.emu.activities.GeneralSettingsActivity.FRAMESKIP_0;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_MODE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_MODE_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_SHARPNESS;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_FSR_SHARPNESS_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.COLOR_PROFILE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SELECTED_VRAM_LIMIT;
@@ -1036,6 +1040,8 @@ public class MainActivity extends AppCompatActivity {
     public static String selectedFrameGeneration = null;
     public static String selectedFrameSkip = null;
     public static boolean selectedSuperResolution = false;
+    public static String wineFsrMode = null;
+    public static int wineFsrSharpness = 0;
     public static String selectedColorProfile = null;
     public static int selectedFragmentId = 0;
     public static String memoryStats = "??/??";
@@ -1176,6 +1182,8 @@ public class MainActivity extends AppCompatActivity {
         selectedFrameGeneration = preferences.getString(SELECTED_FRAME_GENERATION, FRAME_GENERATION_OFF);
         selectedFrameSkip = preferences.getString(SELECTED_FRAMESKIP, FRAMESKIP_0);
         selectedSuperResolution = preferences.getBoolean(SUPER_RESOLUTION, SUPER_RESOLUTION_DEFAULT_VALUE);
+        wineFsrMode = preferences.getString(WINE_FSR_MODE, WINE_FSR_MODE_DEFAULT_VALUE);
+        wineFsrSharpness = preferences.getInt(WINE_FSR_SHARPNESS, WINE_FSR_SHARPNESS_DEFAULT_VALUE);
         selectedColorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
 
         enableRamCounter = preferences.getBoolean(RAM_COUNTER, RAM_COUNTER_DEFAULT_VALUE);

@@ -377,4 +377,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
     public final static String COLOR_PROFILE = "colorProfile";
     public final static String COLOR_PROFILE_DEFAULT_VALUE = "Neutral";
+    public final static String WINE_FSR_MODE = "wineFsrMode";
+    public final static String WINE_FSR_MODE_DEFAULT_VALUE = "Ultra Quality";
+    public final static String WINE_FSR_SHARPNESS = "wineFsrSharpness";
+    public final static int WINE_FSR_SHARPNESS_DEFAULT_VALUE = 2;
 }

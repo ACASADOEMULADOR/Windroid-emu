@@ -30,7 +30,6 @@ import static com.micewine.emu.activities.MainActivity.box64Sse42;
 import static com.micewine.emu.activities.MainActivity.deviceArch;
 import static com.micewine.emu.activities.MainActivity.fpsLimit;
 import static com.micewine.emu.activities.MainActivity.enableAFME;
-import static com.micewine.emu.activities.GeneralSettingsActivity.SUPER_RESOLUTION;
 import static com.micewine.emu.activities.MainActivity.enableDRI3;
 import static com.micewine.emu.activities.MainActivity.homeDir;
 import static com.micewine.emu.activities.MainActivity.preferences;
@@ -47,7 +46,10 @@ import static com.micewine.emu.activities.MainActivity.tmpDir;
 import static com.micewine.emu.activities.MainActivity.useAdrenoTools;
 import static com.micewine.emu.activities.MainActivity.usrDir;
 import static com.micewine.emu.activities.MainActivity.wineESync;
+import static com.micewine.emu.activities.MainActivity.wineFsrMode;
+import static com.micewine.emu.activities.MainActivity.wineFsrSharpness;
 import static com.micewine.emu.activities.MainActivity.wineLogLevel;
+import static com.micewine.emu.activities.MainActivity.selectedSuperResolution;
 import static com.micewine.emu.adapters.AdapterGame.selectedGameName;
 import static com.micewine.emu.fragments.EnvVarsSettingsFragment.getCustomEnvVars;
 import static com.micewine.emu.fragments.ShortcutsFragment.getEnvVars;
@@ -133,8 +135,19 @@ public class EnvVars {
             vars.add("DXVK_FRAME_RATE=" + fpsLimit);
         }
 
-        if (preferences.getBoolean(SUPER_RESOLUTION, false)) {
+        if (selectedSuperResolution) {
             vars.add("WINE_FULLSCREEN_FSR=1");
+
+            int fsrMode = switch (wineFsrMode) {
+                case "Ultra Quality" -> 1;
+                case "Quality" -> 2;
+                case "Balanced" -> 3;
+                case "Performance" -> 4;
+                default -> 1;
+            };
+
+            vars.add("WINE_FULLSCREEN_FSR_MODE=" + fsrMode);
+            vars.add("WINE_FULLSCREEN_FSR_SHARPNESS=" + wineFsrSharpness);
         }
 
         vars.add("MANGOHUD=1");
