@@ -124,7 +124,7 @@ public class AdapterSettingsPreferences extends RecyclerView.Adapter<AdapterSett
                 holder.seekBar.setMax(item.seekBarMaxMinValues[1]);
                 holder.seekBar.setProgress(preferences.getInt(item.key, Integer.parseInt(item.defaultValue)));
 
-                if (holder.seekBar.getProgress() == 0) {
+                if (holder.seekBar.getProgress() == 0 && item.key.equals(FPS_LIMIT)) {
                     holder.seekBarValue.setText(R.string.unlimited);
                 } else {
                     holder.seekBarValue.setText(String.valueOf(holder.seekBar.getProgress()));
@@ -133,11 +133,11 @@ public class AdapterSettingsPreferences extends RecyclerView.Adapter<AdapterSett
                 holder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                        if (!item.key.equals(FPS_LIMIT)) {
+                        if (item.key.equals(WINE_DPI)) {
                             seekBar.setProgress(seekBar.getProgress() / 24 * 24);
                         }
 
-                        if (seekBar.getProgress() == 0) {
+                        if (seekBar.getProgress() == 0 && item.key.equals(FPS_LIMIT)) {
                             holder.seekBarValue.setText(R.string.unlimited);
                         } else {
                             holder.seekBarValue.setText(String.valueOf(seekBar.getProgress()));
