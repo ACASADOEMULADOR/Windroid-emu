@@ -178,23 +178,26 @@ public class VirtualControllerInputView extends View {
 
     public void saveLayout() {
         if (preferences == null) return;
-        SharedPreferences.Editor editor = preferences.edit();
 
-        buttonList.forEach((i) -> {
-            editor.putFloat("VC_BUTTON_" + i.id + "_X", i.x);
-            editor.putFloat("VC_BUTTON_" + i.id + "_Y", i.y);
-        });
+        new Thread(() -> {
+            SharedPreferences.Editor editor = preferences.edit();
 
-        editor.putFloat("VC_BUTTON_" + LEFT_ANALOG + "_X", leftAnalog.x);
-        editor.putFloat("VC_BUTTON_" + LEFT_ANALOG + "_Y", leftAnalog.y);
+            buttonList.forEach((i) -> {
+                editor.putFloat("VC_BUTTON_" + i.id + "_X", i.x);
+                editor.putFloat("VC_BUTTON_" + i.id + "_Y", i.y);
+            });
 
-        editor.putFloat("VC_BUTTON_" + RIGHT_ANALOG + "_X", rightAnalog.x);
-        editor.putFloat("VC_BUTTON_" + RIGHT_ANALOG + "_Y", rightAnalog.y);
+            editor.putFloat("VC_BUTTON_" + LEFT_ANALOG + "_X", leftAnalog.x);
+            editor.putFloat("VC_BUTTON_" + LEFT_ANALOG + "_Y", leftAnalog.y);
 
-        editor.putFloat("VC_BUTTON_DPAD_X", dpad.x);
-        editor.putFloat("VC_BUTTON_DPAD_Y", dpad.y);
+            editor.putFloat("VC_BUTTON_" + RIGHT_ANALOG + "_X", rightAnalog.x);
+            editor.putFloat("VC_BUTTON_" + RIGHT_ANALOG + "_Y", rightAnalog.y);
 
-        editor.apply();
+            editor.putFloat("VC_BUTTON_DPAD_X", dpad.x);
+            editor.putFloat("VC_BUTTON_DPAD_Y", dpad.y);
+
+            editor.apply();
+        }).start();
     }
 
     private void addButton(int id, float x, float y, float radius, int shape) {

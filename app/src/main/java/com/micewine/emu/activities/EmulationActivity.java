@@ -384,7 +384,7 @@ public class EmulationActivity extends AppCompatActivity implements View.OnApply
                 editor.putInt(VIRTUAL_CONTROL_OPACITY, seekBar.getProgress());
                 editor.apply();
 
-                setSharedVars(EmulationActivity.this);
+                new Thread(() -> setSharedVars(EmulationActivity.this)).start();
             }
         });
 
