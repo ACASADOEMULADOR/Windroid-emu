@@ -15,6 +15,8 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.PERF_MODE_ROOT
 import static com.micewine.emu.activities.GeneralSettingsActivity.PERF_MODE_ROOT_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.SWITCH;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_HIDE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_HIDE_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_LOG_LEVEL;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_LOG_LEVEL_DEFAULT_VALUE;
 import static com.micewine.emu.activities.MainActivity.CPU_COUNTER;
@@ -70,6 +72,9 @@ public class DebugSettingsFragment extends Fragment {
 
         addToAdapter(R.string.wine_log_level_title, R.string.wine_log_level_desc, new String[] { "disabled", "default" },
                 SPINNER, WINE_LOG_LEVEL_DEFAULT_VALUE, WINE_LOG_LEVEL
+        );
+        addToAdapter(R.string.wine_hide_title, R.string.wine_hide_desc, null,
+                SWITCH, WINE_HIDE_DEFAULT_VALUE, WINE_HIDE
         );
 
         if (!deviceArch.equals("x86_64")) {

@@ -309,4 +309,6 @@
     <string name="wine_fsr_quality">Quality</string>
     <string name="wine_fsr_balanced">Balanced</string>
     <string name="wine_fsr_performance">Performance</string>
+    <string name="wine_hide_title">Hide Wine</string>
+    <string name="wine_hide_desc">Hides Wine-specific files and exports to help avoid anti-cheat detection</string>
 </resources>

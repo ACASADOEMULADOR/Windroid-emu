@@ -52,6 +52,9 @@ import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI_APPLI
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI_DEFAULT_VALUE;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_LOG_LEVEL;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_LOG_LEVEL_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_HIDE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_HIDE_DEFAULT_VALUE;
+
 import static com.micewine.emu.activities.PresetManagerActivity.SELECTED_BOX64_PRESET;
 import static com.micewine.emu.activities.RatManagerActivity.generateICDFile;
 import static com.micewine.emu.activities.RatManagerActivity.generateMangoHUDConfFile;
@@ -286,7 +289,9 @@ public class MainActivity extends AppCompatActivity {
                     if (driverLibPath == null || driverLibPath.isEmpty()) {
                         Log.e("MainActivity", "Driver library path is null or empty for driver: " + driverName);
                         final String errorDriverName = driverName;
-                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error: Driver library path not found for " + errorDriverName, Toast.LENGTH_LONG).show());
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                "Error: Driver library path not found for " + errorDriverName, Toast.LENGTH_LONG)
+                                .show());
                         return;
                     }
 
@@ -294,7 +299,11 @@ public class MainActivity extends AppCompatActivity {
                     if (!driverFile.exists()) {
                         Log.e("MainActivity", "Driver library file does not exist: " + driverLibPath);
                         final String errorDriverPath = driverLibPath;
-                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error: Driver file not found at " + errorDriverPath, Toast.LENGTH_LONG).show());
+                        runOnUiThread(
+                                () -> Toast
+                                        .makeText(MainActivity.this,
+                                                "Error: Driver file not found at " + errorDriverPath, Toast.LENGTH_LONG)
+                                        .show());
                         return;
                     }
 
@@ -798,7 +807,7 @@ public class MainActivity extends AppCompatActivity {
         if (!wineServices) {
             new Thread(() -> {
                 WineWrapper.waitForProcess("window_handler.exe");
-                runCommand("pkill -9 services.exe", false);
+                runCommand("pkill -SIGTERM -f services.exe", false);
             }).start();
         }
 
@@ -990,6 +999,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return unixUsername;
     }
+
     public static String customRootFSPath = null;
     public static File usrDir = new File(appRootDir + "/usr");
     public static File tmpDir = new File(usrDir + "/tmp");
@@ -1083,6 +1093,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_CREATE_WINE_PREFIX = "com.micewine.emu.ACTION_CREATE_WINE_PREFIX";
 
     public static boolean enableAFME;
+    public static boolean wineHide;
     public static int virtualControlOpacity;
     public static final String RAM_COUNTER = "ramCounter";
     public static final boolean RAM_COUNTER_DEFAULT_VALUE = true;
@@ -1184,6 +1195,7 @@ public class MainActivity extends AppCompatActivity {
         selectedSuperResolution = preferences.getBoolean(SUPER_RESOLUTION, SUPER_RESOLUTION_DEFAULT_VALUE);
         wineFsrMode = preferences.getString(WINE_FSR_MODE, WINE_FSR_MODE_DEFAULT_VALUE);
         wineFsrSharpness = preferences.getInt(WINE_FSR_SHARPNESS, WINE_FSR_SHARPNESS_DEFAULT_VALUE);
+        wineHide = preferences.getBoolean(WINE_HIDE, WINE_HIDE_DEFAULT_VALUE);
         selectedColorProfile = preferences.getString(COLOR_PROFILE, COLOR_PROFILE_DEFAULT_VALUE);
 
         enableRamCounter = preferences.getBoolean(RAM_COUNTER, RAM_COUNTER_DEFAULT_VALUE);
