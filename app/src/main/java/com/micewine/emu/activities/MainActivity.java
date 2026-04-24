@@ -159,6 +159,7 @@ import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.util.DisplayMetrics;
@@ -784,6 +785,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         installDXWrapper(winePrefix);
+        setupUserLinks(winePrefix);
 
         boolean changedDpi = !(preferences.getBoolean(WINE_DPI_APPLIED, WINE_DPI_APPLIED_DEFAULT_VALUE));
         if (changedDpi) {
@@ -1320,5 +1322,38 @@ public class MainActivity extends AppCompatActivity {
         parsedResolutions.add(getPercentOfResolution(nativeResolution, 30));
 
         return parsedResolutions;
+    }
+
+    private void setupUserLinks(String prefixName) {
+        File winePrefixDir = getWinePrefixFile(prefixName);
+        File driveC = new File(winePrefixDir, "drive_c");
+        File usersDir = new File(driveC, "users");
+        String unixUser = getUnixUsername();
+        File unixUserDir = new File(usersDir, unixUser);
+        File steamUserDir = new File(usersDir, "steamuser");
+        File userSharedFolder = new File(Environment.getExternalStorageDirectory(), "Windroid");
+
+        if (!userSharedFolder.exists()) return;
+
+        // Ensure both folders exist and have correct symlinks
+        setupProfile(unixUserDir, userSharedFolder);
+        setupProfile(steamUserDir, userSharedFolder);
+    }
+
+    private void setupProfile(File userDir, File sharedFolder) {
+        if (!userDir.exists()) {
+            userDir.mkdirs();
+        }
+
+        File localAppData = new File(userDir, "AppData");
+        File localSavedGames = new File(userDir, "Saved Games");
+        File localDocuments = new File(userDir, "Documents");
+
+        if (!localAppData.exists())
+            runCommand("ln -sf '" + sharedFolder + "/AppData' '" + localAppData + "'", false);
+        if (!localSavedGames.exists())
+            runCommand("ln -sf '" + sharedFolder + "/Saved Games' '" + localSavedGames + "'", false);
+        if (!localDocuments.exists())
+            runCommand("ln -sf '" + sharedFolder + "/Documents' '" + localDocuments + "'", false);
     }
 }
