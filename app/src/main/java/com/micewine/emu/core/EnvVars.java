@@ -155,13 +155,24 @@ public class EnvVars {
 
         if (!deviceArch.equals("x86_64")) {
             vars.add("BOX64_LOG=" + box64LogLevel);
-            vars.add("BOX64_CPUNAME=\"ARM64 CPU\"");
+
+            if (com.micewine.emu.activities.MainActivity.wineHide) {
+                vars.add("BOX64_CPUNAME=\"Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz\"");
+                vars.add("BOX64_SSE42=1");
+                vars.add("BOX64_AVX=2");
+                vars.add("BOX64_DYNAREC_STRONGMEM=1");
+                vars.add("BOX64_DYNAREC_WAIT=1");
+            } else {
+                vars.add("BOX64_CPUNAME=\"ARM64 CPU\"");
+                vars.add("BOX64_AVX=" + box64Avx);
+                vars.add("BOX64_SSE42=" + box64Sse42);
+                vars.add("BOX64_DYNAREC_STRONGMEM=" + box64DynarecStrongMem);
+                vars.add("BOX64_DYNAREC_WAIT=" + box64DynarecWait);
+            }
+
             vars.add("BOX64_MMAP32=" + box64MMap32);
-            vars.add("BOX64_AVX=" + box64Avx);
-            vars.add("BOX64_SSE42=" + box64Sse42);
             vars.add("BOX64_RCFILE=" + usrDir + "/etc/box64.box64rc");
             vars.add("BOX64_DYNAREC_BIGBLOCK=" + box64DynarecBigBlock);
-            vars.add("BOX64_DYNAREC_STRONGMEM=" + box64DynarecStrongMem);
             vars.add("BOX64_DYNAREC_WEAKBARRIER=" + box64DynarecWeakBarrier);
             vars.add("BOX64_DYNAREC_PAUSE=" + box64DynarecPause);
             vars.add("BOX64_DYNAREC_X87DOUBLE=" + box64DynarecX87Double);
@@ -172,7 +183,6 @@ public class EnvVars {
             vars.add("BOX64_DYNAREC_ALIGNED_ATOMICS=" + box64DynarecAlignedAtomics);
             vars.add("BOX64_DYNAREC_NATIVEFLAGS=" + box64DynarecNativeFlags);
             vars.add("BOX64_DYNAREC_BLEEDING_EDGE=" + box64DynarecBleedingEdge);
-            vars.add("BOX64_DYNAREC_WAIT=" + box64DynarecWait);
             vars.add("BOX64_DYNAREC_DIRTY=" + box64DynarecDirty);
             vars.add("BOX64_DYNAREC_FORWARD=" + box64DynarecForward);
             vars.add("BOX64_DYNAREC_DF=" + box64DynarecDF);
