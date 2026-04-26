@@ -52,6 +52,7 @@ import com.micewine.emu.fragments.EditGamePreferencesFragment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
     private final FragmentActivity activity;
@@ -260,9 +261,14 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             this.vulkanDriver = "Global";
             this.vulkanDriverType = MESA_DRIVER;
             this.d3dxRenderer = "DXVK";
-            this.dxvkVersion = listRatPackagesId("DXVK").get(0);
-            this.wineD3DVersion = listRatPackagesId("WineD3D").get(0);
-            this.vkd3dVersion = listRatPackagesId("VKD3D").get(0);
+            List<String> dxvkList = listRatPackagesId("DXVK");
+            this.dxvkVersion = dxvkList.isEmpty() ? "" : dxvkList.get(0);
+
+            List<String> wineD3DList = listRatPackagesId("WineD3D");
+            this.wineD3DVersion = wineD3DList.isEmpty() ? "" : wineD3DList.get(0);
+
+            List<String> vkd3dList = listRatPackagesId("VKD3D");
+            this.vkd3dVersion = vkd3dList.isEmpty() ? "" : vkd3dList.get(0);
             this.wineESync = true;
             this.wineServices = false;
             this.cpuAffinityCores = String.join(",", availableCPUs);
