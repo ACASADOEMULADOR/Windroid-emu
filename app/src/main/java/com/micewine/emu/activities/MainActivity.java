@@ -1333,11 +1333,20 @@ public class MainActivity extends AppCompatActivity {
         File steamUserDir = new File(usersDir, "steamuser");
         File userSharedFolder = new File(Environment.getExternalStorageDirectory(), "Windroid");
 
-        if (!userSharedFolder.exists()) return;
+        if (!userSharedFolder.exists()) {
+            userSharedFolder.mkdirs();
+        }
+
+        if (steamUserDir.exists() && !Files.isSymbolicLink(steamUserDir.toPath())) {
+            runCommand("rm -rf '" + steamUserDir + "'", false);
+        }
+
+        if (!steamUserDir.exists()) {
+            runCommand("ln -sf '" + userSharedFolder + "' '" + steamUserDir + "'", false);
+        }
 
         // Ensure both folders exist and have correct symlinks
         setupProfile(unixUserDir, userSharedFolder);
-        setupProfile(steamUserDir, userSharedFolder);
     }
 
     private void setupProfile(File userDir, File sharedFolder) {
