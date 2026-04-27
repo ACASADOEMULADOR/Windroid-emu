@@ -12,8 +12,9 @@ import static com.micewine.emu.activities.MainActivity.resolutions18_9;
 import static com.micewine.emu.activities.MainActivity.resolutions4_3;
 import static com.micewine.emu.activities.MainActivity.selectedCpuAffinity;
 import static com.micewine.emu.activities.MainActivity.usrDir;
-import static com.micewine.emu.activities.MainActivity.wineDisksFolder;
 import static com.micewine.emu.adapters.AdapterGame.selectedGameName;
+import static com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND_BOX64;
+import static com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND_FEX;
 import static com.micewine.emu.controller.ControllerUtils.connectedPhysicalControllers;
 import static com.micewine.emu.core.RatPackageManager.getPackageNameVersionById;
 import static com.micewine.emu.core.RatPackageManager.listRatPackages;
@@ -68,8 +69,9 @@ import static com.micewine.emu.fragments.ShortcutsFragment.putVramLimit;
 import static com.micewine.emu.fragments.ShortcutsFragment.putVulkanDriver;
 import static com.micewine.emu.fragments.ShortcutsFragment.putWineD3DVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.putWineESync;
-import static com.micewine.emu.fragments.ShortcutsFragment.putWineServices;
 import static com.micewine.emu.fragments.ShortcutsFragment.putWineVirtualDesktop;
+import static com.micewine.emu.fragments.ShortcutsFragment.putCpuBackend;
+import static com.micewine.emu.fragments.ShortcutsFragment.getCpuBackend;
 import static com.micewine.emu.fragments.ShortcutsFragment.setGameName;
 import static com.micewine.emu.fragments.VirtualControllerPresetManagerFragment.getVirtualControllerPresets;
 import static com.micewine.emu.utils.FileUtils.getFileExtension;
@@ -159,6 +161,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
     private Spinner cpuAffinitySpinner;
     private Spinner selectedBox64Spinner;
     private Spinner selectedBox64ProfileSpinner;
+    private Spinner selectedCpuBackendSpinner;
     private List<TextView> controllersMappingTypeTexts;
     private List<Spinner> controllersMappingTypeSpinners;
     private List<TextView> controllersSwapAnalogsTexts;
@@ -392,6 +395,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
             }
         });
 
+        selectedCpuBackendSpinner = view.findViewById(R.id.selectedCpuBackend);
         selectedBox64Spinner = view.findViewById(R.id.selectedBox64);
         selectedBox64ProfileSpinner = view.findViewById(R.id.selectedBox64Profile);
         imageView = view.findViewById(R.id.imageView);
@@ -757,6 +761,28 @@ public class EditGamePreferencesFragment extends DialogFragment {
             }
         });
 
+        List<String> cpuBackends = Arrays.asList(getString(R.string.cpu_backend_box64), getString(R.string.cpu_backend_fex));
+        List<String> cpuBackendsId = Arrays.asList("Global", CPU_BACKEND_BOX64, CPU_BACKEND_FEX);
+        ArrayList<String> displayCpuBackends = new ArrayList<>();
+        displayCpuBackends.add("Global: " + (preferences.getString(com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND, CPU_BACKEND_BOX64).equals(CPU_BACKEND_BOX64) ? cpuBackends.get(0) : cpuBackends.get(1)));
+        displayCpuBackends.addAll(cpuBackends);
+
+        int cpuBackendIndex = cpuBackendsId.indexOf(getCpuBackend(selectedGameName));
+        if (cpuBackendIndex < 0) cpuBackendIndex = 0;
+
+        selectedCpuBackendSpinner.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, displayCpuBackends));
+        selectedCpuBackendSpinner.setSelection(cpuBackendIndex);
+        selectedCpuBackendSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                temporarySettings.cpuBackend = cpuBackendsId.get(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
         buttonContinue.setOnClickListener((v) -> {
             switch (type) {
                 case EDIT_GAME_PREFERENCES -> {
@@ -796,6 +822,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
 
                     putBox64Version(selectedGameName, temporarySettings.box64Version);
                     putBox64Preset(selectedGameName, temporarySettings.box64Preset);
+                    putCpuBackend(selectedGameName, temporarySettings.cpuBackend);
 
                     putEnableXInput(selectedGameName, temporarySettings.enableXInput);
                     putEnableDInput(selectedGameName, temporarySettings.enableDInput);
@@ -921,6 +948,7 @@ public class EditGamePreferencesFragment extends DialogFragment {
         boolean enableDInput = getEnableDInput(selectedGameName);
         String vramLimit = getVramLimit(selectedGameName);
         boolean enableAFME = getEnableAFME(selectedGameName);
+        String cpuBackend = getCpuBackend(selectedGameName);
     }
 
     public static class CPUAffinityAdapter implements SpinnerAdapter {

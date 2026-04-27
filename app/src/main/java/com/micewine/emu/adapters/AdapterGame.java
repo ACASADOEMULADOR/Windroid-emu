@@ -10,6 +10,7 @@ import static com.micewine.emu.fragments.ShortcutsFragment.MESA_DRIVER;
 import static com.micewine.emu.fragments.ShortcutsFragment.getBox64Preset;
 import static com.micewine.emu.fragments.ShortcutsFragment.getBox64Version;
 import static com.micewine.emu.fragments.ShortcutsFragment.getCpuAffinity;
+import static com.micewine.emu.fragments.ShortcutsFragment.getCpuBackend;
 import static com.micewine.emu.fragments.ShortcutsFragment.getD3DXRenderer;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDXVKVersion;
 import static com.micewine.emu.fragments.ShortcutsFragment.getDisplaySettings;
@@ -199,6 +200,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             runWineIntent.putExtra("cpuAffinity", getCpuAffinity(selectedGameName));
             runWineIntent.putExtra("vramLimit", getVramLimit(selectedGameName));
             runWineIntent.putExtra("enableAFME", getEnableAFME(selectedGameName));
+            runWineIntent.putExtra("cpuBackend", getCpuBackend(selectedGameName));
 
             runWineIntent.setPackage("com.micewine.emu");
             activity.sendBroadcast(runWineIntent);
@@ -243,6 +245,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
         public String vramLimit;
         public boolean enableAFME;
         public ArrayList<AdapterEnvVar.EnvVar> envVars;
+        public String cpuBackend;
 
         public GameItem(String name, String exePath, String exeArguments, String iconPath) {
             this.name = name;
@@ -278,6 +281,7 @@ public class AdapterGame extends RecyclerView.Adapter<AdapterGame.ViewHolder> {
             this.vramLimit = "Auto";
             this.enableAFME = false;
             this.envVars = new ArrayList<>();
+            this.cpuBackend = "Global";
         }
     }
 }

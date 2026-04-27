@@ -319,6 +319,26 @@ public class ShortcutsFragment extends Fragment {
         return gameList.get(index).cpuAffinityCores;
     }
 
+    public static void putCpuBackend(String name, String cpuBackend) {
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return;
+
+        gameList.get(index).cpuBackend = cpuBackend;
+
+        saveShortcuts();
+    }
+
+    public static String getCpuBackend(String name) {
+        int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
+                .orElse(-1);
+        if (index == -1)
+            return "Global";
+
+        return gameList.get(index).cpuBackend == null ? "Global" : gameList.get(index).cpuBackend;
+    }
+
     public static void putWineServices(String name, boolean enabled) {
         int index = IntStream.range(0, gameList.size()).filter(i -> gameList.get(i).name.equals(name)).findFirst()
                 .orElse(-1);

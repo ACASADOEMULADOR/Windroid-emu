@@ -1,8 +1,11 @@
 package com.micewine.emu.fragments;
 
 import static com.micewine.emu.activities.GeneralSettingsActivity.SEEKBAR;
+import static com.micewine.emu.activities.GeneralSettingsActivity.SPINNER;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI;
 import static com.micewine.emu.activities.GeneralSettingsActivity.WINE_DPI_DEFAULT_VALUE;
+import static com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND;
+import static com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND_BOX64;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -47,12 +50,13 @@ public class WineSettingsFragment extends Fragment {
 
         settingsList.clear();
 
-        addToAdapter(R.string.wine_dpi, R.string.null_desc, new int[] { 96, 480 }, SEEKBAR, String.valueOf(WINE_DPI_DEFAULT_VALUE), WINE_DPI);
+        addToAdapter(R.string.cpu_backend_title, R.string.cpu_backend_desc, new String[] { "Box64", "FexCore" }, null, SPINNER, "Box64", CPU_BACKEND);
+        addToAdapter(R.string.wine_dpi, R.string.null_desc, null, new int[] { 96, 480 }, SEEKBAR, String.valueOf(WINE_DPI_DEFAULT_VALUE), WINE_DPI);
     }
 
-    private void addToAdapter(int titleId, int descriptionId, int[] seekBarValues, int type, String defaultValue, String keyId) {
+    private void addToAdapter(int titleId, int descriptionId, String[] spinnerOptions, int[] seekBarValues, int type, String defaultValue, String keyId) {
         settingsList.add(
-                new SettingsListSpinner(titleId, descriptionId, null, seekBarValues, type, defaultValue, keyId)
+                new SettingsListSpinner(titleId, descriptionId, spinnerOptions, seekBarValues, type, defaultValue, keyId)
         );
     }
 }

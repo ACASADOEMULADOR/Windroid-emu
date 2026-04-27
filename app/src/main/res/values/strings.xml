@@ -60,6 +60,10 @@
     <string name="desktop_mode_init">Desktop</string>
     <string name="home_title">Home</string>
     <string name="general_settings">General Settings</string>
+    <string name="cpu_backend_title">CPU Emulation Backend</string>
+    <string name="cpu_backend_desc">Select backend for Wine (Box64 or FexCore/ARM64EC)</string>
+    <string name="cpu_backend_box64">Box64 (Stable)</string>
+    <string name="cpu_backend_fex">FexCore (ARM64EC)</string>
     <string name="exit">Exit</string>
     <string name="open_keyboard">Open Keyboard</string>
     <string name="box64_settings_title">Box64 Settings</string>

@@ -317,6 +317,10 @@ public class GeneralSettingsActivity extends AppCompatActivity {
     public final static String SELECTED_BOX64 = "selectedBox64";
     public final static String SELECTED_VULKAN_DRIVER = "selectedVulkanDriver";
     public final static String SELECTED_WINE_PREFIX = "selectedWinePrefix";
+    public final static String CPU_BACKEND = "cpuBackend";
+    public final static String CPU_BACKEND_BOX64 = "Box64";
+    public final static String CPU_BACKEND_FEX = "FexCore";
+    public final static String CPU_BACKEND_DEFAULT_VALUE = CPU_BACKEND_BOX64;
     public final static String SELECTED_TU_DEBUG_PRESET = "selectedTuDebugPreset";
     public final static String SELECTED_TU_DEBUG_PRESET_DEFAULT_VALUE = "noconform,sysmem";
     public final static String SELECTED_VRAM_LIMIT = "selectedVramLimit";

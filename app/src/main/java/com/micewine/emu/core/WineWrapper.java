@@ -7,6 +7,7 @@ import static com.micewine.emu.activities.MainActivity.winePrefix;
 import static com.micewine.emu.activities.MainActivity.winePrefixesDir;
 import static com.micewine.emu.activities.MainActivity.ratPackagesDir;
 import static com.micewine.emu.activities.MainActivity.selectedWine;
+import static com.micewine.emu.activities.MainActivity.cpuBackend;
 import static com.micewine.emu.core.EnvVars.getEnv;
 import static com.micewine.emu.core.ShellLoader.runCommand;
 import static com.micewine.emu.core.ShellLoader.runCommandWithOutput;
@@ -19,7 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WineWrapper {
-    private static final String IS_BOX64 = deviceArch.equals("x86_64") ? "" : "box64";
+    private static String getExecutionPrefix() {
+        if (deviceArch.equals("x86_64")) return "";
+        if (cpuBackend != null && cpuBackend.contains("FexCore")) return ""; // Native ARM64EC execution doesn't use box64
+        return "box64";
+    }
 
     public static String getCpuHexMask(String cpuAffinityMask) {
         int availCpus = Runtime.getRuntime().availableProcessors();
@@ -104,14 +109,14 @@ public class WineWrapper {
 
         runCommand(
                 ((cwd != null) ? "cd " + cwd + ";" : "") + getEnv() + "WINEPREFIX='" + winePrefixesDir + "/"
-                        + winePrefix + "' " + IS_BOX64 + " " + wineBin + " " + args,
+                        + winePrefix + "' " + getExecutionPrefix() + " " + wineBin + " " + args,
                 true);
     }
 
     public static void killAll() {
         String wineserverBin = ratPackagesDir + "/" + selectedWine + "/files/wine/bin/wineserver";
 
-        runCommand(getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64 + " " + wineserverBin + " -k",
+        runCommand(getEnv() + "WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + getExecutionPrefix() + " " + wineserverBin + " -k",
                 false);
         runCommand("pkill -SIGINT -f .exe", false);
         runCommand("pkill -SIGINT -f wineserver", false);
@@ -223,7 +228,7 @@ public class WineWrapper {
 
     public static int getWinPidByName(String processName) {
         String[] taskList = runCommandWithOutput(
-                getEnv() + "BOX64_LOG=0 WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + IS_BOX64
+                getEnv() + "BOX64_LOG=0 WINEPREFIX='" + winePrefixesDir + "/" + winePrefix + "' " + getExecutionPrefix()
                         + " wine tasklist",
                 false).split("\n");
 

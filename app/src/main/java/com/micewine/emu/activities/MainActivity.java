@@ -236,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
                     String cpuAffinity = intent.getStringExtra("cpuAffinity");
                     String vramLimit = intent.getStringExtra("vramLimit");
                     boolean enableAFME = intent.getBooleanExtra("enableAFME", false);
+                    String cpuBackendExtra = intent.getStringExtra("cpuBackend");
 
                     if (exeArguments == null)
                         exeArguments = "";
@@ -259,6 +260,8 @@ public class MainActivity extends AppCompatActivity {
                         cpuAffinity = String.join(",", availableCPUs);
                     if (vramLimit == null)
                         vramLimit = "Auto";
+                    if (cpuBackendExtra == null)
+                        cpuBackendExtra = "Global";
 
                     deleteDirectoryRecursively(tmpDir.toPath());
                     tmpDir.mkdirs();
@@ -329,6 +332,7 @@ public class MainActivity extends AppCompatActivity {
                             cpuAffinity,
                             vramLimit,
                             enableAFME,
+                            cpuBackendExtra,
                             adrenoToolsDriverPath);
 
                     runXServer();
@@ -1039,6 +1043,7 @@ public class MainActivity extends AppCompatActivity {
     public static Integer box64NoSigill = null;
     public static String wineLogLevel = null;
     public static String selectedBox64 = null;
+    public static String cpuBackend = null;
     public static String selectedD3DXRenderer = null;
     public static String selectedWineD3D = null;
     public static String selectedDXVK = null;
@@ -1114,13 +1119,13 @@ public class MainActivity extends AppCompatActivity {
 
     public static void setSharedVars(Activity activity, String adrenoToolsDriverPath) {
         setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                null,
+                null, null,
                 adrenoToolsDriverPath);
     }
 
     public static void setSharedVars(Activity activity) {
         setSharedVars(activity, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                null,
+                null, null,
                 null);
     }
 
@@ -1141,6 +1146,7 @@ public class MainActivity extends AppCompatActivity {
             String cpuAffinity,
             String vramLimit,
             Boolean afme,
+            String cpuBackendExtra,
             String adrenoToolsDriverPath) {
         useAdrenoTools = (adrenoToolsDriverPath != null);
         adrenoToolsDriverFile = (adrenoToolsDriverPath != null ? new File(adrenoToolsDriverPath) : null);
@@ -1148,6 +1154,7 @@ public class MainActivity extends AppCompatActivity {
         appLang = activity.getResources().getString(R.string.app_lang);
 
         selectedBox64 = (box64Version != null ? box64Version : getBox64Version(selectedGameName));
+        cpuBackend = (cpuBackendExtra != null && !cpuBackendExtra.equals("Global")) ? cpuBackendExtra : preferences.getString(com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND, com.micewine.emu.activities.GeneralSettingsActivity.CPU_BACKEND_BOX64);
         if ("Global".equals(selectedBox64)) {
             selectedBox64 = preferences.getString(SELECTED_BOX64, "");
         }
